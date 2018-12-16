@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Backup important configuration files
-# Must run as root
+# Some source paths require root privileges
 #
 
 # Path to the current directory where this script is located
@@ -29,7 +29,7 @@ DMODE="$CFG_DMODE"
 EXIT_CODE=0
 
 
-# Overrid configuration parameters with external arguments
+# Override configuration parameters with external arguments
 if [[ "$1" != "" ]]; then SOURCE=($1)  ; fi
 if [[ "$2" != "" ]]; then EXCLUDE=($2) ; fi
 if [[ "$3" != "" ]]; then OUTDIR="$3"  ; fi
@@ -37,8 +37,8 @@ if [[ "$4" != "" ]]; then
   LOG="$CFG_LOG_DIR/$4.log"
   PREFIX="$4"
 fi
-if [[ "$5" != "" ]]; then USER="$5"  ; fi
-if [[ "$6" != "" ]]; then GROUP="$6"  ; fi
+if [[ "$5" != "" ]]; then USER="$5"    ; fi
+if [[ "$6" != "" ]]; then GROUP="$6"   ; fi
 
 
 README="$OUTDIR/README.txt"
