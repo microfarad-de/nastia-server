@@ -1,0 +1,104 @@
+#!/bin/bash
+#
+# Search a list of directories for corrupted image files
+# 
+# Requires the following packages:
+# - imagemagick: for checking image files for integrity (using identify command)
+#
+
+# Directory where this script is located
+DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
+
+# Include common configuration file
+source "$DIR/common.sh"
+
+
+
+# Configuration variables
+PATTERN=".*\.(jpg|JPG|jpeg|JPEG|png|PNG)" # Image file name regex pattern
+LOG="$CFG_LOG_DIR/check-images.log"       # Main log file
+LOCK="$CFG_TMPFS_DIR/check-images.lock"     # Lock file for enforcing only one instance fo this script
+
+
+# Global variables
+FAIL_COUNT=0
+TOTAL_COUNT=0
+
+
+# Print info message to log file
+function infoLog {
+  _infoLog "$1" "check-images" "$LOG" "ecd"
+}
+
+# Print warning message to log file
+function warningLog {
+  _warningLog "$1" "check-images" "$LOG" "ecd"
+}
+
+# Print error message to log file
+function errorLog {
+  _errorLog "$1" "check-images" "$LOG" "ecd"
+}
+
+# Main processing routine
+function process {
+  local pattern="$1"
+  local directory="$2"
+  local rv
+  local result
+  echo " "
+  echo "directory: $directory "
+  echo "pattern:   $pattern "
+  if [[ ! -e "$directory" ]]; then
+    errorLog "directory '$directory' does not exist"
+    return 1
+  fi
+  fileList=$(find "$directory" -regextype posix-extended -regex "$pattern")
+  while read -r f
+  do
+    # Check if the lock file still exists, deleting lock file will stop the script execution
+    if [[ ! -e "$LOCK" ]]; then
+      warningLog "KILLED DUE TO REMOVED $LOCK"
+      exit 1
+    fi
+    echo " "
+    echo "checking $f ..."
+    result=$(identify -format "%f" "$f" 2>&1)
+    rv="$?"
+    echo "  identify returned: $rv"
+    echo "  identify result: $result"
+    if [[ rv -ne 0 ]]; then
+      errorLog "$result (returned $rv)"
+      (( FAIL_COUNT++ ))
+    fi
+    (( TOTAL_COUNT++ ))
+  done <<< "$fileList"
+  return 0
+}
+
+# Enforce a single instance of this script
+semaphoreLock "$LOCK"
+if [[ $? -ne 0 ]]; then
+  warningLog "an instance of the current script is already running (please remove $LOCK)"
+  exit 1
+fi
+
+echo " "
+echo " "
+echo "##############################"
+echo "Checking image files"
+date
+echo "##############################"
+
+
+
+# Loop over configurations
+for dir in "${CFG_MEDIA_CHKIMG_DIR[@]}"; do
+  process "$PATTERN" "$CFG_MEDIA_ROOT_DIR/$dir"
+done
+
+echo " "
+infoLog "checked $TOTAL_COUNT image files with $FAIL_COUNT errors"
+
+semaphoreRelease "$LOCK"
+exit 0

@@ -1,0 +1,16 @@
+# KHr:
+# Type=idle  ->  Start after all services have started
+
+[Unit]
+Description=fan control service
+Wants=init-gpio.service
+After=init-gpio.service
+
+[Service]
+Type=idle
+ExecStart=/opt/nastia-server/bin/fan.sh
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+

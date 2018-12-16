@@ -1,0 +1,415 @@
+#!/bin/bash
+#
+# Batch script for auto-organizing pictures and movies
+#
+# Renames media files according to jpeg exif or modification date
+# then moves them into pre-defined directories.
+# Per-date sub-directories are generated on the fly.
+# Duplicates are automatically detected and moved into a separate folder.
+# A backup copy of the media files may be kept in a separate folder.
+#
+# Requires the following packages:
+# - libimage-exiftool-perl: for parsing exif information
+# - imagemagick: for comparing duplicate files
+#
+
+# Current directory where this script is located
+DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
+
+# Include common configuration file
+source "$DIR/common.sh"
+
+
+
+# Configuration options
+LOG="$CFG_LOG_DIR/photostream.log"     # Main log file
+LOCK="$CFG_TMPFS_DIR/photostream.lock" # Lock file for enforcing only one instance of this script
+BAK="Backup"                           # Name of the sub-directories containing image backups
+DUP="Duplicates"                       # Name of the sub-directories containing image duplicates
+
+# Knon file name patterns
+IMAGE_PATTERN="*.jpg *.JPG *.jpeg *.JPEG *.png *.PNG"
+MOVIE_PATTERN="*.mov *.MOV *.mp4 *.MP4"
+AUDIO_PATTERN="*.3gpp *.3GPP *.m4a *.M4A"
+
+
+# Global variables
+DUP_FILE_LIST=""
+LOG_HEADER=1
+ERROR_FLAG=0
+COPY_COUNT=0
+DUP_COUNT=0
+ERR_COUNT=0
+NO_DATE_COUNT=0
+
+
+# Print message to log file
+function printLog {
+  local text="$1"
+  if [[ "$LOG_HEADER" == 1 ]]; then
+    echo "$(eval $LOG_STAMP) - $(pwd):" >> "$LOG"
+    LOG_HEADER=0
+  fi
+  echo "    $text" >> "$LOG"
+}
+
+# Print info message to log file
+function infoLog {
+  printLog "$1"
+  _infoLog "$1" "photostream" "$LOG" "ec"
+}
+
+# Print warning message to log file
+function warningLog {
+  printLog "[WARNING] $1"
+  _warningLog "$1" "photostream" "$LOG" "ec"
+}
+
+# Print error message to log file
+function errorLog {
+  printLog "[ERROR] $1"
+  _errorLog "$1" "photostream" "$LOG" "ec"
+  ERROR_FLAG=1
+}
+
+# Create a new directory with pre-defined permissions
+function installDir {
+  local path="$1"
+  mkdir -p "$path"
+  local rv=$?
+  if [[ $rv -ne 0 ]]; then
+    errorLog "mkdir returned $rv"
+  fi
+  #chmod "$CFG_DMODE" "$path"
+  #rv=$?
+  #if [[ $rv -ne 0 ]]; then
+  #  errorLog "chmod $path returned $rv"
+  #fi
+}
+
+# Move or copy, append incremental index to duplicate names
+function smartMove {
+  local cmd="$1"
+  local src="$2"
+  local dst="$3"
+  local basename="${dst%.*}"
+  local ext="${dst##*.}"
+  local rv=0
+  local num
+  if [[ -e "$dst" ]]; then
+    num=1
+    while [[ -e "$basename-$num.$ext" ]]; do
+      (( num++ ))
+    done
+    dst="$basename-$num.$ext"
+  fi
+  echo "$src --> $dst ($cmd)"
+  printLog "$src --> $dst ($cmd)"
+  $cmd "$src" "$dst"
+  rv=$?
+  if [[ "$rv" -ne 0 ]]; then
+    warningLog "$cmd returned $rv"
+  fi
+}
+
+# Create a list of potential duplicate files
+function createDupFileList {
+  local src="$1"
+  local dst="$2"
+  local dstDir="$3"
+  DUP_FILE_LIST=$(find "$dstDir" -not -path "*/Inbox/*" -a \( -name "${src%.*}*" -o -name "${dst%.*}*" \) )
+  if (( ${#DUP_FILE_LIST} > 2 )); then
+    echo "found potential duplicates:"
+    echo "$DUP_FILE_LIST"
+  fi
+}
+
+# Find duplicate items
+function checkDuplicate {
+  local src="$1"
+  local dst="$2"
+  local dstDir="$3"
+  createDupFileList "$src" "$dst" "$dstDir"
+  local ext="${dst##*.}"
+  local result
+  local rv
+  local dupFile=""
+  while read -r dupFile
+  do
+    if [[ -e "$dupFile" ]]; then
+      result=""
+      if [[ "$ext" == "jpg" ]]; then
+        echo "comparing image: $src <> $dupFile ..."
+        result=$(compare -limit memory 100mb -metric AE "$src" "$dupFile" /dev/null 2>&1)
+        rv=$?
+        echo "    compare returned: $rv"
+        if (( "$rv" > 1 )); then
+          warningLog "compare tool returned $rv: $src ??? $dupFile"
+        fi
+        echo "    compare result: $result"
+      else
+        echo "comparing file: $src <> $dupFile ..."
+        cmp "$src" "$dupFile" > /dev/null
+        result=$?
+      fi
+      if [[ "$result" == 0 ]]; then
+        echo "duplicate found: $src"
+        printLog "DUPLICATE FOUND: $src == $dupFile"
+        installDir "$DUP"
+        smartMove "mv" "$src" "$DUP/$src"
+        return 1
+      fi
+    fi
+  done <<< "$DUP_FILE_LIST"
+  return 0
+}
+
+# Create date directory
+function createDir {
+  local name="$1"
+  local dstDir="$2"
+  local year="${name:0:4}"
+  local month="${name:5:2}"
+  local fullPath="${dstDir}/${year}-${month}"
+  installDir "$fullPath"
+  echo "$fullPath"
+}
+
+
+# Recover date and time from file name (e.g Dropbox Camera Uploads)
+function name2date {
+  local file="$1"
+  local name=$(basename "$file")
+  local timestamp=""
+  local year month day hour minute second
+  # Dropbox Camera Uploads format "YYYY-MM-DD HH.MM.SS"
+  if [[ "$name" == [1-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]" "[0-2][0-9].[0-5][0-9].[0-5][0-9]*.??? ]]; then
+    year="${name:0:4}"
+    month="${name:5:2}"
+    day="${name:8:2}"
+    hour="${name:11:2}"
+    minute="${name:14:2}"
+    second="${name:17:2}"
+    timestamp="$year$month$day$hour$minute.$second"
+  # photostream (this script's) format "YYYY-MM-DD-HHMMSS"
+  elif [[ "$name" == [1-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]-[0-2][0-9][0-5][0-9][0-5][0-9]*.??? ]]; then
+    year="${name:0:4}"
+    month="${name:5:2}"
+    day="${name:8:2}"
+    hour="${name:11:2}"
+    minute="${name:13:2}"
+    second="${name:15:2}"
+    timestamp="$year$month$day$hour$minute.$second"
+  fi
+  if [[ -n "$timestamp" ]]; then
+    echo "extracting timestamp from file name: $file ($timestamp)"
+    #printLog "NAME-TO-DATE: $file ($timestamp)"
+    touch "$file" -t "$timestamp"
+    local rv="$?"
+    if [[ $rv -ne  0 ]]; then 
+      errorLog "touch returned $rv while modifying $file"
+    fi
+    ls -l --time-style=full-iso "$file"
+  fi
+}
+
+
+# Parse EXIF information
+function parseExif {
+  local file="$1"
+  local rv
+  local result
+  echo "parsing EXIF: $file ..."
+  result=$(exiftool '-FileModifyDate<DateTimeOriginal' '-FileModifyDate<CreateDate' "$file" 2>&1)
+  rv=$?
+  echo "$result"
+  echo "    exiftool returned: $rv"
+  if [[ "$rv" -ne 0 ]]; then
+    errorLog "exiftool returned $rv: failed to parse $file"
+    return 1
+  fi
+  if [[ $result == *"No writable tags set"* ]]; then
+    printLog "EXIF TAG NOT FOUND: $file"
+    return 2
+  fi
+  return 0
+}
+
+
+# Rename and move pictures into target directory
+function rename {
+  local fileList="$1"
+  local dstDir="$2"
+  local backup="$3"
+  local subfolder="$4"
+  local outExt="$5"
+  local dstPath=""
+  local file=""
+  local exifValid
+  
+  echo "renaming and moving files..."
+  while read -r file
+  do
+    ERROR_FLAG=0
+    # Check if the lock file still exists, deleting lock file will stop the script execution
+    if [[ ! -e "$LOCK" ]]; then
+      warningLog "KILLED DUE TO REMOVED $LOCK"
+      echo "KILLED DUE TO REMOVED $LOCK"
+      exit 1
+    fi
+    if [[ -f "$file" ]]; then
+      #chown "$CFG_USER:$CFG_GROUP" "$file"
+      #local rv=$?
+      #if [[ $rv -ne 0 ]]; then
+      #  errorLog "chown $file returned $rv"
+      #fi
+      #chmod "$CFG_FMODE" "$file"
+      #rv=$?
+      #if [[ $rv -ne 0 ]]; then
+      #  errorLog "chmod $file returned $rv"
+      #fi
+      name2date "$file"
+      parseExif "$file"
+      exifValid=$?
+      if [[ -z "$outExt" ]]; then
+        local ext="${file##*.}"
+      else
+        local ext="$outExt"
+      fi
+      local epoch=$(stat "$file" --format %Y)
+      local name=$(date -d @"$epoch" '+%Y-%m-%d-%H%M%S')
+      ext="${ext,,}" # convert to lower case
+      name="$name.$ext"
+      checkDuplicate "$file" "$name" "$dstDir"
+      if [[ $? -eq 0 ]]; then
+        if [[ "$backup" -eq 1 ]]; then
+          installDir "$BAK"
+          smartMove "cp --preserve=timestamps" "$file" "$BAK/$name"
+        fi
+        if [[ "$exifValid" -ne 0 ]]; then
+          dstPath="$dstDir/No-Date"
+          installDir "$dstPath"
+          (( NO_DATE_COUNT++ ))
+        elif [[ "$subfolder" -eq 1 ]]; then
+          dstPath=$(createDir "$name" "$dstDir")
+        else
+          dstPath="$dstDir"
+        fi
+        smartMove "mv" "$file" "$dstPath/$name"
+        if [[ ERROR_FLAG -eq 0 ]]; then
+          (( COPY_COUNT++ ))
+        fi
+      else
+        if [[ ERROR_FLAG -eq 0 ]]; then
+          (( DUP_COUNT++ ))
+        fi
+      fi
+      if [[ ERROR_FLAG -ne 0 ]]; then
+        (( ERR_COUNT++ ))
+      fi
+    fi
+  done <<< "$fileList"   
+}
+
+
+# Main processing routine
+function process {
+  local type="$1"
+  local srcDir="$2"
+  local dstDir="$3"
+  local backup="$4"
+  local subfolder="$5"
+  local outExt="$6"
+  local pattern
+  local fileList=""
+  LOG_HEADER=1
+  COPY_COUNT=0
+  DUP_COUNT=0
+  NO_DATE_COUNT=0
+  ERR_COUNT=0
+
+  case "$type" in
+  "image")
+      pattern="$IMAGE_PATTERN"
+    ;;
+  "movie")
+      pattern="$MOVIE_PATTERN"
+    ;;
+  "audio")
+      pattern="$AUDIO_PATTERN"
+    ;;
+  *)
+    errorLog "invalid file type '$type'"
+    return 1
+    ;;
+  esac
+
+  echo " "
+  echo "source:      $srcDir "
+  echo "destination: $dstDir "
+  echo "backup:      $backup  "
+  echo "subfolder:   $subfolder "
+  echo "pattern:     $pattern "
+  echo "extension:   $outExt "
+  
+  if [[ ! -d "$srcDir" ]]; then
+    errorLog "directory '$srcDir' does not exist"
+    return 1
+  fi
+  cd "$srcDir"
+  
+  if [[ ! -d "$dstDir" ]]; then
+    errorLog "directory '$dstDir' does not exist"
+    return 1
+  fi
+
+  fileList=$(ls $pattern 2>/dev/null)
+
+  if (( ${#fileList} > 2 )); then
+    rename "$fileList" "$dstDir" "$backup" "$subfolder" "$outExt"
+    infoLog "$srcDir ($type): $COPY_COUNT successful / $NO_DATE_COUNT without EXIF / $DUP_COUNT duplicates / $ERR_COUNT errors"
+  fi
+  echo "done"
+}
+
+
+
+
+
+
+#################
+####  START  ####
+#################
+
+
+
+# Enforce a single instance of this script
+semaphoreLock "$LOCK"
+if [[ $? -ne 0 ]]; then
+  warningLog "an instance of the current script is already running (please remove $LOCK)"
+  exit 1
+fi
+
+
+
+echo " "
+echo " "
+echo "##############################"
+echo "Updating photo stream"
+date
+echo "##############################"
+
+
+# Loop over configurations
+for i in "${!CFG_MEDIA_TYPE[@]}"; do
+  type="${CFG_MEDIA_TYPE[$i]}"
+  src="$CFG_MEDIA_ROOT_DIR/${CFG_MEDIA_SOURCE[$i]}"
+  dst="$CFG_MEDIA_ROOT_DIR/${CFG_MEDIA_DESTINATION[$i]}"
+  bak="${CFG_MEDIA_BACKUP[$i]}"
+  sub="${CFG_MEDIA_SUBFOLDERS[$i]}"
+  out="${CFG_MEDIA_OUTEXT[$i]}"
+  process "$type" "$src" "$dst" "$bak" "$sub" "$out"
+done
+
+semaphoreRelease "$LOCK"
+exit 0

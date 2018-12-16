@@ -1,0 +1,16 @@
+# KHr:
+# Type=idle  ->  Start after all services have started
+
+[Unit]
+Description=server initialization service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=idle
+ExecStart=/opt/nastia-server/sbin/init.sh
+User=root
+
+[Install]
+WantedBy=multi-user.target
+

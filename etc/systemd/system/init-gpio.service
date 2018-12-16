@@ -1,0 +1,14 @@
+# KHr:
+# Type=idle  ->  Start after all services have started
+
+[Unit]
+Description=GPIO initialization service
+
+[Service]
+Type=idle
+ExecStart=/opt/nastia-server/sbin/init-gpio.sh
+User=root
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,26 @@
+#
+# /etc/cron.d/nastia-server
+#
+# crontab fragment for the server
+# KHr
+#
+
+# Disable automated emails
+MAILTO="" 
+ 
+# Jobs executed by root
+#       m   h   dom mon dow   user   command
+        0 */3   *   *   *     root   /opt/nastia-server/sbin/backup-config.sh
+        0   1   *   *   *     root   /opt/nastia-server/sbin/permissions.sh
+        5   1   *   *   Sun   root   /opt/nastia-server/sbin/backup-sd.sh
+
+# Jobs executed by USER
+#       m   h   dom mon dow   user  command
+      */5   *   *   *   *     pi    /opt/nastia-server/bin/dyndns.sh
+        5 */3   *   *   *     pi    /opt/nastia-server/bin/backup-hdd.sh
+  5-59/10   *   *   *   *     pi    /opt/nastia-server/bin/dropbox-photos.sh
+     */10   *   *   *   *     pi    /opt/nastia-server/bin/photostream.sh
+        0   2   *   *   Sun   pi    /opt/nastia-server/bin/check-images.sh
+        0   4   *   *   *     pi    /opt/nastia-server/bin/monitor.sh
+
+
