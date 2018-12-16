@@ -19,12 +19,17 @@ OUTDIR="$CFG_BACKUP_CONFIG_DESTINATION"
 LOCK="$CFG_TMPFS_DIR/backup-config.lock"
 LOG="$CFG_LOG_DIR/backup-config.log"
 PREFIX="backup-config"
+USER="$CFG_USER"
+GROUP="$CFG_GROUP"
+FMODE="$CFG_FMODE"
+DMODE="$CFG_DMODE"
+
 
 # Global variables
 EXIT_CODE=0
 
 
-# Source, exclude list, output directory and log prefix may be passed as arguments
+# Overrid configuration parameters with external arguments
 if [[ "$1" != "" ]]; then SOURCE=($1)  ; fi
 if [[ "$2" != "" ]]; then EXCLUDE=($2) ; fi
 if [[ "$3" != "" ]]; then OUTDIR="$3"  ; fi
@@ -32,6 +37,9 @@ if [[ "$4" != "" ]]; then
   LOG="$CFG_LOG_DIR/$4.log"
   PREFIX="$4"
 fi
+if [[ "$5" != "" ]]; then USER="$5"  ; fi
+if [[ "$6" != "" ]]; then GROUP="$6"  ; fi
+
 
 README="$OUTDIR/README.txt"
 
@@ -92,7 +100,7 @@ function main {
   rsync -rltDv --delete $options $dir/$file $OUTDIR/$dir
   local rv=$?
   if [[ $rv -ne 0 ]]; then
-    errorLog "failed to back-up $source (exit code $rv)"
+    errorLog "failed to copy $source (exit code $rv)"
   fi
 
   if [[ "$options" != "" ]]; then
@@ -134,12 +142,12 @@ for i in "${!SOURCE[@]}"; do
 done
 
 # Set output ownership and permissions
-chown -R "$CFG_USER":"$CFG_GROUP" "$OUTDIR"
-find "$OUTDIR" -type d -exec chmod "$CFG_DMODE" {} +
-find "$OUTDIR" -type f -exec chmod "$CFG_FMODE" {} +
+chown -R "$USER":"$GROUP" "$OUTDIR"
+find "$OUTDIR" -type d -exec chmod "$DMODE" {} +
+find "$OUTDIR" -type f -exec chmod "$FMODE" {} +
 
 if [[ $EXIT_CODE -eq 0 ]]; then
-  infoLog "backup successful"
+  infoLog "success"
 else
   echo "errors during backup"
 fi
