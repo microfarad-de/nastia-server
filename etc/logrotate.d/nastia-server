@@ -1,0 +1,33 @@
+#
+# KHr: server log files
+#
+
+
+/var/log/nastia-server/backup-sd.log
+/var/log/nastia-server/backup-config.log 
+/var/log/nastia-server/check-images.log
+/var/log/nastia-server/dyndns.log
+/var/log/nastia-server/monitor.log
+/var/log/nastia-server/init.log
+/var/log/nastia-server/permissions.log
+{
+  rotate 99
+  size 100k 
+}
+
+
+/var/log/nastia-server/fan.log 
+{
+  rotate 1
+  size 100k 
+}
+
+
+/var/log/nastia-server/backup-hdd.log
+/var/log/nastia-server/dropbox-photos.log
+/var/log/nastia-server/photostream.log
+{
+  rotate 99
+  size 1000k
+}
+
