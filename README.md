@@ -22,4 +22,4 @@ In order to install this package, please copy the contents of the _opt_ director
 
 This software was named after my three-year-old daughter Nastia.
 
-Feel free to use and distribute the full contents of this package or parts of it according to the _GNU General Public License v3.0_. I hope that you find it useful.
+Feel free to use and distribute the full contents of this package or parts of it according to the _GNU General Public License v3.0_. I hope that you find this software useful.
