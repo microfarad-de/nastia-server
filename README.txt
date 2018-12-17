@@ -4,3 +4,4 @@ List of files and directories:
 /etc/systemd/system/init.service 
 /etc/systemd/system/init-gpio.service 
 /etc/systemd/system/fan.service 
+/etc/logrotate.d/nastia-server 

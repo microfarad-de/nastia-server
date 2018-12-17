@@ -25,6 +25,7 @@ SOURCE[1]="/etc/cron.d/nastia-server"
 SOURCE[2]="/etc/systemd/system/init.service"
 SOURCE[3]="/etc/systemd/system/init-gpio.service"
 SOURCE[4]="/etc/systemd/system/fan.service"
+SOURCE[5]="/etc/logrotate.d/nastia-server"
 
 
 
