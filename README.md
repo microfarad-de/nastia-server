@@ -2,7 +2,7 @@
 
 This software package contains a collection of automation tools for running a home server. Originally implemented on the Raspbian Stretch Linux distribution running on a Raspberry Pi 3B+.
 
-Follwoing is the full feature list:
+Following is the full feature list:
 
 * Media stream: 
   * Automatically fetches your media files from the Dropbox Camera Uploads directory, or any other pre-defined directory, renames them according to the EXIF date and stores them into monthly sub-directories. 
