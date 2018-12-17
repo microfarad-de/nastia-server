@@ -28,7 +28,7 @@ SOURCE[4]="/etc/systemd/system/fan.service"
 
 
 
-# Call the main script
+# Call the copy script
 $DIR/../lib/copy.sh "${SOURCE[*]}" "${EXCLUDE[*]}" "$REPOSITORY" "$LOG_PREFIX" ""
 rv=$?
 
