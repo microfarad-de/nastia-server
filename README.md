@@ -18,8 +18,8 @@ Following is the full feature list:
 
 The directory structure of this repository reflects the Linux file system structure relative to its root directory _(/)_.
 
-In order to install this package, please copy the contents of the _opt_ directory to your Linux file system; please also copy the cron, logrotate and systemd service configuration files into the respective _etc_ sub-directories. Finally, set the parameters within the main configuration file under _/opt/nastia-server/etc/nastia-server.conf_ according to your desired settings.
+In order to install this package, please copy the contents of the _opt_ directory to your Linux file system; please also copy the cron, logrotate and systemd service configuration files into the respective _etc_ sub-directories. Finally, create a copy of the configuration file under _/opt/nastia-server/etc/nastia-server.conf_ renaming it to _nastia-server.local_; then modify the parameters inside copied file to achieve your desired setup.
 
-This software was named after my three-year-old daughter Nastia.
+Nastia is the name of my three-year-old daughter.
 
 Feel free to use and distribute the full contents of this package or parts of it according to the _GNU General Public License v3.0_. I hope that you find this software useful.
