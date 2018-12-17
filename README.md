@@ -13,7 +13,7 @@ Follwoing is the full feature list:
   * Creates a backup copy of your important configuration files.
   * Creates a backup image of the Raspberry Pi SD card to an external hard drive.
 * Communicate the server's public IP address to the Dynamic DNS service
-* Run server diagnostics every night and send an automated test report via email
+* Run extensive system diagnostics every night and send an automated test report via email
 * Control the CPU cooling fan over the Raspberry Pi's GPIO pin
 
 The directory structure of this repository reflects the linux file system structure relative to its root directory _(/)_.
