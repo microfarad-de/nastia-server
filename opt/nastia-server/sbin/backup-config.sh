@@ -40,4 +40,4 @@ chown -R "$USER":"$GROUP" "$OUTDIR"
 find "$OUTDIR" -type d -exec chmod "$DMODE" {} +
 find "$OUTDIR" -type f -exec chmod "$FMODE" {} +
 
-exit rv
+exit $rv
