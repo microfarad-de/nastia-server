@@ -46,8 +46,10 @@ function main {
   local file
 
   # Ensure that the source files are readable
-  find "$source" -type d -exec chmod u+rx {} +
-  find "$source" -type f -exec chmod u+r {} +
+  if [[ "$CHMOD" != "" ]]; then
+    find "$source" -type d -exec chmod u+rx {} +
+    find "$source" -type f -exec chmod u+r {} +
+  fi
 
   # Check if source is a file or a directory
   if [[ -f "$source" ]]; then
@@ -88,7 +90,7 @@ function main {
 #################
 
 # Check for correct number of arguments
-if [[ $# -ne 4 ]]; then
+if [[ $# -ne 5 ]]; then
   errorLog "invalid number of arguments $#"
   exit 1
 fi
@@ -102,6 +104,7 @@ if [[ "$4" != "" ]]; then                  # Log prefix, logfile basename
   LOCK="$CFG_TMPFS_DIR/$4.lock"
   PREFIX="$4"
 fi
+if [[ "$5" != "" ]]; then CHMOD="$5" ; fi  # "chmod" = change source file permissions
 
 # Readme file name
 README="$OUTDIR/README.txt"

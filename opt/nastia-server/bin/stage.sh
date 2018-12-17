@@ -29,7 +29,7 @@ SOURCE[4]="/etc/systemd/system/fan.service"
 
 
 # Call the main script
-$DIR/../lib/copy.sh "${SOURCE[*]}" "${EXCLUDE[*]}" "$REPOSITORY" "$LOG_PREFIX"
+$DIR/../lib/copy.sh "${SOURCE[*]}" "${EXCLUDE[*]}" "$REPOSITORY" "$LOG_PREFIX" ""
 
 
 

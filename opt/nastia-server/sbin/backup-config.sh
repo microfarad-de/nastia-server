@@ -32,7 +32,7 @@ FMODE="$CFG_FMODE"
 
 
 # Call the copy script
-$DIR/../lib/copy.sh "${SOURCE[*]}" "${EXCLUDE[*]}" "$DESTINATION" "$LOG_PREFIX"
+$DIR/../lib/copy.sh "${SOURCE[*]}" "${EXCLUDE[*]}" "$DESTINATION" "$LOG_PREFIX" "chmod"
 rv=$?
 
 # Set output ownership and permissions
