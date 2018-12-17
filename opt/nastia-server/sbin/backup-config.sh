@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Backup important configuration files
-# Some source paths require root privileges
+# Must run as root
 #
 
 # Path to the current directory where this script is located
@@ -15,99 +15,12 @@ source "$DIR/common.sh"
 # Configuration parameters
 SOURCE=(${CFG_BACKUP_CONFIG_SOURCE[*]})
 EXCLUDE=(${CFG_BACKUP_CONFIG_EXCLUDE[*]})
-OUTDIR="$CFG_BACKUP_CONFIG_DESTINATION"
-LOCK="$CFG_TMPFS_DIR/backup-config.lock"
-LOG="$CFG_LOG_DIR/backup-config.log"
-PREFIX="backup-config"
+DESTINATION="$CFG_BACKUP_CONFIG_DESTINATION"
+LOG_PREFIX="backup-config"
 USER="$CFG_USER"
 GROUP="$CFG_GROUP"
-FMODE="$CFG_FMODE"
 DMODE="$CFG_DMODE"
-
-
-# Global variables
-EXIT_CODE=0
-
-
-# Override configuration parameters with external arguments
-if [[ "$1" != "" ]]; then SOURCE=($1)  ; fi
-if [[ "$2" != "" ]]; then EXCLUDE=($2) ; fi
-if [[ "$3" != "" ]]; then OUTDIR="$3"  ; fi
-if [[ "$4" != "" ]]; then
-  LOG="$CFG_LOG_DIR/$4.log"
-  PREFIX="$4"
-fi
-if [[ "$5" != "" ]]; then USER="$5"    ; fi
-if [[ "$6" != "" ]]; then GROUP="$6"   ; fi
-
-
-README="$OUTDIR/README.txt"
-
-
-
-
-# Print an info log message
-function infoLog {
-  _infoLog "$1" "$PREFIX" "$LOG" "ecd"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_INFO_LOG"
-}
-
-# Print a warning log message
-function warningLog {
-  _warningLog "$1" "$PREFIX" "$LOG" "ecd"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_WARNING_LOG"
-}
-
-# Print an error log message
-function errorLog {
-  _errorLog "$1" "$PREFIX" "$LOG" "ecd"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_ERROR_LOG"
-  EXIT_CODE=1
-}
-
-
-
-# Main execution routine
-function main {
-  local source="$1"
-  local options="$2"
-  local dir
-  local file
-
-  # Ensure that the source files are readable
-  find "$source" -type d -exec chmod u+rx {} +
-  find "$source" -type f -exec chmod u+r {} +
-
-  # Check if source is a file or a directory
-  if [[ -f "$source" ]]; then
-    dir=$(dirname "$source")
-    file=$(basename "$source")
-  else
-    dir="$source"
-    file=""
-  fi
-
-  # Create the output directory
-  mkdir -p "$OUTDIR/$dir"
-  rv=$?
-  if [[ $rv -ne 0 ]]; then
-    errorLog "failed to create $OUTDIR/$source (exit code $rv)"
-  fi
-
-  echo ""
-  echo ""
-  echo "$dir/$file:"
-  rsync -rltDv --delete $options $dir/$file $OUTDIR/$dir
-  local rv=$?
-  if [[ $rv -ne 0 ]]; then
-    errorLog "failed to copy $source (exit code $rv)"
-  fi
-
-  if [[ "$options" != "" ]]; then
-    options="($options)"
-  fi
-  echo "$source $options" >> "$README"
-}
+FMODE="$CFG_FMODE"
 
 
 
@@ -116,41 +29,15 @@ function main {
 ####  START  ####
 #################
 
-# Avoid multiple instances of this script
-semaphoreLock "$LOCK"
-if [[ $? -ne 0 ]]; then
-  warningLog "an instance of the current script is already running (please remove $LOCK)"
-  exit 1
-fi
 
 
-
-# Update the readme file
-echo "List of files and directories:" > "$README"
-
-
-# Loop over sources
-for i in "${!SOURCE[@]}"; do
-  source="${SOURCE[$i]}"
-  exclude="${EXCLUDE[$i]}"
-  exclude=($exclude)
-  options=""
-  for x in "${exclude[@]}"; do
-    options="$options --exclude=$x"
-  done
-   main "$source" "$options"
-done
+# Call the copy script
+$DIR/../lib/copy.sh "${SOURCE[*]}" "${EXCLUDE[*]}" "$DESTINATION" "$LOG_PREFIX"
+rv=$?
 
 # Set output ownership and permissions
 chown -R "$USER":"$GROUP" "$OUTDIR"
 find "$OUTDIR" -type d -exec chmod "$DMODE" {} +
 find "$OUTDIR" -type f -exec chmod "$FMODE" {} +
 
-if [[ $EXIT_CODE -eq 0 ]]; then
-  infoLog "success"
-else
-  echo "errors during backup"
-fi
-
-semaphoreRelease "$LOCK"
-exit $EXIT_CODE
+exit rv
