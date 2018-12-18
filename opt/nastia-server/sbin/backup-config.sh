@@ -31,12 +31,12 @@ FMODE="$CFG_FMODE"
 # Convert array to string
 for i in "${!CFG_BACKUP_CONFIG_SOURCE[@]}"; do
   if [[ "${CFG_BACKUP_CONFIG_SOURCE[$i]}" == "" ]]; then
-    SOURCE="$SOURCE _"
+    SOURCE="$SOURCE %"
   else
     SOURCE="$SOURCE ${CFG_BACKUP_CONFIG_SOURCE[$i]}"
   fi
   if [[ "${CFG_BACKUP_CONFIG_EXCLUDE[$i]}" == "" ]]; then
-    EXCLUDE="$EXCLUDE _"
+    EXCLUDE="$EXCLUDE %"
   else
     EXCLUDE="$EXCLUDE ${CFG_BACKUP_CONFIG_EXCLUDE[$i]}"
   fi

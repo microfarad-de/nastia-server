@@ -30,12 +30,12 @@ SOURCE[5]="/etc/logrotate.d/nastia-server"
 # Convert array to string
 for i in "${!SOURCE[@]}"; do
   if [[ "${SOURCE[$i]}" == "" ]]; then
-    SOURCE_ARG="$SOURCE_ARG _"
+    SOURCE_ARG="$SOURCE_ARG %"
   else
     SOURCE_ARG="$SOURCE_ARG ${SOURCE[$i]}"
   fi
   if [[ "${EXCLUDE[$i]}" == "" ]]; then
-    EXCLUDE_ARG="$EXCLUDE_ARG _"
+    EXCLUDE_ARG="$EXCLUDE_ARG %"
   else
     EXCLUDE_ARG="$EXCLUDE_ARG ${EXCLUDE[$i]}"
   fi

@@ -130,12 +130,12 @@ for i in "${!SOURCE[@]}"; do
   exclude=($exclude)
   options=""
   for x in "${exclude[@]}"; do
-    if [[ "$x" != "_" ]]; then
+    if [[ "$x" != "%" ]]; then
       options="$options --exclude=$x"
     fi
   done
 
-  if [[ "$source" != "" && "$source" != "_" ]]; then
+  if [[ "$source" != "" && "$source" != "%" ]]; then
     main "$source" "$options"
   fi
 done
