@@ -27,10 +27,23 @@ SOURCE[3]="/etc/systemd/system/init-gpio.service"
 SOURCE[4]="/etc/systemd/system/fan.service"
 SOURCE[5]="/etc/logrotate.d/nastia-server"
 
+# Convert array to string
+for i in "${!SOURCE[@]}"; do
+  if [[ "${SOURCE[$i]}" == "" ]]; then
+    SOURCE_ARG="$SOURCE_ARG _"
+  else
+    SOURCE_ARG="$SOURCE_ARG ${SOURCE[$i]}"
+  fi
+  if [[ "${EXCLUDE[$i]}" == "" ]]; then
+    EXCLUDE_ARG="$EXCLUDE_ARG _"
+  else
+    EXCLUDE_ARG="$EXCLUDE_ARG ${EXCLUDE[$i]}"
+  fi
+done
 
 
 # Call the copy script
-$DIR/../lib/copy.sh "${SOURCE[*]}" "${EXCLUDE[*]}" "$REPOSITORY" "$LOG_PREFIX" ""
+$DIR/../lib/copy.sh "$SOURCE_ARG" "$EXCLUDE_ARG" "$REPOSITORY" "$LOG_PREFIX" ""
 rv=$?
 
 exit $rv

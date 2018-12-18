@@ -13,8 +13,6 @@ source "$DIR/common.sh"
 
 
 # Configuration parameters
-SOURCE=(${CFG_BACKUP_CONFIG_SOURCE[*]})
-EXCLUDE=(${CFG_BACKUP_CONFIG_EXCLUDE[*]})
 DESTINATION="$CFG_BACKUP_CONFIG_DESTINATION"
 LOG_PREFIX="backup-config"
 USER="$CFG_USER"
@@ -30,9 +28,23 @@ FMODE="$CFG_FMODE"
 #################
 
 
+# Convert array to string
+for i in "${!CFG_BACKUP_CONFIG_SOURCE[@]}"; do
+  if [[ "${CFG_BACKUP_CONFIG_SOURCE[$i]}" == "" ]]; then
+    SOURCE="$SOURCE _"
+  else
+    SOURCE="$SOURCE ${CFG_BACKUP_CONFIG_SOURCE[$i]}"
+  fi
+  if [[ "${CFG_BACKUP_CONFIG_EXCLUDE[$i]}" == "" ]]; then
+    EXCLUDE="$EXCLUDE _"
+  else
+    EXCLUDE="$EXCLUDE ${CFG_BACKUP_CONFIG_EXCLUDE[$i]}"
+  fi
+done
+
 
 # Call the copy script
-$DIR/../lib/copy.sh "${SOURCE[*]}" "${EXCLUDE[*]}" "$DESTINATION" "$LOG_PREFIX" "chmod"
+$DIR/../lib/copy.sh "$SOURCE" "$EXCLUDE" "$DESTINATION" "$LOG_PREFIX" "chmod"
 rv=$?
 
 # Set output ownership and permissions
