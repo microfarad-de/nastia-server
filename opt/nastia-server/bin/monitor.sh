@@ -27,8 +27,6 @@ SPEED_TEST_PING_THRESHOLD="$CFG_MONITOR_SPEED_PING_THRESHOLD"  # Maximum accepta
 SPEED_TEST_DL_THRESHOLD="$CFG_MONITOR_SPEED_DL_THRESHOLD"      # Minimum acceptable downlink internet connection speed in Mbps
 SPEED_TEST_UL_THRESHOLD="$CFG_MONITOR_SPEED_UL_THRESHOLD"      # Minimum acceptable uplink internet connection speed in Mbps
 SERVICES=("${CFG_MONITOR_SERVICE[@]}")              # List of services to be checked
-CRON_PREFIXES=("${CFG_MONITOR_CRON_PREFIX[@]}")     # List of log prefixes for the cron jobs to be monitored
-CRON_INTERVALS=("${CFG_MONITOR_CRON_INTERVAL[@]}")  # List of cron job execution intervals
 
 # List of available testcases
 TESTCASES=(
@@ -415,9 +413,9 @@ function cron-check {
   mailLog "<table>"
   mailLog "<tr><th>Job</th><th>Interval</th><th>Since</th><th>Status</th></tr>"
   t=$(date +%s)
-  for i in "${!CRON_PREFIXES[@]}"; do
-    prefix="${CRON_PREFIXES[$i]}"
-    interval="${CRON_INTERVALS[$i]}"
+  for i in "${!CFG_MONITOR_CRON_PREFIX[@]}"; do
+    prefix="${CFG_MONITOR_CRON_PREFIX[$i]}"
+    interval="${CFG_MONITOR_CRON_INTERVAL[$i]}"
     tmp="$CFG_TMP_DIR/monitor-cron-check-$prefix.tmp"
     for log in "$CFG_INFO_LOG" "$CFG_WARNING_LOG" "$CFG_ERROR_LOG"; do
       grep "\[$prefix\]" "$log" > /dev/null 2>&1
