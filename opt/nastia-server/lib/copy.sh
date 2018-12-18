@@ -70,7 +70,7 @@ function main {
   echo ""
   echo ""
   echo "$dir/$file:"
-  rsync -rltDv --delete $options $dir/$file $OUTDIR/$dir
+  rsync -rltDv --delete-excluded $options $dir/$file $OUTDIR/$dir
   local rv=$?
   if [[ $rv -ne 0 ]]; then
     errorLog "failed to copy $source (exit code $rv)"
