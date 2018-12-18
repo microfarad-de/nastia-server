@@ -36,8 +36,8 @@ $DIR/../lib/copy.sh "${SOURCE[*]}" "${EXCLUDE[*]}" "$DESTINATION" "$LOG_PREFIX" 
 rv=$?
 
 # Set output ownership and permissions
-chown -R "$USER":"$GROUP" "$OUTDIR"
-find "$OUTDIR" -type d -exec chmod "$DMODE" {} +
-find "$OUTDIR" -type f -exec chmod "$FMODE" {} +
+chown -R "$USER":"$GROUP" "$DESTINATION"
+find "$DESTINATION" -type d -exec chmod "$DMODE" {} +
+find "$DESTINATION" -type f -exec chmod "$FMODE" {} +
 
 exit $rv
