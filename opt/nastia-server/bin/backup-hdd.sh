@@ -85,8 +85,10 @@ for x in "${EXCLUDE[@]}"; do
   OPTIONS="$OPTIONS --exclude=$x"
 done
 
-
-rm -rf "$DST/*.inprogress"
+# Remove temprary folders
+if [[ "$DRYRUN" == "" ]]; then
+  rm -rf $DST/*.inprogress
+fi
 
 rsync $OPTIONS $DRYRUN --link-dest=$DST/Latest ${SRC[@]} $DST/$DATE.inprogress
 rv=$?
