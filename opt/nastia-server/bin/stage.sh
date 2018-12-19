@@ -34,7 +34,7 @@ for i in "${!SOURCE[@]}"; do
   if [[ "${EXCLUDE[$i]}" == "" ]]; then
     EXCLUDE_ARG="$EXCLUDE_ARG %"
   else
-    EXCLUDE_ARG="$EXCLUDE_ARG ${EXCLUDE[$i]}"
+    EXCLUDE_ARG="$EXCLUDE_ARG $(echo ${EXCLUDE[$i]} | tr ' ' '#')"
   fi
 done
 

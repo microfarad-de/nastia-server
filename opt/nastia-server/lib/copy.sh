@@ -64,16 +64,16 @@ function main {
   fi
 
   # Create the output directory
-  mkdir -p "$OUTDIR/$dir"
+  mkdir -p "$DESTINATION/$dir"
   rv=$?
   if [[ $rv -ne 0 ]]; then
-    errorLog "failed to create $OUTDIR/$source (exit code $rv)"
+    errorLog "failed to create $DESTINATION/$source (exit code $rv)"
   fi
 
   echo ""
   echo ""
   echo "$dir/$file:"
-  rsync -rltDv --delete-excluded $options $dir/$file $OUTDIR/$dir
+  rsync -rltDv --delete-excluded $options $dir/$file $DESTINATION/$dir
   local rv=$?
   if [[ $rv -ne 0 ]]; then
     errorLog "failed to copy $source (exit code $rv)"
@@ -104,7 +104,7 @@ SOURCE=($1)  # List of files and directories to be copied
 # Arg 2:
 EXCLUDE=($2) # Excluded files
 # Arg 3:
-OUTDIR="$3"  # Output directory
+DESTINATION="$3"  # Destination directory
 # Arg 4:
 if [[ "$4" != "" ]]; then
   LOG="$CFG_LOG_DIR/$4.log"      # Log file
@@ -117,7 +117,7 @@ CHMOD="$5"   # chmod: change source file permissions
 
 
 # Readme file name
-README="$OUTDIR/README.txt"
+README="$DESTINATION/README.txt"
 
 
 # Avoid multiple instances of this script
@@ -137,7 +137,7 @@ echo "List of files and directories:" > "$README"
 for i in "${!SOURCE[@]}"; do
   source="${SOURCE[$i]}"
   exclude="${EXCLUDE[$i]}"
-  exclude=($exclude)
+  exclude=( $(echo "$exclude" | tr "#" " ") )
   options=""
   for x in "${exclude[@]}"; do
     if [[ "$x" != "%" ]]; then
@@ -150,7 +150,7 @@ for i in "${!SOURCE[@]}"; do
   fi
 done
 
-
+echo " "
 if [[ $EXIT_CODE -eq 0 ]]; then
   infoLog "success"
 else

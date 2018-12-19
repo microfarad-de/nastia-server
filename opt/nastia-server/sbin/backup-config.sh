@@ -38,7 +38,7 @@ for i in "${!CFG_BACKUP_CONFIG_SOURCE[@]}"; do
   if [[ "${CFG_BACKUP_CONFIG_EXCLUDE[$i]}" == "" ]]; then
     EXCLUDE="$EXCLUDE %"
   else
-    EXCLUDE="$EXCLUDE ${CFG_BACKUP_CONFIG_EXCLUDE[$i]}"
+    EXCLUDE="$EXCLUDE $(echo ${CFG_BACKUP_CONFIG_EXCLUDE[$i]} | tr ' ' '#')"
   fi
 done
 
