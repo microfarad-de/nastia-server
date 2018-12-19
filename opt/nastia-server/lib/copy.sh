@@ -110,7 +110,7 @@ if [[ "$4" != "" ]]; then
   LOG="$CFG_LOG_DIR/$4.log"      # Log file
   LOCK="$CFG_TMPFS_DIR/$4.lock"  # Lock file
   LOG_PREFIX="$4"                # Log prefix
-  LOG_MODE="ecd"
+  LOG_MODE="ecd"                 # Enable logging
 fi
 # Arg 5:
 CHMOD="$5"   # chmod: change source file permissions
