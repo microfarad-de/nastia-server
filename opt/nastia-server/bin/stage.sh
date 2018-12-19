@@ -14,9 +14,6 @@ source "$DIR/common.sh"
 # Path to the GitHub repository
 REPOSITORY="$CFG_GIT_REPOSITORY"
 
-# Prefix for naming the log file
-LOG_PREFIX="stage"
-
 
 # Source directories to be copied
 SOURCE[0]="/opt/nastia-server"
@@ -43,7 +40,7 @@ done
 
 
 # Call the copy script
-$DIR/../lib/copy.sh "$SOURCE_ARG" "$EXCLUDE_ARG" "$REPOSITORY" "$LOG_PREFIX" ""
+$DIR/../lib/copy.sh "$SOURCE_ARG" "$EXCLUDE_ARG" "$REPOSITORY" "" ""
 rv=$?
 
 exit $rv

@@ -13,25 +13,28 @@ source "$_LIB_DIR/common.sh"
 
 # Global variables
 EXIT_CODE=0
-
+LOG=""
+LOG_PREFIX=""
+LOG_MODE="e"
+LOCK="$CFG_TMPFS_DIR/copy.lock"
 
 
 
 # Print an info log message
 function infoLog {
-  _infoLog "$1" "$PREFIX" "$LOG" "ecd"
+  _infoLog "$1" "$LOG_PREFIX" "$LOG" "$LOG_MODE"
   chown "$CFG_USER":"$CFG_GROUP" "$CFG_INFO_LOG"
 }
 
 # Print a warning log message
 function warningLog {
-  _warningLog "$1" "$PREFIX" "$LOG" "ecd"
+  _warningLog "$1" "$LOG_PREFIX" "$LOG" "$LOG_MODE"
   chown "$CFG_USER":"$CFG_GROUP" "$CFG_WARNING_LOG"
 }
 
 # Print an error log message
 function errorLog {
-  _errorLog "$1" "$PREFIX" "$LOG" "ecd"
+  _errorLog "$1" "$LOG_PREFIX" "$LOG" "$LOG_MODE"
   chown "$CFG_USER":"$CFG_GROUP" "$CFG_ERROR_LOG"
   EXIT_CODE=1
 }
@@ -94,17 +97,24 @@ if [[ $# -ne 5 ]]; then
   errorLog "invalid number of arguments $#"
   exit 1
 fi
-  
+
 # Parse the script arguments
-if [[ "$1" != "" ]]; then SOURCE=($1) ; fi # List of files and directories to be copied
-if [[ "$2" != "" ]]; then EXCLUDE=($2); fi # Excluded files
-if [[ "$3" != "" ]]; then OUTDIR="$3" ; fi # Output directory
-if [[ "$4" != "" ]]; then                  # Log prefix, logfile basename
-  LOG="$CFG_LOG_DIR/$4.log"
-  LOCK="$CFG_TMPFS_DIR/$4.lock"
-  PREFIX="$4"
+# Arg 1:
+SOURCE=($1)  # List of files and directories to be copied
+# Arg 2:
+EXCLUDE=($2) # Excluded files
+# Arg 3:
+OUTDIR="$3"  # Output directory
+# Arg 4:
+if [[ "$4" != "" ]]; then
+  LOG="$CFG_LOG_DIR/$4.log"      # Log file
+  LOCK="$CFG_TMPFS_DIR/$4.lock"  # Lock file
+  LOG_PREFIX="$4"                # Log prefix
+  LOG_MODE="ecd"
 fi
-if [[ "$5" != "" ]]; then CHMOD="$5" ; fi  # "chmod" = change source file permissions
+# Arg 5:
+CHMOD="$5"   # chmod: change source file permissions
+
 
 # Readme file name
 README="$OUTDIR/README.txt"
