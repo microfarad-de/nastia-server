@@ -10,34 +10,35 @@ DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
 # Include common configuration file
 source "$DIR/common.sh"
 
-# configuration parameters
-SRC=("${CFG_BACKUP_SOURCE[@]}")
+# Configuration parameters
+SRC="${CFG_BACKUP_SOURCE[*]}"
 DST="$CFG_BACKUP_DESTINATION"
-OPTIONS="-av --exclude=lost+found" # -a = -rlptgoD
+EXCLUDE=($CFG_BACKUP_EXCLUDE)
+OPTIONS="-av" # -a = -rlptgoD
 LOCK="$CFG_TMPFS_DIR/backup-hdd.lock"
 LOG="$CFG_LOG_DIR/backup-hdd.log"
 CLEANUP_SCRIPT="$DIR/../lib/cleanup.py"
 DATE=$(date "+%Y-%m-%d-%H%M%S")
 
-# global variables
+# Global variables
 DRYRUN=""
 
 
-# redirect stdout ( > ) into a named pipe ( >() ) running "tee"
+# Redirect stdout ( > ) into a named pipe ( >() ) running "tee"
 exec > >(tee -i -a "$LOG")
 exec 2>&1
 
-# info log messages
+# Info log messages
 function infoLog {
   _infoLog "$1" "backup-hdd" "" "c"
 }
 
-# warning log messages
+# Warning log messages
 function warningLog {
   _warningLog "$1" "backup-hdd" "" "ec"
 }
 
-# error log messages
+# Error log messages
 function errorLog {
   _errorLog "$1" "backup-hdd" "" "ec"
 }
@@ -48,12 +49,14 @@ function errorLog {
 #### START  ####
 ################
 
-# parse the the argument if available
+
+
+# Parse the the argument if available
 if [[ "$1" = "--dry-run" ]]; then
   DRYRUN="--dry-run"
 fi
 
-# avoid multiple instances of this script
+# Avoid multiple instances of this script
 if [[ "$DRYRUN" == "" ]]; then
   semaphoreLock "$LOCK"
   if [[ $? -ne 0 ]]; then
@@ -61,7 +64,6 @@ if [[ "$DRYRUN" == "" ]]; then
     exit 1
   fi
 fi
-
 
 echo " "
 echo " "
@@ -77,12 +79,19 @@ if [[ "$DRYRUN" != "" ]]; then
   echo " "
 fi
 
+
+# Process excluded file list
+for x in "${EXCLUDE[@]}"; do
+  OPTIONS="$OPTIONS --exclude=$x"
+done
+
+
 rm -rf "$DST/*.inprogress"
 
 rsync $OPTIONS $DRYRUN --link-dest=$DST/Latest ${SRC[@]} $DST/$DATE.inprogress
 rv=$?
 
-# backup successful
+# Backup successful
 if [[ $rv -eq 0 || $rv -eq 23 || $rv -eq 24 ]]; then
   if [[ "$DRYRUN" == "" ]]; then
     mv "$DST/$DATE.inprogress" "$DST/$DATE"
@@ -99,7 +108,7 @@ if [[ $rv -eq 0 || $rv -eq 23 || $rv -eq 24 ]]; then
   # delete old backups and check free disk space
   $CLEANUP_SCRIPT "$DST" "$DRYRUN"
 
-# backup failed
+# Backup failed
 else
   errorLog "rsync returned $rv"
   if [[ "$DRYRUN" == "" ]]; then
