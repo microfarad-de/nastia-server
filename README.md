@@ -2,6 +2,8 @@
 
 This software package provides a collection of automation tools for running a home server. Originally implemented on the Raspbian Stretch Linux distribution running on a Raspberry Pi 3B+.
 
+For an in-depth presentation of the project, please visit: www.microfarad.de/pi-server
+
 Following is the full feature list:
 
 * Media stream: 
@@ -19,6 +21,14 @@ Following is the full feature list:
 The directory structure of this repository reflects the Linux file system structure relative to its root directory _(/)_.
 
 In order to install this package, please copy the contents of the _opt_ directory to your Linux file system; please also copy the cron, logrotate and systemd service configuration files into the respective _etc_ sub-directories. Finally, create a copy of the configuration file under _/opt/nastia-server/etc/nastia-server.conf_ renaming it to _nastia-server.local_; then modify the parameters inside copied file to achieve your desired setup.
+
+The following Linux packages need to be installed in order to run this software:
+
+* rsync
+* imagemagick
+* libimage-exiftool-perl
+* speedtest-cli
+* lynx
 
 Nastia is the name of my three-year-old daughter.
 
