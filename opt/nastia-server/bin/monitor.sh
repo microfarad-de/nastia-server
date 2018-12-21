@@ -61,7 +61,6 @@ function infoLog {
 
 # Log a info, writes to email report only
 function mailLog {
-  _infoLog "$1" "" "$LOG" "e+"
   MAIL_BODY="${MAIL_BODY}$1"$'\n'
 }
 
@@ -181,19 +180,26 @@ function execute {
 
 # System statistics
 function system-status {
+  echo "*** System Status ***"
   mailLog "<h2>System Status</h2>"
+  echo "Uptime: $(/usr/bin/uptime -p)"
+  echo "System time: $(date)"
+  echo "Load average: $(cat /proc/loadavg)"
   mailLog "<table>"
   mailLog "<tr><th class='padded'>Uptime:</th><td class='padded'>$(/usr/bin/uptime -p)</td></tr>"
   mailLog "<tr><th class='padded'>System time:</th><td class='padded'>$(date)</td></tr>"
   mailLog "<tr><th class='padded'>Load average:</th><td class='padded'>$(cat /proc/loadavg)</td></tr>"
   mailLog "</table>"
   mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
 }
 
 
 # Check remaining disk space
 function disk-space {
   local disk freeSpace totalSpace rv freePercent
+  echo "*** Available Disk Space ***"
   mailLog "<h2>Available Disk Space</h2>"
   mailLog "<table>"
   mailLog "<tr><th>Disk</th><th>Size</th><th>Avail</th><th>Avail%</th><th>Status</th></tr>"
@@ -211,14 +217,14 @@ function disk-space {
         errorLog "df failed with error code $rv while checking $disk" "inline"
         mailLog "</td>"
       else
-        #mailLog "$disk: $freeSpace GB ($freePercent%) free"
         if [[ $freePercent -lt $DISK_SPACE_THRESHOLD ]]; then
+          echo "$disk: $freeSpace GB ($freePercent%) free"
           mailLog "<td>"
           warningLog "$disk is running out of space" "inline"
           mailLog "</td>"
         else
           mailLog "<td>"
-          okLog "OK" "inline"
+          okLog "$disk: $freeSpace GB ($freePercent%) free" "inline"
           mailLog "</td>"
         fi
       fi
@@ -233,17 +239,20 @@ function disk-space {
   done
   mailLog "</table>"
   mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
 }
 
 
 # Check internet speed
 function speed-test {
-  local result rv 
+  local result rv
   local count=0
   local png dl ul
   local pngMin=9999
   local dlMax=0
   local ulMax=0
+  echo "*** Internet Connection Speed Test ***"
   mailLog "<h2>Internet Connection Speed Test</h2>"
   mailLog "<table>"
   mailLog "<tr><th></th><th>Ping</th><th>Download</th><th>Upload</th></tr>"
@@ -254,8 +263,10 @@ function speed-test {
     png=$(echo "$result" | grep "Ping" | cut -f2 -d" " | cut -f1 -d".")
     dl=$(echo "$result" | grep "Download" | cut -f2 -d" " | cut -f1 -d".")
     ul=$(echo "$result" | grep "Upload"   | cut -f2 -d" " | cut -f1 -d".")
+    echo "* Run $count:"
     mailLog "<tr><th>Run $count:</th>"
     if [[ $rv -eq 0 ]]; then
+      echo "$result"
       mailLog "<td>$png ms</td><td>$dl Mbit/s</td><td>$ul Mbit/s</td>"
     else
       mailLog "<td>"
@@ -268,6 +279,10 @@ function speed-test {
     if [[ $dl -gt $dlMax ]];   then dlMax=$dl;   fi
     if [[ $ul -gt $ulMax ]];   then ulMax=$ul;   fi
   done
+  echo "* Best:"
+  echo "Ping: $pngMin ms"
+  echo "Download: $dlMax Mbit/s"
+  echo "Upload: $ulMax Mbit/s"
   mailLog "<tr><th>Best:</th><td>$pngMin ms</td><td>$dlMax Mbit/s</td><td>$ulMax Mbit/s</td></tr>"
   mailLog "<tr><th>Status:</th><td>"
   if [[ $pngMin -gt $SPEED_TEST_PING_THRESHOLD ]]; then
@@ -289,12 +304,15 @@ function speed-test {
   fi
   mailLog "</td></tr></table>"
   mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
 }
 
 
 # Check errors from other scripts
 function script-errors {
   local result
+  echo "*** Error Messages ***"
   mailLog "<h2>Error Messages</h2>"
   if [[ -e "$CFG_ERROR_LOG" ]]; then
     result=`cat "$CFG_ERROR_LOG"`
@@ -308,12 +326,15 @@ function script-errors {
     okLog "no error messages"
   fi
   mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
 }
 
 
 # Check warnings from other scripts
 function script-warnings {
   local result
+  echo "*** Warning Messages ***"
   mailLog "<h2>Warning Messages</h2>"
   if [[ -e "$CFG_WARNING_LOG" ]]; then
     result=`cat "$CFG_WARNING_LOG"`
@@ -327,29 +348,37 @@ function script-warnings {
     okLog "no warning messages"
   fi
   mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
 }
 
 
 # Check info messages from other scripts
 function script-info {
   local result
+  echo "*** Info Messages ***"
   mailLog "<h2>Info Messages</h2>"
   if [[ -e "$CFG_INFO_LOG" ]]; then
     result=`cat "$CFG_INFO_LOG"`
+    echo "$result"
     mailLog "<pre>"
     mailLog "$result"
     mailLog "</pre>"
     SCRIPT_INFO=1
   else
+    echo "no info messages"
     mailLog "<p><font class='unsure'>[?]</font> no info messages</p>"
   fi
   mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
 }
 
 
 # Check IPv4 network connectivity
 function ping-v4 {
   local result rv
+  echo "*** IPv4 Ping Test ***"
   mailLog "<h2>IPv4 Ping Test</h2>"
   result=$(ping -c 4 "$DOMAIN_NAME" -4 2>&1)
   rv=$?
@@ -358,10 +387,13 @@ function ping-v4 {
   else
     okLog "ping is good"
   fi
+  echo "$result"
   mailLog "<pre>"
   mailLog "$result"
   mailLog "</pre>"
   mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
 }
 
 
@@ -371,6 +403,7 @@ function ping-v6 {
   if [[ "$DOMAIN_NAME_V6" == "" ]]; then
     return
   fi
+  echo "*** IPv6 Ping Test ***"
   mailLog "<h2>IPv6 Ping Test</h2>"
   result=$(ping -c 4 "$DOMAIN_NAME_V6" -6 2>&1)
   rv=$?
@@ -379,10 +412,13 @@ function ping-v6 {
   else
     okLog "ping is good"
   fi
+  echo "$result"
   mailLog "<pre>"
   mailLog "$result"
   mailLog "</pre>"
   mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
 }
 
 
@@ -392,16 +428,20 @@ function service-status {
   for service in "${SERVICES[@]}"; do
     status=$(/usr/sbin/service "$service" status 2>&1)
     rv=$?
+    echo "*** '$service' Service Status ***"
     mailLog "<h2>'$service' Service Status</h2>"
     if [[ $rv -ne 0 ]]; then
       errorLog "service '$service' failed:"
     else
       okLog "service '$service' is running"
     fi
+    echo "$status"
     mailLog "<pre>"
     mailLog "$status"
     mailLog "</pre>"
     mailLog "<p>&nbsp;</p>"
+    echo ""
+    echo ""
   done
 }
 
@@ -409,6 +449,7 @@ function service-status {
 # Check if the cron jobs are running
 function cron-check {
   local i prefix interval tmp log lastT t delta
+  echo "*** Cron Job Status ***"
   mailLog "<h2>Cron Job Status</h2>"
   mailLog "<table>"
   mailLog "<tr><th>Job</th><th>Interval</th><th>Since</th><th>Status</th></tr>"
@@ -433,14 +474,16 @@ function cron-check {
     mailLog "<td>$prefix</td><td>$interval d.<td>$((delta/86400)) d.</td>"
     mailLog "<td>"
     if [[ $delta -gt $((86400*interval)) ]]; then
-      warningLog "cron job '$prefix' took $((delta/86400)) (>$interval) days to execute" "inline"
+      warningLog "$prefix: cron job took $((delta/86400)) (>$interval) days to execute" "inline"
     else
-      okLog "OK" "inline"
+      okLog "$prefix: last run since $((delta/86400)) d." "inline"
     fi
     mailLog "</td></tr>"
   done
   mailLog "</table>"
   mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
 }
 
 
@@ -480,7 +523,7 @@ mailLog "font.warning {font-weight: bold; color: orange;}"
 mailLog "font.error {font-weight: bold; color: red;}"
 mailLog "font.unsure {font-weight: bold; color: gray;}"
 mailLog "</style></head><body>"
-
+echo ""
 
 arg=$1
 exitCode=0
@@ -529,6 +572,8 @@ logSemaphoreRelease
 if [[ $? -ne 0 ]]; then
   warningLog "log semaphore was not locked"
 fi
+
+echo ""
 
 # Release lock
 semaphoreRelease "$LOCK"

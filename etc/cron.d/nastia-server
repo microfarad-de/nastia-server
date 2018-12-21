@@ -27,7 +27,7 @@ MAILTO=""
      */10   *   *   *   *     pi    /opt/nastia-server/bin/photostream.sh     > /dev/null
         0   2   *   *   Sun   pi    /opt/nastia-server/bin/check-images.sh    > /dev/null
         0   4   *   *   *     pi    /opt/nastia-server/bin/monitor.sh         > /dev/null
- 
+
 # Test job
 #     */1   *   *   *   *     pi    echo "$(date)  shell:$0  path:$PATH  mailto:$MAILTO" >> /home/pi/cron-test
 
