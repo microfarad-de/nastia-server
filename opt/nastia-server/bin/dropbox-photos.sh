@@ -112,14 +112,14 @@ fi
 
 
 # Create the source directory if it does not exist
-result=$(execute "list" "" "" "warningLog" | grep "$SOURCE_DIR")
+result=$(execute "list" "" "" "warningLog" "1" | grep "$SOURCE_DIR")
 if [[ "$result" == "" ]]; then
   execute "mkdir" "$SOURCE_DIR" "" "warningLog" "1"
 fi
 
 
 # Check if the source folder contains pictures
-result=$(execute "list" "$SOURCE_DIR" "" "warningLog" 2>&1)
+result=$(execute "list" "$SOURCE_DIR" "" "warningLog" "2" 2>&1)
 echo "$result"
 if [[ "$result" != *"[F]"* ]]; then
   echo "No photos to download"
@@ -141,7 +141,7 @@ execute "move" "$SOURCE_DIR" "$TEMP_DIR/$DESTINATION_DIR" "errorLog"
 
 
 # Re-create the source directory
-result=$(execute "list" "" "" "warningLog" | grep "$SOURCE_DIR")
+result=$(execute "list" "" "" "warningLog" "3" | grep "$SOURCE_DIR")
 if [[ "$result" == "" ]]; then
   execute "mkdir" "$SOURCE_DIR" "" "warningLog" "2"
 fi
