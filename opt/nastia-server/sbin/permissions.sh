@@ -13,50 +13,69 @@ source "$DIR/common.sh"
 # Log file
 LOG="$CFG_LOG_DIR/permissions.log"
 
+EXIT_CODE=0
 
 # Print an info log message
 function infoLog {
   _infoLog "$1" "permissions" "$LOG" "ecd"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_INFO_LOG"
+  chown "$CFG_USER":"$CFG_GROUP" "$CFG_INFO_LOG" > /dev/null 2>&1
 }
 
 # Print a warning log message
 function warningLog {
   _warningLog "$1" "permissions" "$LOG" "ecd"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_WARNING_LOG"
+  chown "$CFG_USER":"$CFG_GROUP" "$CFG_WARNING_LOG" > /dev/null 2>&1
 }
 
 # Print an error log message
 function errorLog {
   _errorLog "$1" "permissions" "$LOG" "ecd"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_ERROR_LOG"
+  chown "$CFG_USER":"$CFG_GROUP" "$CFG_ERROR_LOG" > /dev/null 2>&1
+  EXIT_CODE=1
 }
 
 
-RV=0
+function main {
+  local dir="$1"
+  local user="$2"
+  local group="$3"
+  local dmode="$4"
+  local fmode="$5"
+
+  chown -R "$user":"$group" "$dir"
+  echo chown -R "$user":"$group" "$dir"
+  rv=$?;
+  if [[ $rv -ne 0 ]]; then
+    errorLog "chown $user:$group $dir failed (exit code $rv)"
+  fi
+  echo find "$dir" -type d -exec chmod "$dmode" {} +
+  find "$dir" -type d -exec chmod "$dmode" {} +
+  rv=$?
+  if [[ $rv -ne 0 ]]; then
+    errorLog "chmod $dmode $dir (d) failed (exit code $rv)"
+  fi
+  echo find "$dir" -type f -exec chmod "$fmode" {} +
+  find "$dir" -type f -exec chmod "$fmode" {} +
+  rv=$?
+  if [[ $rv -ne 0 ]]; then
+    errorLog "chmod $fmode $dir (f) failed (exit code $rv)"
+  fi
+}
 
 
-chown -R mysql:mysql "$CFG_MYSQL_DIR"
-rv=$?; let RV=RV+rv
-find "$CFG_MYSQL_DIR" -type d -exec chmod g+rwx {} +
-rv=$?; let RV=RV+rv
-find "$CFG_MYSQL_DIR" -type f -exec chmod g+rw {} +
-rv=$?; let RV=RV+rv
+#################
+####  START  ####
+#################
 
 
-chown -R www-data:www-data "$CFG_WWW_DIR"
-rv=$?; let RV=RV+rv
-find "$CFG_WWW_DIR" -type d -exec chmod g+rwx {} +
-rv=$?; let RV=RV+rv
-find "$CFG_WWW_DIR" -type f -exec chmod g+rw {} +
-rv=$?; let RV=RV+rv
 
+# Loop over config items
+for i in "${!CFG_PERMISSION_SET[@]}"; do
+  main ${CFG_PERMISSION_SET[$i]}
+done
 
-if [[ $RV -eq 0 ]]; then
-  infoLog "succeeded to set file permissions"
-else
-  errorLog "failed to set file permissions (exit code $RV)"
+if [[ $EXIT_CODE -eq 0 ]]; then
+  infoLog "permissions applied successfully"
 fi
 
-
-exit $RV
+exit $EXIT_CODE
