@@ -199,8 +199,8 @@ function system-status {
 # Check remaining disk space
 function disk-space {
   local disk freeSpace totalSpace rv freePercent
-  echo "*** Available Disk Space ***"
-  mailLog "<h2>Available Disk Space</h2>"
+  echo "*** Disk Space ***"
+  mailLog "<h2>Disk Space</h2>"
   mailLog "<table>"
   mailLog "<tr><th>Disk</th><th>Size</th><th>Avail</th><th>Avail%</th><th>Status</th></tr>"
   for disk in "${DISK_SPACE_DISKS[@]}"; do
@@ -252,8 +252,8 @@ function speed-test {
   local pngMin=9999
   local dlMax=0
   local ulMax=0
-  echo "*** Internet Connection Speed Test ***"
-  mailLog "<h2>Internet Connection Speed Test</h2>"
+  echo "*** Internet Connection Speed ***"
+  mailLog "<h2>Internet Connection Speed</h2>"
   mailLog "<table>"
   mailLog "<tr><th></th><th>Ping</th><th>Download</th><th>Upload</th></tr>"
   while [[ count -lt $SPEED_TEST_RUNS ]]; do
@@ -378,8 +378,8 @@ function script-info {
 # Check IPv4 network connectivity
 function ping-v4 {
   local result rv
-  echo "*** IPv4 Ping Test ***"
-  mailLog "<h2>IPv4 Ping Test</h2>"
+  echo "*** IPv4 Ping ***"
+  mailLog "<h2>IPv4 Ping</h2>"
   result=$(ping -c 4 "$DOMAIN_NAME" -4 2>&1)
   rv=$?
   if [[ $rv -ne 0 ]]; then
@@ -403,8 +403,8 @@ function ping-v6 {
   if [[ "$DOMAIN_NAME_V6" == "" ]]; then
     return
   fi
-  echo "*** IPv6 Ping Test ***"
-  mailLog "<h2>IPv6 Ping Test</h2>"
+  echo "*** IPv6 Ping ***"
+  mailLog "<h2>IPv6 Ping</h2>"
   result=$(ping -c 4 "$DOMAIN_NAME_V6" -6 2>&1)
   rv=$?
   if [[ $rv -ne 0 ]]; then
