@@ -32,4 +32,4 @@ The following Linux packages need to be installed in order to run this software:
 
 Nastia is the name of my three-year-old daughter.
 
-Feel free to use and distribute the full contents of this package or parts of it according to the _GNU General Public License v3.0_. I hope that you find this software useful.
+Unless stated otherwise inside the source file headers, please feel free to use and distribute the full contents of this package or parts of it according to the _GNU General Public License v3.0_. I hope that you find this software useful.
