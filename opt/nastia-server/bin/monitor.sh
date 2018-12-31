@@ -103,7 +103,7 @@ function constructMail {
   echo "to: $RECIPIENT"
   echo "cc:"
   echo "bcc:"
-  echo "Subject: $SUBJECT $status ($(date '+%Y%m%d%H%M'))"
+  echo "Subject: $SUBJECT $status ($(date))"
   echo "MIME-Version: 1.0"
   if [[ "$FORMAT" == "html" ]]; then
     echo "Content-Type: multipart/alternative; boundary=Next_Part_qwwertzuiopasdfghjklyxcvbnm"
