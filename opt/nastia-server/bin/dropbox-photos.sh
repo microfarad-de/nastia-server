@@ -63,7 +63,7 @@ function execute {
   local result=""
   local rv=10
   local attempt=0
-  
+
   if [[ "$marker" != "" ]]; then
     marker=" ($marker)"
   fi
@@ -73,13 +73,13 @@ function execute {
     rv="$?"
     let attempt=attempt+1
   done
-  
+
   if [[ $attempt -gt 1 && $rv -eq 0 ]]; then
     warningLog "$command $arg1 $arg2 took $attempt attempts$marker"
   elif [[ $rv -ne 0 ]]; then
     $logCmd "$command $arg1 $arg2 failed after $attempt attempts$marker"
   fi
-  
+
   echo "$result"
   return $rv
 }

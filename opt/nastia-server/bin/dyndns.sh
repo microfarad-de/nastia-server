@@ -26,7 +26,7 @@ ANYDNS_PASSWORD="$CFG_DYNDNS_ANYDNS_PASSWORD"
 # Common configuration parameters:
 LOG="$CFG_LOG_DIR/dyndns.log"              # Main log file
 IPV4_URL="https://www.goip.de/myip"        # URL that returns the current IPv4 address
-IPV6_URL="https://www.anydns.info/ip.php"  # URL that returns the current IPv6 address
+IPV6_URL="http://www.anydns.info/ip.php"  # URL that returns the current IPv6 address
 
 
 # Global variables
@@ -132,7 +132,7 @@ function updateAnydns {
     return
   fi
 
-  result=$(wget "$option" -qO- "https://www.anydns.info/update.php?user=$ANYDNS_USERNAME&password=$ANYDNS_PASSWORD&host=$domain" 2>&1)
+  result=$(wget "$option" -qO- "http://www.anydns.info/update.php?user=$ANYDNS_USERNAME&password=$ANYDNS_PASSWORD&host=$domain" 2>&1)
 
   if [[ "$result" == *"OK"* ]]; then
     infoLog "$domain/$protocol: $ip"
@@ -169,14 +169,16 @@ function main {
 
 # Retrieve the public IPv4 addresses
 IPV4=$(wget --inet4-only -qO- "$IPV4_URL" 2>&1)
-if [[ $? -ne 0 ]]; then
-  warningLog "failed to retrieve current IPv4 address"
+rv=$?
+if [[ $rv -ne 0 ]]; then
+  warningLog "failed to retrieve current IPv4 address (exit code $rv)"
 fi
 
 # Retrieve the public IPv6 address
 IPV6=$(wget --inet6-only -qO- "$IPV6_URL" 2>&1)
-if [[ $? -ne 0 ]]; then
-  warningLog "failed to retrieve current IPv6 address"
+rv=$?
+if [[ $rv -ne 0 ]]; then
+  warningLog "failed to retrieve current IPv6 address (exit code $rv)"
 fi
 
 echo "IP address:"
