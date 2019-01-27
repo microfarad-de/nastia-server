@@ -4,7 +4,7 @@ This software package provides a collection of automation tools for running a ho
 
 For an in-depth presentation of the project, please visit: www.microfarad.de/pi-server
 
-Unless stated otherwise inside the source file headers, please feel free to use and distribute the full contents of this package or parts of it according to the _GNU General Public License v3.0_. I hope that you find this software useful.
+Unless stated otherwise within the source file headers, please feel free to use and distribute the full contents of this package or parts of it according to the _GNU General Public License v3.0_. I hope that you find this software useful.
 
 Nastia is the name of my three-year-old daughter.
 
