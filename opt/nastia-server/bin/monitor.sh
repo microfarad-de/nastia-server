@@ -454,6 +454,7 @@ function cron-check {
   mailLog "<table>"
   mailLog "<tr><th>Job</th><th>Interval</th><th>Since</th><th>Status</th></tr>"
   t=$(date +%s)
+  t=$((t / 86400))
   for i in "${!CFG_MONITOR_CRON_PREFIX[@]}"; do
     prefix="${CFG_MONITOR_CRON_PREFIX[$i]}"
     interval="${CFG_MONITOR_CRON_INTERVAL[$i]}"
@@ -471,12 +472,12 @@ function cron-check {
     fi
     delta=$((t-lastT))
     mailLog "<tr>"
-    mailLog "<td>$prefix</td><td>$interval d.<td>$((delta/86400)) d.</td>"
+    mailLog "<td>$prefix</td><td>$interval d.<td>$delta d.</td>"
     mailLog "<td>"
     if [[ $delta -gt $((86400*interval)) ]]; then
-      warningLog "$prefix: cron job took $((delta/86400)) (>$interval) days to execute" "inline"
+      warningLog "$prefix: cron job took $delta (>$interval) days to execute" "inline"
     else
-      okLog "$prefix: last run since $((delta/86400)) d." "inline"
+      okLog "$prefix: last run since $delta d." "inline"
     fi
     mailLog "</td></tr>"
   done
