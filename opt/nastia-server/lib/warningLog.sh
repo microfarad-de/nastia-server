@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Wrapper for sending info log messages via command line
+# Wrapper for sending warning log messages via command line
 #
 # This source file is part of the follwoing repository:
 # http://www.github.com/microfarad-de/nastia-server
