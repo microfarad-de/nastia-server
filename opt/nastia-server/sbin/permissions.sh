@@ -64,8 +64,8 @@ function main {
   local dmode="$4"
   local fmode="$5"
 
-  chown -R "$user":"$group" "$dir"
   echo chown -R "$user":"$group" "$dir"
+  chown -R "$user":"$group" "$dir"
   rv=$?;
   if [[ $rv -ne 0 ]]; then
     errorLog "chown $user:$group $dir failed (exit code $rv)"
