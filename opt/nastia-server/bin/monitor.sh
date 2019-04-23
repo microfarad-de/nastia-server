@@ -340,7 +340,7 @@ function script-errors {
   if [[ -e "$CFG_ERROR_LOG" ]]; then
     result=`cat "$CFG_ERROR_LOG"`
     errorLog "the following errors occurred:"
-    infoLog $'\n'"$result"
+    infoLog "(the following out-of-sequence timestamps are copied from other log files)"$'\n'"$result"
     mailLog "<pre>"
     mailLog "$result"
     mailLog "</pre>"
@@ -362,7 +362,7 @@ function script-warnings {
   if [[ -e "$CFG_WARNING_LOG" ]]; then
     result=`cat "$CFG_WARNING_LOG"`
     warningLog "the following warnings occurred:"
-    infoLog $'\n'"$result"
+    infoLog "(the following out-of-sequence timestamps are copied from other log files)"$'\n'"$result"
     mailLog "<pre>"
     mailLog "$result"
     mailLog "</pre>"
