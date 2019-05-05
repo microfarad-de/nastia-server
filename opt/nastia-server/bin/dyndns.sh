@@ -45,6 +45,8 @@ GOIP_PASSWORD="$CFG_DYNDNS_GOIP_PASSWORD"
 ANYDNS_USERNAME="$CFG_DYNDNS_ANYDNS_USERNAME"
 ANYDNS_PASSWORD="$CFG_DYNDNS_ANYDNS_PASSWORD"
 
+# IPv6 support flag
+IPV6_SUPPORT="$CFG_DYNDNS_IPV6_SUPPORT"
 
 # Common configuration parameters:
 LOG="$CFG_LOG_DIR/dyndns.log"              # Main log file
@@ -174,6 +176,10 @@ function main {
   local domain="$1"
   local protocol="$2"
 
+  if [[ "$protocol" == "ipv6" && $IPV6_SUPPORT -ne 1 ]]; then
+    warningLog "$domain/$protocol: IPv6 is disabled"
+    return
+  fi
   if [[ "$domain" == *"goip.de" ]]; then
     updateGoip "$domain" "$protocol"
   elif [[ "$domain" == *"anydns.info" ]]; then
@@ -198,15 +204,19 @@ if [[ $rv -ne 0 ]]; then
 fi
 
 # Retrieve the public IPv6 address
-IPV6=$(wget --inet6-only -qO- "$IPV6_URL" 2>&1)
-rv=$?
-if [[ $rv -ne 0 ]]; then
-  warningLog "failed to retrieve current IPv6 address (exit code $rv)"
+if [[ $IPV6_SUPPORT -eq 1 ]]; then
+  IPV6=$(wget --inet6-only -qO- "$IPV6_URL" 2>&1)
+  rv=$?
+  if [[ $rv -ne 0 ]]; then
+   warningLog "failed to retrieve current IPv6 address (exit code $rv)"
+  fi
 fi
 
 echo "IP address:"
 echo "  IPv4: $IPV4"
-echo "  IPv6: $IPV6"
+if [[ $IPV6_SUPPORT -eq 1 ]]; then
+  echo "  IPv6: $IPV6"
+fi
 
 # Loop over configurations
 for i in "${!CFG_DYNDNS_DOMAIN[@]}"; do
