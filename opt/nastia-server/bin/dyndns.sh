@@ -46,12 +46,12 @@ ANYDNS_USERNAME="$CFG_DYNDNS_ANYDNS_USERNAME"
 ANYDNS_PASSWORD="$CFG_DYNDNS_ANYDNS_PASSWORD"
 
 # IPv6 support flag
-IPV6_SUPPORT="$CFG_DYNDNS_IPV6_SUPPORT"
+IPV6_ENABLED="$CFG_DYNDNS_IPV6_ENABLED"
 
 # Common configuration parameters:
-LOG="$CFG_LOG_DIR/dyndns.log"              # Main log file
-IPV4_URL="https://www.goip.de/myip"        # URL that returns the current IPv4 address
-IPV6_URL="http://www.anydns.info/ip.php"  # URL that returns the current IPv6 address
+LOG="$CFG_LOG_DIR/dyndns.log"     # Main log file
+IPV4_URL="$CFG_DYNDNS_IPV4_URL"   # URL that returns the current IPv4 address
+IPV6_URL="$CFG_DYNDNS_IPV6_URL"   # URL that returns the current IPv6 address
 
 
 # Global variables
@@ -176,7 +176,7 @@ function main {
   local domain="$1"
   local protocol="$2"
 
-  if [[ "$protocol" == "ipv6" && $IPV6_SUPPORT -ne 1 ]]; then
+  if [[ "$protocol" == "ipv6" && $IPV6_ENABLED -ne 1 ]]; then
     warningLog "$domain/$protocol: IPv6 is disabled"
     return
   fi
@@ -204,7 +204,7 @@ if [[ $rv -ne 0 ]]; then
 fi
 
 # Retrieve the public IPv6 address
-if [[ $IPV6_SUPPORT -eq 1 ]]; then
+if [[ $IPV6_ENABLED -eq 1 ]]; then
   IPV6=$(wget --inet6-only -qO- "$IPV6_URL" 2>&1)
   rv=$?
   if [[ $rv -ne 0 ]]; then
@@ -214,7 +214,7 @@ fi
 
 echo "IP address:"
 echo "  IPv4: $IPV4"
-if [[ $IPV6_SUPPORT -eq 1 ]]; then
+if [[ $IPV6_ENABLED -eq 1 ]]; then
   echo "  IPv6: $IPV6"
 fi
 
