@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 #
 # Remove old incremental backups
 # Emulating the behavior of Apple Time Machine
