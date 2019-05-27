@@ -1,0 +1,14 @@
+# KHr:
+# Type=idle  ->  Start after all services have started
+
+[Unit]
+Description=ups control service
+
+[Service]
+Type=idle
+ExecStart=/opt/nastia-server/sbin/ups.py
+User=root
+
+[Install]
+WantedBy=multi-user.target
+
