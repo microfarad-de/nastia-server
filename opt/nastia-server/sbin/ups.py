@@ -37,23 +37,40 @@ BAUD_RATE = 19200             # Serial baud rate
 INTERVAL  =     5             # Polling interval in seconds
 
 
-# Initialize the serial port
-ser = serial.Serial(DEVICE, BAUD_RATE, timeout=1)
+# Read the contents of the receive buffer
+def read():
+    rx = " "
+    while len(rx) > 0:
+        rx = ser.readline()
+        sys.stdout.write(rx)
+    time.sleep(0.5)
 
+# Write to the transmit buffer
+def write(str):
+    ser.write(str)
+    time.sleep(0.5)
+
+
+
+# Initialize the serial port
+ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0)
+
+
+count = 0
 
 # Main loop
 while 1:
 
-    rx = " "
+    read()
+    write('stat\n')
+    read()
+    count += 1
 
-    # Flush the FIFO
-    while len(rx) > 0:
-        rx = ser.readline()
-        sys.stdout.write(rx)
-
-    ser.write('stat\n')
-    rx = ser.readline()
-    sys.stdout.write(rx)
+    if count == 3:
+        write('status\n')
+        read()
+        count = 0
 
     time.sleep(INTERVAL)
+
 
