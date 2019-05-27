@@ -53,13 +53,13 @@ def write(str):
 
 
 # Initialize the serial port
-ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.5)
+ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0)
 
 
 # A serial connection will cause the MCU to reboot
 # The following will flush the initial boot message
 # and wait until the MCU is up and running
-time.sleep(1)
+time.sleep(2)
 read()
 time.sleep(5)
 
