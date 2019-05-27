@@ -43,17 +43,25 @@ def read():
     while len(rx) > 0:
         rx = ser.readline()
         sys.stdout.write(rx)
-    time.sleep(0.5)
+    #time.sleep(0.5)
 
 # Write to the transmit buffer
 def write(str):
     ser.write(str)
-    time.sleep(0.5)
+    #time.sleep(0.5)
 
 
 
 # Initialize the serial port
-ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0)
+ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.5)
+
+
+# A serial connection will cause the MCU to reboot
+# The following will flush the initial boot message
+# and wait until the MCU is up and running
+time.sleep(1)
+read()
+time.sleep(5)
 
 
 count = 0
@@ -61,7 +69,6 @@ count = 0
 # Main loop
 while 1:
 
-    read()
     write('stat\n')
     read()
     count += 1
