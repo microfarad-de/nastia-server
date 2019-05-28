@@ -43,12 +43,22 @@ def read():
     while len(rx) > 0:
         rx = ser.readline()
         sys.stdout.write(rx)
-    #time.sleep(0.5)
+    time.sleep(0.1)
 
 # Write to the transmit buffer
 def write(str):
     ser.write(str)
-    #time.sleep(0.5)
+    time.sleep(0.1)
+
+
+
+
+
+
+
+#################
+####  START  ####
+#################
 
 
 
@@ -61,7 +71,7 @@ ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0)
 # and wait until the MCU is up and running
 time.sleep(2)
 read()
-time.sleep(5)
+time.sleep(2)
 
 
 count = 0
