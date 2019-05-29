@@ -127,7 +127,7 @@ while 1:
         write("halt\n")
         result = read()
         if "SHUTDOWN" in result:
-            errorLog("shutdown")
+            errorLog(result)
             os.popen("halt")
         else:
             errorLog("shutdown failed")
