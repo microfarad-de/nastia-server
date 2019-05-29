@@ -28,22 +28,43 @@
 import serial    # pip install pyserial
 import sys
 import time
+import os
 
+
+# Current directory where this script is located
+DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 # Configuration parameters
-DEVICE    = '/dev/ttyUSB0'    # RS232 device name
-BAUD_RATE = 19200             # Serial baud rate
 INTERVAL  =     5             # Polling interval in seconds
+
+
+# Print info log message
+def infoLog ( text ):
+    os.popen( DIR + "/infoLog.sh \"" + text.rstrip() + "\" 'ups' \"" + LOG + "\" 'cd'" )
+
+
+# Print warning log message
+def warningLog ( text ):
+    os.popen( DIR + "/warningLog.sh \"" + text.rstrip() + "\" 'ups' \"" + LOG + "\" 'cd'" )
+
+
+# Print error log message
+def errorLog ( text ):
+    os.popen( DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' \"" + LOG + "\" 'cd'" )
+
 
 
 # Read the contents of the receive buffer
 def read():
     rx = " "
+    result = ""
     while len(rx) > 0:
         rx = ser.readline()
         sys.stdout.write(rx)
+        result = result + rx
     time.sleep(0.1)
+    return result
 
 # Write to the transmit buffer
 def write(str):
@@ -61,6 +82,17 @@ def write(str):
 #################
 
 
+# Check for correct number of arguments
+if len(sys.argv) < 2:
+    print "usage: " + sys.argv[0] + " DEVICE BAUD_RATE"
+    sys.exit()
+
+DEVICE    = sys.argv[1]    # RS232 device name
+BAUD_RATE = sys.argv[2]    # Serial baud rate
+LOG       = sys.argv[3]    # Main log file
+
+infoLog("UPS service started")
+
 
 # Initialize the serial port
 ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0)
@@ -74,19 +106,32 @@ read()
 time.sleep(2)
 
 
-count = 0
+lastResult = ""
 
 # Main loop
 while 1:
 
-    write('stat\n')
-    read()
-    count += 1
+    write("stat\n")
+    result = read()
 
-    if count == 3:
-        write('status\n')
-        read()
-        count = 0
+    if result != lastResult:
+        lastResult = result
+        if "BATTERY" in result:
+            warningLog(result)
+        elif "ERROR" in result:
+            errorLog(result)
+        else:
+            infoLog(result)
+
+    if "BATTERY 75" in result:
+        write("halt\n")
+        result = read()
+        if "SHUTDOWN" in result:
+            errorLog("shutdown")
+            os.popen("halt")
+        else:
+            errorLog("shutdown failed")
+
 
     time.sleep(INTERVAL)
 
