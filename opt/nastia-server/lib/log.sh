@@ -61,6 +61,10 @@ function _printLog {
     logSemaphoreLock
   fi
 
+  if [[ "$log" == "" && "$prefix" != "" ]]; then
+    log="$CFG_LOG_DIR/$prefix.log"
+  fi
+
   if [[ "$prefix" != "" ]]; then
     prefix=" [$prefix]"
   fi

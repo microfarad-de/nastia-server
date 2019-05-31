@@ -36,22 +36,25 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 # Configuration parameters
-INTERVAL  =     5             # Polling interval in seconds
+INTERVAL = 5  # Polling interval in seconds
 
 
 # Print info log message
 def infoLog ( text ):
-    os.popen( DIR + "/infoLog.sh \"" + text.rstrip() + "\" 'ups' \"" + LOG + "\" 'cd'" )
+    print(text.rstrip() )
+    os.popen( DIR + "/infoLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'" )
 
 
 # Print warning log message
 def warningLog ( text ):
-    os.popen( DIR + "/warningLog.sh \"" + text.rstrip() + "\" 'ups' \"" + LOG + "\" 'cd'" )
+    print("[WARNING] " + text.rstrip() )
+    os.popen( DIR + "/warningLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'" )
 
 
 # Print error log message
 def errorLog ( text ):
-    os.popen( DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' \"" + LOG + "\" 'cd'" )
+    print("[ERROR] " + text.rstrip() )
+    os.popen( DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'" )
 
 
 
@@ -61,7 +64,6 @@ def read():
     result = ""
     while len(rx) > 0:
         rx = ser.readline()
-        sys.stdout.write(rx)
         result = result + rx
     time.sleep(0.1)
     return result
@@ -89,10 +91,8 @@ if len(sys.argv) < 2:
 
 DEVICE    = sys.argv[1]    # RS232 device name
 BAUD_RATE = sys.argv[2]    # Serial baud rate
-LOG       = sys.argv[3]    # Main log file
 
 infoLog("UPS service started")
-
 
 # Initialize the serial port
 ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0)
@@ -102,7 +102,8 @@ ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0)
 # The following will flush the initial boot message
 # and wait until the MCU is up and running
 time.sleep(2)
-read()
+result = read()
+sys.stdout.write(result)
 time.sleep(2)
 
 

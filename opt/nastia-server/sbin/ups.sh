@@ -36,13 +36,12 @@ source "$DIR/common.sh"
 # Configuration parameters
 DEVICE="$CFG_UPS_DEVICE"         # Serial port device name
 BAUD_RATE="$CFG_UPS_BAUD_RATE"   # Serial port baud rate
-LOG="$CFG_LOG_DIR/ups.log"       # Main log file
 SCRIPT="$DIR/../lib/ups.py"      # Python script
 
 
 
 
 # Call the Python script
-$SCRIPT "$DEVICE" "$BAUD_RATE" "$LOG"
+$SCRIPT "$DEVICE" "$BAUD_RATE"
 
 
