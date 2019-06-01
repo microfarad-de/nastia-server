@@ -10,6 +10,7 @@
 /var/log/nastia-server/monitor.log
 /var/log/nastia-server/init.log
 /var/log/nastia-server/permissions.log
+/var/log/nastia-server/ups.log
 {
   rotate 99
   size 100k 
