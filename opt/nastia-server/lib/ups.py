@@ -125,7 +125,7 @@ while 1:
         else:
             infoLog(result)
 
-    if "BATTERY 75" in result:
+    if "BATTERY 0" in result:
         write("halt\n")
         result = read()
         if "SHUTDOWN" in result:
