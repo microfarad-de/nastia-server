@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Uninterruptible Power Supply (UPS) Control
+# RS232 Serial Port Console
 #
 # This source file is part of the follwoing repository:
 # http://www.github.com/microfarad-de/nastia-server
@@ -28,34 +28,6 @@
 import serial    # pip install pyserial
 import sys
 import time
-import os
-
-
-# Current directory where this script is located
-DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-# Configuration parameters
-INTERVAL = 5  # Polling interval in seconds
-
-
-# Print info log message
-def infoLog ( text ):
-    print(text.rstrip() )
-    os.popen( DIR + "/infoLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'" )
-
-
-# Print warning log message
-def warningLog ( text ):
-    print("[WARNING] " + text.rstrip() )
-    os.popen( DIR + "/warningLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'" )
-
-
-# Print error log message
-def errorLog ( text ):
-    print("[ERROR] " + text.rstrip() )
-    os.popen( DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'" )
-
 
 
 # Read the contents of the receive buffer
@@ -75,14 +47,9 @@ def write(str):
 
 
 
-
-
-
-
 #################
 ####  START  ####
 #################
-
 
 # Check for correct number of arguments
 if len(sys.argv) < 2:
@@ -92,7 +59,6 @@ if len(sys.argv) < 2:
 DEVICE    = sys.argv[1]    # RS232 device name
 BAUD_RATE = sys.argv[2]    # Serial baud rate
 
-infoLog("UPS service started")
 
 # Initialize the serial port
 ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0)
@@ -102,39 +68,15 @@ ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0)
 # The following will flush the initial boot message
 # and wait until the MCU is up and running
 time.sleep(2)
-result = read()
-sys.stdout.write(result)
-time.sleep(2)
+rx = read()
+sys.stdout.write(rx)
 
 
-lastResult = ""
-
-# Main loop
 while 1:
+    tx = sys.stdin.readline()
+    write(tx)
+    rx = read()
+    sys.stdout.write(rx)
 
-    write("stat\n")
-    result = read()
-    #sys.stdout.write(result)
-
-    if result != lastResult:
-        lastResult = result
-        if "BATTERY" in result:
-            warningLog(result)
-        elif "ERROR" in result:
-            errorLog(result)
-        else:
-            infoLog(result)
-
-    if "BATTERY 75" in result:
-        write("halt\n")
-        result = read()
-        if "SHUTDOWN" in result:
-            errorLog(result)
-            os.popen("halt")
-        else:
-            errorLog("shutdown failed")
-
-
-    time.sleep(INTERVAL)
 
 
