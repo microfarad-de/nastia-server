@@ -36,7 +36,7 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 # Configuration parameters
-INTERVAL = 5  # Polling interval in seconds
+INTERVAL = 10  # Polling interval in seconds
 
 
 # Print info log message
