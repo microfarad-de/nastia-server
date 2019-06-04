@@ -6,7 +6,7 @@ Description=GPIO initialization service
 
 [Service]
 Type=idle
-ExecStart=/opt/nastia-server/sbin/init-gpio.sh
+ExecStart=/opt/nastia-server/sbin/init-gpio
 User=root
 
 [Install]

@@ -8,7 +8,7 @@ After=network-online.target
 
 [Service]
 Type=idle
-ExecStart=/opt/nastia-server/sbin/init.sh
+ExecStart=/opt/nastia-server/sbin/init
 User=root
 
 [Install]
