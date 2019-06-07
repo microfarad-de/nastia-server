@@ -36,26 +36,36 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 # Configuration parameters
-INTERVAL = 5  # Polling interval in seconds
-
+INTERVAL =      5  # Polling interval in seconds
+SEMAPHORE = "ups"  # Semaphore identifier, must be the same for all scripts
+                   # accessing the same serial port
 
 # Print info log message
-def infoLog ( text ):
-    print(text.rstrip() )
-    os.popen( DIR + "/infoLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'" )
+def infoLog(text):
+    print(text.rstrip())
+    os.popen(DIR + "/infoLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
 
 
 # Print warning log message
-def warningLog ( text ):
-    print("[WARNING] " + text.rstrip() )
-    os.popen( DIR + "/warningLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'" )
+def warningLog(text):
+    print("[WARNING] " + text.rstrip())
+    os.popen(DIR + "/warningLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
 
 
 # Print error log message
-def errorLog ( text ):
-    print("[ERROR] " + text.rstrip() )
-    os.popen( DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'" )
+def errorLog (text):
+    print("[ERROR] " + text.rstrip())
+    os.popen(DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
 
+
+# Lock the semaphore
+def semaphoreLock():
+    os.popen(DIR + "/semaphoreLock.sh " + SEMAPHORE + " b")
+
+
+# Release the semaphore
+def semaphoreRelease():
+    os.popen(DIR + "/semaphoreRelease.sh " + SEMAPHORE)
 
 
 # Read the contents of the receive buffer
@@ -102,7 +112,9 @@ ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
 # The following will flush the initial boot message
 # and wait until the MCU is up and running
 time.sleep(2)
+semaphoreLock()
 result = read()
+semaphoreRelease()
 sys.stdout.write(result)
 time.sleep(2)
 
@@ -112,9 +124,10 @@ lastResult = ""
 # Main loop
 while 1:
 
+    semaphoreLock()
     write("stat\n")
     result = read()
-    #sys.stdout.write(result)
+    semaphoreRelease()
 
     if result != lastResult:
         lastResult = result
@@ -126,8 +139,10 @@ while 1:
             infoLog(result)
 
     if "BATTERY 0" in result:
+        semaphoreLock()
         write("halt\n")
         result = read()
+        semaphoreRelease()
         if "SHUTDOWN" in result:
             errorLog(result)
             os.popen("halt")
