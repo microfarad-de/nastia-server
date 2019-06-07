@@ -37,5 +37,9 @@ The following Linux packages need to be installed in order to run this software:
 * rsync
 * imagemagick
 * libimage-exiftool-perl
-* speedtest-cli
 * lynx
+* Python (pip install):
+  - speedtest-cli
+  - pyserial
+  - ilock
+  
