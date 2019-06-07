@@ -24,6 +24,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+#
+# Note:
+#   User must have sudo rights to be able to perform a system shutdown
+#
 
 import serial  # pip install pyserial
 import ilock   # pip install ilock
@@ -137,7 +141,7 @@ while 1:
             result = read()
         if "SHUTDOWN" in result:
             errorLog(result)
-            os.popen("halt")
+            os.popen("sudo halt")
         else:
             errorLog("shutdown failed")
 
