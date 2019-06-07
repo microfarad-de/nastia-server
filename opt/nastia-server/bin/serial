@@ -25,32 +25,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import serial    # pip install pyserial
+import serial  # pip install pyserial
+import ilock   # pip install ilock
 import sys
 import time
-import os
-
-# Current directory where this script is located
-DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Directory path of the common libraries
-LIB_DIR = DIR + "/../lib"
 
 
-# Semaphore identifier, must be the same for all scripts
-# accessing the same serial port
-SEMAPHORE = "ups"
-
-
-# Lock the semaphore
-def semaphoreLock():
-    os.popen(LIB_DIR + "/semaphoreLock.sh " + SEMAPHORE + " b")
-
-
-# Release the semaphore
-def semaphoreRelease():
-    os.popen(LIB_DIR + "/semaphoreRelease.sh " + SEMAPHORE)
-
+# System-wide lock ensures mutually exclusive access to the serial port
+lock = ilock.ILock("serial-port", timeout=15)
 
 
 # Read the contents of the receive buffer
@@ -91,18 +73,16 @@ ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
 # The following will flush the initial boot message
 # and wait until the MCU is up and running
 time.sleep(2)
-semaphoreLock()
-rx = read()
-semaphoreRelease()
+with lock: # Enusre exclusive acces through system-wide lock
+    rx = read()
 sys.stdout.write(rx)
 
 
 while 1:
     tx = sys.stdin.readline()
-    semaphoreLock()
-    write(tx)
-    rx = read()
-    semaphoreRelease()
+    with lock:
+        write(tx)
+        rx = read()
     sys.stdout.write(rx)
 
 

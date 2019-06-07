@@ -25,7 +25,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import serial    # pip install pyserial
+import serial  # pip install pyserial
+import ilock   # pip install ilock
 import sys
 import time
 import os
@@ -35,10 +36,13 @@ import os
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-# Configuration parameters
+# Polling interval in seconds
 INTERVAL =      5  # Polling interval in seconds
-SEMAPHORE = "ups"  # Semaphore identifier, must be the same for all scripts
-                   # accessing the same serial port
+
+
+# System-wide lock ensures mutually exclusive access to the serial port
+lock = ilock.ILock("serial-port", timeout=15)
+
 
 # Print info log message
 def infoLog(text):
@@ -56,16 +60,6 @@ def warningLog(text):
 def errorLog (text):
     print("[ERROR] " + text.rstrip())
     os.popen(DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
-
-
-# Lock the semaphore
-def semaphoreLock():
-    os.popen(DIR + "/semaphoreLock.sh " + SEMAPHORE + " b")
-
-
-# Release the semaphore
-def semaphoreRelease():
-    os.popen(DIR + "/semaphoreRelease.sh " + SEMAPHORE)
 
 
 # Read the contents of the receive buffer
@@ -112,9 +106,8 @@ ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
 # The following will flush the initial boot message
 # and wait until the MCU is up and running
 time.sleep(2)
-semaphoreLock()
-result = read()
-semaphoreRelease()
+with lock: # Enusre exclusive acces through system-wide lock
+    result = read()
 sys.stdout.write(result)
 time.sleep(2)
 
@@ -124,10 +117,9 @@ lastResult = ""
 # Main loop
 while 1:
 
-    semaphoreLock()
-    write("stat\n")
-    result = read()
-    semaphoreRelease()
+    with lock:
+        write("stat\n")
+        result = read()
 
     if result != lastResult:
         lastResult = result
@@ -139,10 +131,9 @@ while 1:
             infoLog(result)
 
     if "BATTERY 0" in result:
-        semaphoreLock()
-        write("halt\n")
-        result = read()
-        semaphoreRelease()
+        with lock:
+            write("halt\n")
+            result = read()
         if "SHUTDOWN" in result:
             errorLog(result)
             os.popen("halt")
