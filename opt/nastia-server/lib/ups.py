@@ -44,10 +44,6 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 INTERVAL =      5  # Polling interval in seconds
 
 
-# System-wide lock ensures mutually exclusive access to the serial port
-lock = ilock.ILock("serial-port", timeout=15)
-
-
 # Print info log message
 def infoLog(text):
     print(text.rstrip())
@@ -99,6 +95,9 @@ if len(sys.argv) < 2:
 
 DEVICE    = sys.argv[1]    # RS232 device name
 BAUD_RATE = sys.argv[2]    # Serial baud rate
+
+# System-wide lock ensures mutually exclusive access to the serial port
+lock = ilock.ILock(DEVICE, timeout=600)
 
 infoLog("UPS service started")
 

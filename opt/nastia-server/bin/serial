@@ -31,9 +31,6 @@ import sys
 import time
 
 
-# System-wide lock ensures mutually exclusive access to the serial port
-lock = ilock.ILock("serial-port", timeout=15)
-
 
 # Read the contents of the receive buffer
 def read():
@@ -64,6 +61,8 @@ if len(sys.argv) < 2:
 DEVICE    = sys.argv[1]    # RS232 device name
 BAUD_RATE = sys.argv[2]    # Serial baud rate
 
+# System-wide lock ensures mutually exclusive access to the serial port
+lock = ilock.ILock(DEVICE, timeout=600)
 
 # Initialize the serial port
 with lock:
