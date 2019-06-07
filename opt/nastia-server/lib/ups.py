@@ -106,7 +106,7 @@ ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
 # The following will flush the initial boot message
 # and wait until the MCU is up and running
 time.sleep(2)
-with lock: # Enusre exclusive acces through system-wide lock
+with lock: # Ensure exclusive access through system-wide lock
     result = read()
 sys.stdout.write(result)
 time.sleep(2)
