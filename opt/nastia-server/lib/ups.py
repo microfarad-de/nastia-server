@@ -99,7 +99,8 @@ BAUD_RATE = sys.argv[2]    # Serial baud rate
 infoLog("UPS service started")
 
 # Initialize the serial port
-ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
+with lock:
+    ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
 
 
 # A serial connection will cause the MCU to reboot
