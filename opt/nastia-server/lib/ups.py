@@ -62,6 +62,11 @@ def errorLog (text):
     os.popen(DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
 
 
+# Print a log message to the measurements log file
+def measLog(text):
+    os.popen(DIR + "/infoLog.sh \"" + text.rstrip() + "\" 'ups-meas' '' 'd'")
+
+
 # Read the contents of the receive buffer
 def read():
     rx = " "
@@ -102,7 +107,7 @@ lock = ilock.ILock(DEVICE, timeout=600)
 infoLog("UPS service started")
 
 # Initialize the serial port
-with lock:
+with lock: # Ensure exclusive access through system-wide lock
     ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
 
 
@@ -110,21 +115,25 @@ with lock:
 # The following will flush the initial boot message
 # and wait until the MCU is up and running
 time.sleep(2)
-with lock: # Ensure exclusive access through system-wide lock
+with lock:
     result = read()
 sys.stdout.write(result)
 time.sleep(2)
 
 
 lastResult = ""
+lastMeasResult = ""
+measCount = 0
 
 # Main loop
 while 1:
 
+    # Read the UPS status
     with lock:
         write("stat\n")
         result = read()
 
+    # Trace the UPS status
     if result != lastResult:
         lastResult = result
         if "BATTERY" in result:
@@ -134,6 +143,7 @@ while 1:
         else:
             infoLog(result)
 
+    # Handle low battery condition
     if "BATTERY 0" in result:
         with lock:
             write("halt\n")
@@ -144,6 +154,20 @@ while 1:
         else:
             errorLog("shutdown failed")
 
+    # Read the UPS measurements
+    with lock:
+        write("meas\n")
+        result = read()
+
+    # Trace the UPS measurements
+    if result != lastMeasResult:
+        lastMeasResult = result
+        if measCount == 0:
+            measLog("  V_in  V_ups V_batt I_batt PWM")
+        measLog(result)
+        measCount += 1
+        if measCount >= 20:
+            measCount = 0
 
     time.sleep(INTERVAL)
 

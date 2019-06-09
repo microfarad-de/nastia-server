@@ -18,6 +18,7 @@
 
 
 /var/log/nastia-server/fan.log 
+/var/log/nastia-server/ups-meas.log
 {
   rotate 1
   size 100k 
