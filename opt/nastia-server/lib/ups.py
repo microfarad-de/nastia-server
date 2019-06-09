@@ -163,7 +163,7 @@ while 1:
     if result != lastMeasResult:
         lastMeasResult = result
         if measCount == 0:
-            measLog("  V_in  V_ups V_batt I_batt PWM")
+            measLog("V_in   V_ups  V_batt I_batt PWM")
         measLog(result)
         measCount += 1
         if measCount >= 20:
