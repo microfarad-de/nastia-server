@@ -2,8 +2,10 @@
 #
 # Automatic fan control via GPIO
 #
-# Dependencies:
-# - init-gpio.sh must run first
+# Note:
+#   This script must be executed by root in order to be able
+#   to initialize the GPIO
+#
 #
 # This source file is part of the follwoing repository:
 # http://www.github.com/microfarad-de/nastia-server
@@ -66,32 +68,36 @@ function errorLog {
 
 infoLog "fan control service started"
 
-# Wait to ensure that the GPIO is initialized
-sleep 2
+
 
 # Initialize GPIO
-#if [[ ! -e "/sys/class/gpio/gpio$GPIO_PIN" ]]; then
-#  echo "$GPIO_PIN" > "/sys/class/gpio/export"
-#  rv=$?
-#  if [[ $rv -ne 0 ]]; then
-#    errorLog "failed to initialize GPIO pin $GPIO_PIN (exit code $rv)"
-#  else
-#    infoLog "initialized GPIO pin $GPIO_PIN"
-#  fi
-#fi
+if [[ ! -e "/sys/class/gpio/gpio$GPIO_PIN" ]]; then
+  echo "$GPIO_PIN" > "/sys/class/gpio/export"
+  rv=$?
+  if [[ $rv -ne 0 ]]; then
+    errorLog "failed to initialize GPIO pin $GPIO_PIN (exit code $rv)"
+  else
+    infoLog "initialized GPIO pin $GPIO_PIN"
+  fi
+else
+  infoLog "GPIO pin $GPIO_PIN already initialized"
+fi
 
-#DIRECTION=$(cat "/sys/class/gpio/gpio$GPIO_PIN/direction")
+DIRECTION=$(cat "/sys/class/gpio/gpio$GPIO_PIN/direction")
 
 # Set the GPIO direction
-#if [[ $DIRECTION != "out" ]]; then
-#  echo "out" > "/sys/class/gpio/gpio$GPIO_PIN/direction"
-#  rv=$?
-#  if [[ $rv -ne 0 ]]; then
-#    errorLog "failed to set GPIO pin $GPIO_PIN direction (exit code $rv)"
-#  else
-#    infoLog "GPIO pin $GPIO_PIN direction set to 'out'"
-#  fi
-#fi
+if [[ $DIRECTION != "out" ]]; then
+  echo "out" > "/sys/class/gpio/gpio$GPIO_PIN/direction"
+  rv=$?
+  if [[ $rv -ne 0 ]]; then
+    errorLog "failed to set GPIO pin $GPIO_PIN direction (exit code $rv)"
+  else
+    infoLog "GPIO pin $GPIO_PIN direction set to 'out'"
+  fi
+else
+  infoLog "GPIO pin $GPIO_PIN direction already set to 'out'"
+fi
+
 
 
 # Periodically poll the CPU temperature
