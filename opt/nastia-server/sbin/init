@@ -42,19 +42,16 @@ LOG="$CFG_LOG_DIR/init.log"  # Main log file
 # Print info message to log file
 function infoLog {
   _infoLog "$1" "init" "$LOG" "ecdp"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_INFO_LOG"
 }
 
 # Print warning message to log file
 function warningLog {
   _warningLog "$1" "init" "$LOG" "ecdp"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_WARNING_LOG"
 }
 
 # Print error message to log file
 function errorLog {
   _errorLog "$1" "init" "$LOG" "ecdp"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_ERROR_LOG"
   exit 1
 }
 

@@ -45,19 +45,16 @@ LOCK="$CFG_TMPFS_DIR/copy.lock"
 # Print an info log message
 function infoLog {
   _infoLog "$1" "$LOG_PREFIX" "$LOG" "$LOG_MODE"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_INFO_LOG" > /dev/null 2>&1
 }
 
 # Print a warning log message
 function warningLog {
   _warningLog "$1" "$LOG_PREFIX" "$LOG" "$LOG_MODE"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_WARNING_LOG" > /dev/null 2>&1
 }
 
 # Print an error log message
 function errorLog {
   _errorLog "$1" "$LOG_PREFIX" "$LOG" "$LOG_MODE"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_ERROR_LOG" > /dev/null 2>&1
   EXIT_CODE=1
 }
 

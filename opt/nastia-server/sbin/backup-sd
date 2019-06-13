@@ -42,17 +42,14 @@ LOG="$CFG_LOG_DIR/backup-sd.log"
 
 function infoLog {
   _infoLog "$1" "backup-sd" "$LOG" "ecd"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_INFO_LOG"
 }
 
 function warningLog {
   _warningLog "$1" "backup-sd" "$LOG" "ecd"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_WARNING_LOG"
 }
 
 function errorLog {
   _errorLog "$1" "backup-sd" "$LOG" "ecd"
-  chown "$CFG_USER":"$CFG_GROUP" "$CFG_ERROR_LOG"
   semaphoreRelease "$LOCK"
   exit 1
 }
