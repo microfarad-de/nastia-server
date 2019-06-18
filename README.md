@@ -23,6 +23,7 @@ Following is the full feature list:
 * Dynamic DNS: communicates the server's public IP address to the Dynamic DNS service.
 * System diagnostics: runs extensive system diagnostics every night and send an automated test report via email.
 * Fan control: controls the CPU cooling fan over the Raspberry Pi's GPIO pin.
+* UPS control: reads the status of the UPS and ensures a safe shutdown upon power loss (www.microfarad.de/pi-ups)
 
 ## Installation
 
