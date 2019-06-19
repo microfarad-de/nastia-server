@@ -46,12 +46,12 @@ In order to install this package, please copy the contents of the `opt` director
 
 The following Linux packages need to be installed in order to run this software:
 
-* rsync
-* imagemagick
-* libimage-exiftool-perl
-* lynx
-* Python (pip install):
-  - speedtest-cli
-  - pyserial
-  - ilock
+* `apt-get install rsync`
+* `apt-get install imagemagick`
+* `apt-get install libimage-exiftool-perl`
+* `apt-get install lynx`
+* `apt-get install python`
+  - `pip install speedtest-cli`
+  - `pip install pyserial`
+  - `pip install ilock`
   
