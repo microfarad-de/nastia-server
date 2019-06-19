@@ -36,15 +36,9 @@ controls the CPU cooling fan over the Raspberry Pi's GPIO pin. This script runs 
 * UPS control [`sbin/ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/ups): reads the status of the UPS and ensures a safe shutdown upon power loss (see www.microfarad.de/pi-ups). This script runs as a service with `service start ups`.
 * Centralized configuration file [etc/nastia-server.conf](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/etc/nastia-server.conf).
 
-## Installation
-
-The directory structure of this repository reflects the Linux file system structure relative to its root directory `/`.
-
-In order to install this package, please copy the contents of the `opt` directory to your Linux file system; please also copy the cron, logrotate and systemd service configuration files into the respective `etc` sub-directories. Finally, create a copy of the configuration file under `/opt/nastia-server/etc/nastia-server.conf` renaming it to `nastia-server.local`; then modify the parameters inside copied file to achieve your desired setup.
-
 ## Dependencies
 
-The following Linux packages need to be installed in order to run this software:
+The following Linux packages need to be installed first:
 
 * `apt-get install rsync`
 * `apt-get install imagemagick`
@@ -54,4 +48,11 @@ The following Linux packages need to be installed in order to run this software:
   - `pip install speedtest-cli`
   - `pip install pyserial`
   - `pip install ilock`
-  
+
+## Installation
+
+The directory structure of this repository reflects the Linux file system structure relative to its root directory `/`.
+
+In order to install this package, please copy the contents of the `opt` directory to your Linux file system; please also copy the cron, logrotate and systemd service configuration files into the respective `etc` sub-directories. Finally, create a copy of the configuration file under `/opt/nastia-server/etc/nastia-server.conf` renaming it to `nastia-server.local`; then modify the parameters inside copied file to achieve your desired setup.
+
+
