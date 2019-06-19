@@ -1,6 +1,6 @@
 # nastia-server
 
-This software package provides a collection of automation tools for running a home server. Originally implemented on the Raspbian Stretch Linux distribution running on a Raspberry Pi 3B+.
+This software package provides a collection of automation scripts for running a home server. Originally implemented on the Raspbian Stretch Linux distribution running on a Raspberry Pi 3B+.
 
 For an in-depth presentation of the project, please visit: www.microfarad.de/pi-server
 
@@ -8,9 +8,9 @@ Unless stated otherwise within the source file headers, please feel free to use 
 
 Nastia is the name of my three-year-old daughter.
 
-## Features
+## The Scripts
 
-Following is the full feature list:
+Following is the list of available scripts:
 
 * Media stream: 
   * [`bin/photostream`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/photostream): 
@@ -32,14 +32,14 @@ communicates the server's public IP address to the Dynamic DNS service.
 * System diagnostics [`bin/monitor`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/monitor): 
 runs extensive system diagnostics every night and send an automated test report via email.
 * Fan control [`sbin/fan`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/fan): 
-controls the CPU cooling fan over the Raspberry Pi's GPIO pin.
-* UPS control [`sbin/ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/ups): reads the status of the UPS and ensures a safe shutdown upon power loss (www.microfarad.de/pi-ups)
+controls the CPU cooling fan over the Raspberry Pi's GPIO pin. This script runs as a service with `service start fan`.
+* UPS control [`sbin/ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/ups): reads the status of the UPS and ensures a safe shutdown upon power loss (see www.microfarad.de/pi-ups). This script runs as a service with `service start ups`.
 
 ## Installation
 
-The directory structure of this repository reflects the Linux file system structure relative to its root directory _(/)_.
+The directory structure of this repository reflects the Linux file system structure relative to its root directory `/`.
 
-In order to install this package, please copy the contents of the _opt_ directory to your Linux file system; please also copy the cron, logrotate and systemd service configuration files into the respective _etc_ sub-directories. Finally, create a copy of the configuration file under _/opt/nastia-server/etc/nastia-server.conf_ renaming it to _nastia-server.local_; then modify the parameters inside copied file to achieve your desired setup.
+In order to install this package, please copy the contents of the `opt` directory to your Linux file system; please also copy the cron, logrotate and systemd service configuration files into the respective `etc` sub-directories. Finally, create a copy of the configuration file under `/opt/nastia-server/etc/nastia-server.conf` renaming it to `nastia-server.local`; then modify the parameters inside copied file to achieve your desired setup.
 
 ## Dependencies
 
