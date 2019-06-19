@@ -34,7 +34,8 @@ runs extensive system diagnostics every night and sends an automated test report
 * Fan control [`sbin/fan`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/fan): 
 controls the CPU cooling fan over the Raspberry Pi's GPIO pin. This script runs as a service with `service start fan`.
 * UPS control [`sbin/ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/ups): reads the status of the UPS and ensures a safe shutdown upon power loss (see www.microfarad.de/pi-ups). This script runs as a service with `service start ups`.
-* Centralized configuration file [etc/nastia-server.conf](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/etc/nastia-server.conf).
+* System configuration parameters are stored in the centralized configuration file under 
+[etc/nastia-server.conf](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/etc/nastia-server.conf).
 
 ## Dependencies
 
