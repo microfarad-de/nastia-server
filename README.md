@@ -13,17 +13,27 @@ Nastia is the name of my three-year-old daughter.
 Following is the full feature list:
 
 * Media stream: 
-  * Automatically fetches your media files from the Dropbox Camera Uploads directory, or any other pre-defined directory, renames them according to the EXIF date and stores them into monthly sub-directories. 
-  * Detects and eliminates duplicate media files.
-  * Checks image files for corruption.
+  * [`bin/photostream`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/photostream): 
+  automatically fetches your media files from the Dropbox Camera Uploads directory, or any other pre-defined directory, 
+  renames them according to the EXIF date and stores them into monthly sub-directories. Detects and eliminates duplicate media files.
+  * [`bin/dropbox-photos`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/dropbox-photos):
+  automatically downloads photos from a Dropbox folder.
+  * [`bin/check-images`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/check-images): 
+  checks image files for corruption.
 * Automated system backup:
-  * Incremental backup of the storage hard-drive, mimicks the Apple Time Machine behavior.
-  * Creates a backup copy of important configuration files.
-  * Creates a backup image of the Raspberry Pi SD card to an external hard drive.
-* Dynamic DNS: communicates the server's public IP address to the Dynamic DNS service.
-* System diagnostics: runs extensive system diagnostics every night and send an automated test report via email.
-* Fan control: controls the CPU cooling fan over the Raspberry Pi's GPIO pin.
-* UPS control: reads the status of the UPS and ensures a safe shutdown upon power loss (www.microfarad.de/pi-ups)
+  * [`bin/backup-hdd`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/backup-hdd): 
+  incremental backup of the storage hard-drive, mimicks the Apple Time Machine behavior.
+  * [`sbin/backup-config`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/backup-config): 
+  creates a backup copy of important configuration files.
+  * [`sbin/backup-sd`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/backup-sd): 
+  creates a backup image of the Raspberry Pi SD card to an external hard drive.
+* Dynamic DNS [`bin/dyndns`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/dyndns): 
+communicates the server's public IP address to the Dynamic DNS service.
+* System diagnostics [`bin/monitor`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/monitor): 
+runs extensive system diagnostics every night and send an automated test report via email.
+* Fan control [`sbin/fan`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/fan): 
+controls the CPU cooling fan over the Raspberry Pi's GPIO pin.
+* UPS control [`sbin/ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/ups): reads the status of the UPS and ensures a safe shutdown upon power loss (www.microfarad.de/pi-ups)
 
 ## Installation
 
