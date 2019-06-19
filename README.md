@@ -32,8 +32,8 @@ communicates the server's public IP address to the Dynamic DNS service.
 * System diagnostics [`monitor`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/monitor): 
 runs extensive system diagnostics every night and sends an automated test report via email.
 * Fan control [`fan`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/fan): 
-controls the CPU cooling fan over the Raspberry Pi's GPIO pin. This script runs as a service with `service start fan`.
-* UPS control [`ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/ups): reads the status of the UPS and ensures a safe shutdown upon power loss (see www.microfarad.de/pi-ups). This script runs as a service with `service start ups`.
+controls the CPU cooling fan over the Raspberry Pi's GPIO pin. This script runs as a service with `service fan start`.
+* UPS control [`ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/ups): reads the status of the UPS and ensures a safe shutdown upon power loss (see www.microfarad.de/pi-ups). This script runs as a service with `service ups start`.
 * System configuration parameters are stored in the centralized configuration file under 
 [nastia-server.conf](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/etc/nastia-server.conf).
 * If not stated otherwise, the above scripts are executed unsing cron jobs which are configured under
