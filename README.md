@@ -53,6 +53,8 @@ The following Linux packages need to be installed first:
 
 The directory structure of this repository reflects the Linux file system structure relative to its root directory `/`.
 
-In order to install this package, please copy the contents of the `opt` directory to your Linux file system; please also copy the cron, logrotate and systemd service configuration files into the respective `etc` sub-directories. Finally, create a copy of the configuration file under `/opt/nastia-server/etc/nastia-server.conf` renaming it to `nastia-server.local`; then modify the parameters inside copied file to achieve your desired setup.
+In order to install this package, copy the contents of the `opt` directory to your Linux file system. Also copy the cron, logrotate and systemd service configuration files into the respective `etc` sub-directories. 
+
+Finally, create a copy of the configuration file under `/opt/nastia-server/etc/nastia-server.conf` renaming it to `nastia-server.local`, then modify the parameters inside copied file to achieve your desired setup.
 
 
