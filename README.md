@@ -14,7 +14,7 @@ Following is the list of available scripts:
 
 * Media stream: 
   * [`photostream`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/photostream): 
-  automatically fetches your media files from one or more pre-defined directoris, 
+  automatically fetches your media files from one or more pre-defined directories, 
   renames them according to the EXIF date and stores them into monthly sub-directories. Detects and eliminates duplicate media files.
   * [`dropbox-photos`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/dropbox-photos):
   automatically downloads photos from a Dropbox folder.
