@@ -1,6 +1,6 @@
 # nastia-server
 
-This software package provides a collection of automation scripts for running a home server. Originally implemented on the Raspbian Stretch Linux distribution running on a Raspberry Pi 3B+.
+This software package provides a collection of automation scripts for running a home server. Originally implemented on the Raspbian Stretch Linux distribution running on a Raspberry Pi 3 B+.
 
 For an in-depth presentation of the project, please visit: www.microfarad.de/pi-server
 
