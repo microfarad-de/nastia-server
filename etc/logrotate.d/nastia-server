@@ -21,7 +21,7 @@
 /var/log/nastia-server/ups-meas.log
 {
   rotate 1
-  size 100k 
+  size 1000k 
 }
 
 
