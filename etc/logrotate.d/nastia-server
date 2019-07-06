@@ -2,7 +2,9 @@
 # KHr: server log files
 #
 
-
+/var/log/nastia-server/backup-hdd.log
+/var/log/nastia-server/dropbox-photos.log
+/var/log/nastia-server/photostream.log
 /var/log/nastia-server/backup-sd.log
 /var/log/nastia-server/backup-config.log 
 /var/log/nastia-server/check-images.log
@@ -13,9 +15,8 @@
 /var/log/nastia-server/ups.log
 {
   rotate 99
-  size 100k 
+  size 1000k 
 }
-
 
 /var/log/nastia-server/fan.log 
 /var/log/nastia-server/ups-meas.log
@@ -24,12 +25,4 @@
   size 1000k 
 }
 
-
-/var/log/nastia-server/backup-hdd.log
-/var/log/nastia-server/dropbox-photos.log
-/var/log/nastia-server/photostream.log
-{
-  rotate 99
-  size 1000k
-}
 
