@@ -331,7 +331,7 @@ function rename {
         (( ERR_COUNT++ ))
       fi
     fi
-  done <<< "$fileList"   
+  done <<< "$fileList"
 }
 
 
@@ -374,13 +374,13 @@ function process {
   echo "subfolder:   $subfolder "
   echo "pattern:     $pattern "
   echo "extension:   $outExt "
-  
+
   if [[ ! -d "$srcDir" ]]; then
     errorLog "directory '$srcDir' does not exist"
     return 1
   fi
   cd "$srcDir"
-  
+
   if [[ ! -d "$dstDir" ]]; then
     errorLog "directory '$dstDir' does not exist"
     return 1
@@ -424,14 +424,17 @@ echo "##############################"
 
 
 # Loop over configurations
-for i in "${!CFG_MEDIA_TYPE[@]}"; do
-  type="${CFG_MEDIA_TYPE[$i]}"
-  src="$CFG_MEDIA_ROOT_DIR/${CFG_MEDIA_SOURCE[$i]}"
-  dst="$CFG_MEDIA_ROOT_DIR/${CFG_MEDIA_DESTINATION[$i]}"
-  bak="${CFG_MEDIA_BACKUP[$i]}"
-  sub="${CFG_MEDIA_SUBFOLDERS[$i]}"
-  out="${CFG_MEDIA_OUTEXT[$i]}"
-  process "$type" "$src" "$dst" "$bak" "$sub" "$out"
+for i in "${!CFG_MEDIA_STREAM[@]}"; do
+  config=(${CFG_MEDIA_STREAM[i]})
+  type="${config[0]}"
+  src=$(echo "$CFG_MEDIA_ROOT_DIR/${config[1]}" | tr "%" " ")  # Replace % with space
+  dst=$(echo "$CFG_MEDIA_ROOT_DIR/${config[2]}" | tr "%" " ")  # Replace % with space
+  bak="${config[3]}"
+  sub="${config[4]}"
+  out="${config[5]}"
+  if [[ "$type" != "" ]]; then
+    process "$type" "$src" "$dst" "$bak" "$sub" "$out"
+  fi
 done
 
 semaphoreRelease "$LOCK"

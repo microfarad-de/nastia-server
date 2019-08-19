@@ -471,16 +471,17 @@ function service-status {
 
 # Check if the cron jobs are running
 function cron-check {
-  local i prefix interval tmp log lastT t delta
+  local i config prefix interval tmp log lastT t delta
   echo "*** Cron Job Status ***"
   mailLog "<h2>Cron Job Status</h2>"
   mailLog "<table>"
   mailLog "<tr><th>Job</th><th>Interval</th><th>Since</th><th>Status</th></tr>"
   t=$(date +%s)
   t=$((t / 86400))
-  for i in "${!CFG_MONITOR_CRON_PREFIX[@]}"; do
-    prefix="${CFG_MONITOR_CRON_PREFIX[$i]}"
-    interval="${CFG_MONITOR_CRON_INTERVAL[$i]}"
+  for i in "${!CFG_MONITOR_CRON[@]}"; do
+    config=(${CFG_MONITOR_CRON[i]})
+    prefix="${config[0]}"
+    interval="${config[1]}"
     tmp="$CFG_TMP_DIR/monitor-cron-check-$prefix.tmp"
     for log in "$CFG_INFO_LOG" "$CFG_WARNING_LOG" "$CFG_ERROR_LOG"; do
       grep "\[$prefix\]" "$log" > /dev/null 2>&1

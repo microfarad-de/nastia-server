@@ -219,9 +219,10 @@ if [[ $IPV6_ENABLED -eq 1 ]]; then
 fi
 
 # Loop over configurations
-for i in "${!CFG_DYNDNS_DOMAIN[@]}"; do
-  domain="${CFG_DYNDNS_DOMAIN[$i]}"
-  protocol="${CFG_DYNDNS_PROTOCOL[$i]}"
+for i in "${!CFG_DYNDNS_CONFIG[@]}"; do
+  config=(${CFG_DYNDNS_CONFIG[i]})
+  domain="${config[0]}"
+  protocol="${config[1]}"
   main "$domain" "$protocol"
 done
 
