@@ -163,6 +163,8 @@ while 1:
                     warningLog ("bad battery (interval = " + str(deltaHours) + "h)")
                 chargingFlag = True
                 wasOnBatteryFlag = False
+            elif "CHARGING" in result:
+                infoLog(result)
             else:
                 chargingFlag = False
                 infoLog(result)
