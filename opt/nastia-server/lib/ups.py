@@ -33,8 +33,9 @@
 import serial  # pip install pyserial
 import ilock   # pip install ilock
 import sys
-import time
 import os
+import time
+import datetime
 
 
 # Current directory where this script is located
@@ -43,6 +44,11 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Polling interval in seconds
 INTERVAL = 5
+
+# If the battery gets trickle charged more often than
+# the follwoing threshold (in hours), then a bad battery
+# warning will be written into the trace.
+BAD_BATTERY_THRESHOLD = 48
 
 
 # Print info log message
@@ -125,6 +131,9 @@ time.sleep(2)
 lastResult = ""
 lastMeasResult = ""
 measCount = 0
+chargingFlag = False
+wasOnBatteryFlag = True
+lastChargeTime = datetime.datetime(1970,01,01)
 
 # Main loop
 while 1:
@@ -138,11 +147,25 @@ while 1:
     if result != lastResult:
         lastResult = result
         if "BATTERY" in result:
+            wasOnBatteryFlag = True
             warningLog(result)
         elif "ERROR" in result:
             errorLog(result)
         else:
-            infoLog(result)
+            # Bad battery detection
+            if "CHARGING" in result and not chargingFlag:
+                chargeTime = datetime.datetime.now()
+                delta = chargeTime - lastChargeTime
+                deltaHours = delta.days*24 + delta.seconds/3600
+                lastChargeTime = chargeTime
+                infoLog(result.rstrip() + " (interval = " + str(deltaHours) + "h)")
+                if deltaHours < BAD_BATTERY_THRESHOLD and not wasOnBatteryFlag:
+                    warningLog ("bad battery (interval = " + str(deltaHours) + "h)")
+                chargingFlag = True
+                wasOnBatteryFlag = False
+            else:
+                chargingFlag = False
+                infoLog(result)
 
     # Handle low battery condition
     if "BATTERY 0" in result:
