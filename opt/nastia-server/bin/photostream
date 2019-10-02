@@ -140,7 +140,7 @@ function createDupFileList {
   local src="$1"
   local dst="$2"
   local dstDir="$3"
-  DUP_FILE_LIST=$(find "$dstDir" -not -path "*/Inbox/*" -a \( -name "${src%.*}*" -o -name "${dst%.*}*" \) )
+  DUP_FILE_LIST=$(find "$dstDir" -not -path "*/Inbox/*" -not -path "*/.sync/*" -a \( -name "${src%.*}*" -o -name "${dst%.*}*" \) )
   if (( ${#DUP_FILE_LIST} > 2 )); then
     echo "found potential duplicates:"
     echo "$DUP_FILE_LIST"
@@ -269,7 +269,7 @@ function rename {
   local dstPath=""
   local file=""
   local exifValid
-  
+
   echo "renaming and moving files..."
   while read -r file
   do
