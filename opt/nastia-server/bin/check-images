@@ -67,6 +67,7 @@ function errorLog {
 function process {
   local pattern="$1"
   local directory="$2"
+  local f
   local rv
   local result
   echo " "
