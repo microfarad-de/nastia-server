@@ -6,8 +6,8 @@ Description=ups control service
 
 [Service]
 Type=idle
-ExecStart=/opt/nastia-server/bin/ups
-User=pi
+ExecStart=/opt/nastia-server/sbin/ups
+User=root
 
 [Install]
 WantedBy=multi-user.target

@@ -3,7 +3,7 @@
 # Uninterruptible Power Supply (UPS) Control
 #
 # Note:
-#   User must have sudo rights to be able to perform a system shutdown
+#   Must run as root to be able to perform a system shutdown
 #
 #
 # This source file is part of the follwoing repository:
@@ -47,7 +47,7 @@ INTERVAL = 5
 
 # If the battery gets trickle charged more often than
 # the follwoing threshold (in hours), then a bad battery
-# warning will be written into the trace.
+# warning will be written into the trace log.
 BAD_BATTERY_THRESHOLD = 48
 
 
@@ -158,9 +158,9 @@ while 1:
                 delta = chargeTime - lastChargeTime
                 deltaHours = delta.days*24 + delta.seconds/3600
                 lastChargeTime = chargeTime
-                infoLog(result.rstrip() + " (interval = " + str(deltaHours) + "h)")
+                infoLog(result.rstrip() + " (delta = " + str(deltaHours) + "h)")
                 if deltaHours < BAD_BATTERY_THRESHOLD and not wasOnBatteryFlag:
-                    warningLog ("bad battery (interval = " + str(deltaHours) + "h)")
+                    warningLog ("bad battery (delta = " + str(deltaHours) + "h)")
                 chargingFlag = True
                 wasOnBatteryFlag = False
             elif "CHARGING" in result:
