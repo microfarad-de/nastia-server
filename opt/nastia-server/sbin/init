@@ -71,7 +71,7 @@ if [[ $CFG_WLAN_DISABLE -eq 1 ]]; then
   if [[ $rv -eq 0 ]]; then
     infoLog "$CFG_WLAN_INTERFACE disabled"
   else
-    errorLog "failed to disable $CFG_WLAN_INTERFACE (exit code $?)"
+    errorLog "failed to disable $CFG_WLAN_INTERFACE (exit code $rv)"
   fi
 fi
 
