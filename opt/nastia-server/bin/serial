@@ -29,7 +29,7 @@ import serial  # pip install pyserial
 import ilock   # pip install ilock
 import sys
 import time
-
+import signal
 
 
 # Read the contents of the receive buffer
@@ -47,15 +47,24 @@ def write(str):
     ser.write(str)
     time.sleep(0.1)
 
+# Handle Ctrl+C
+def signal_handler(sig, frame):
+   print ("\nInterrupted by user\n")
+   raise SystemExit(0)
 
 
 #################
 ####  START  ####
 #################
 
+print("\nInteractive Serial Console\n")
+
+# Handle Ctrl+C
+signal.signal(signal.SIGINT, signal_handler)
+
 # Check for correct number of arguments
-if len(sys.argv) < 2:
-    print "usage: " + sys.argv[0] + " DEVICE BAUD_RATE"
+if len(sys.argv) < 3:
+    print "Usage: " + sys.argv[0] + " DEVICE BAUD_RATE\n"
     sys.exit()
 
 DEVICE    = sys.argv[1]    # RS232 device name
@@ -67,6 +76,8 @@ lock = ilock.ILock(DEVICE, timeout=600)
 # Initialize the serial port
 with lock:
     ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
+    print("Connected to " + str(DEVICE) + " at " + str(BAUD_RATE) + " baud")
+    print("Waiting for user input (press Ctrl+C to exit)...\n")
 
 
 # A serial connection will cause the MCU to reboot
@@ -84,6 +95,7 @@ while 1:
         write(tx)
         rx = read()
     sys.stdout.write(rx)
+
 
 
 
