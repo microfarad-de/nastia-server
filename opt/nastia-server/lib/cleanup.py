@@ -113,7 +113,7 @@ for dir in dirList:
     if dryRun == 0: shutil.rmtree(fullPath)
     infoLog( "removed " + fullPath )
     continue
-  if age.days > 14 and delta.days < 7:
+  if age.days > 28 and delta.days < 7:
     if dryRun == 0: shutil.rmtree(fullPath)
     infoLog( "removed " + fullPath )
     continue

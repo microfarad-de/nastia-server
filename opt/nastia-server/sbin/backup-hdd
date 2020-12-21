@@ -40,7 +40,7 @@ OPTIONS="-av" # -a = -rlptgoD
 LOCK="$CFG_TMPFS_DIR/backup-hdd.lock"
 LOG="$CFG_LOG_DIR/backup-hdd.log"
 CLEANUP_SCRIPT="$DIR/../lib/cleanup.py"
-DATE=$(date "+%Y-%m-%d-%H%M%S")
+DATE=$(date "+%Y-%m-%d-%H%M00")
 
 # Global variables
 DRYRUN=""
@@ -110,6 +110,7 @@ done
 # Remove temprary folders
 if [[ "$DRYRUN" == "" ]]; then
   rm -rf $DST/*.inprogress
+  rm -rf "$DST/$DATE"
 fi
 
 rsync $OPTIONS $DRYRUN --link-dest=$DST/Latest ${SRC[@]} $DST/$DATE.inprogress
