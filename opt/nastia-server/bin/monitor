@@ -498,7 +498,7 @@ function cron-check {
     mailLog "<tr>"
     mailLog "<td>$prefix</td><td>$interval d.<td>$delta d.</td>"
     mailLog "<td>"
-    if [[ $delta -gt $((86400*interval)) ]]; then
+    if [[ $delta -gt $interval ]]; then
       warningLog "$prefix: cron job took $delta (>$interval) days to execute" "inline"
     else
       okLog "$prefix: last run since $delta d." "inline"

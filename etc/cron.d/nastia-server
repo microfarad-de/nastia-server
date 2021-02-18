@@ -16,7 +16,7 @@ MAILTO=""
 # Jobs executed by root
 #       m   h   dom mon dow   user   command
         0 */3   *   *   *     root   /opt/nastia-server/sbin/backup-config > /dev/null
-        5 */3   *   *   *     root   /opt/nastia-server/sbin/backup-hdd      > /dev/null
+        5 */3   *   *   *     root   /opt/nastia-server/sbin/backup-hdd    > /dev/null
         0   1   *   *   *     root   /opt/nastia-server/sbin/permissions   > /dev/null
         5   1   *   *   Sun   root   /opt/nastia-server/sbin/backup-sd     > /dev/null
 
