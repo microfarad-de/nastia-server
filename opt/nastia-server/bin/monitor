@@ -287,9 +287,9 @@ function speed-test {
     dl=$(echo "$result" | grep "Download" | cut -f2 -d" " | cut -f1 -d".")
     ul=$(echo "$result" | grep "Upload"   | cut -f2 -d" " | cut -f1 -d".")
     echo "* Run $count:"
+    echo "$result"
     mailLog "<tr><th>Run $count:</th>"
     if [[ $rv -eq 0 ]]; then
-      echo "$result"
       mailLog "<td>$png ms</td><td>$dl Mbit/s</td><td>$ul Mbit/s</td>"
     else
       mailLog "<td>"
