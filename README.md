@@ -21,7 +21,7 @@ Following is the list of available scripts:
   * [`check-images`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/check-images): 
   checks image files for corruption.
 * Automated system backup:
-  * [`backup-hdd`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/backup-hdd): 
+  * [`backup-hdd`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/backup-hdd): 
   performs an incremental backup of the storage hard-drive while mimicking the Apple Time Machine behavior.
   * [`backup-config`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/backup-config): 
   creates a backup copy of important configuration files.
