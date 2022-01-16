@@ -51,6 +51,7 @@ SPEED_TEST_DL_THRESHOLD="$CFG_MONITOR_SPEED_DL_THRESHOLD"      # Minimum accepta
 SPEED_TEST_UL_THRESHOLD="$CFG_MONITOR_SPEED_UL_THRESHOLD"      # Minimum acceptable uplink internet connection speed in Mbps
 SERVICES=("${CFG_MONITOR_SERVICE[@]}")              # List of services to be checked
 
+
 # List of available testcases
 TESTCASES=(
   "system-status"
@@ -160,7 +161,7 @@ function constructMail {
 # Send an email message
 function sendMail {
   local status="$1"
-  constructMail "$status" | /usr/sbin/ssmtp -t
+  constructMail "$status" | /usr/bin/msmtp -a default "$RECIPIENT"
   local rv=${PIPESTATUS[1]}
   if [[ $rv -ne 0 ]]; then
     errorLog "mail returned $rv while sending to $RECIPIENT"
