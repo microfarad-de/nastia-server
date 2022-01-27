@@ -30,6 +30,7 @@ _LIB_DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
 
 _CONFIG="$_LIB_DIR/../etc/nastia-server"
 
+_TEMP_FILE="/tmp/nastia-server-config.tmp"
 
 # Configuration parser function
 # - Single line and inline comments;
@@ -40,6 +41,7 @@ _CONFIG="$_LIB_DIR/../etc/nastia-server"
 function parseConfig {
   local file="$1"
   local lhs rhs
+  echo "" > "$_TEMP_FILE"
   if [[ -f "$file" ]]; then
     while IFS='= ' read -r lhs rhs
     do
@@ -48,10 +50,11 @@ function parseConfig {
         rhs="${rhs%"${rhs##*[^ ]}"}" # Del trailing spaces
         rhs="${rhs%\"*}"     # Del opening string quotes 
         rhs="${rhs#\"*}"     # Del closing string quotes 
-        declare -g "CFG_$lhs"="$rhs"
+	echo "CFG_$lhs"="\"$rhs\"" >> "$_TEMP_FILE"
       fi
     done < $file
   fi
+  source "$_TEMP_FILE"
 }
 
 # Main server configuration file
@@ -59,6 +62,3 @@ parseConfig "$_CONFIG.conf"
 
 # Local configuration file has priority
 parseConfig "$_CONFIG.local"
-
-
-
