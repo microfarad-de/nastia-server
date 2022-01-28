@@ -32,8 +32,9 @@ DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
 source "$DIR/common.sh"
 
 LOG_PREFIX="backup-files"
-
 LOG="$CFG_LOG_DIR/$LOG_PREFIX.log"
+RSYNC_CMD="rsync -avmu --delete"
+MAX_DELETIONS=100
 
 # Redirect stdout ( > ) into a named pipe ( >() ) running "tee"
 exec > >(tee -i -a "$LOG")
@@ -65,34 +66,54 @@ function errorLog {
 
 result=0
 
-# Convert array to string
 for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
-  SOURCE="${CFG_BACKUP_FILES_SOURCE[$i]}/"
-  EXCLUDE=(${CFG_BACKUP_FILES_EXCLUDE[$i]})
-  DESTINATION="${CFG_BACKUP_FILES_DESTINATION[$i]}/"
+  source="${CFG_BACKUP_FILES_SOURCE[$i]}/"
+  exclude=(${CFG_BACKUP_FILES_EXCLUDE[$i]})
+  destination="${CFG_BACKUP_FILES_DESTINATION[$i]}/"
+  rv=0
 
-  for x in "${EXCLUDE[@]}"; do
+  for x in "${exclude[@]}"; do
       options="$options --exclude=$x"
   done
 
-  if [[ $SOURCE == "" ]] || [[ $DESTINATION == "" ]]; then
-    continue
-  fi
-
   echo "############################"
   date
-  echo "Source:      $SOURCE"
-  echo "Exclude:     ${EXCLUDE[@]}"
-  echo "Destination: $DESTINATION"
+  echo "Source:      $source"
+  echo "Exclude:     ${exclude[@]}"
+  echo "Destination: $destination"
   echo "############################"
   echo " "
-  rsync -avmu --delete $options "$SOURCE" "$DESTINATION"
-  rv=$?
+
+  if [[ $source == "/" ]]; then
+    errorLog "invalid source folder ($source)"
+    rv=101
+  fi
+  if [[ $destination == "/" ]]; then
+    errorLog "invalid destination folder ($destination)"
+    rv=102
+  fi
+
+  if [[ rv -eq 0 ]]; then
+    delCount=$($RSYNC_CMD --dry-run $options "$source" "$destination" | grep deleting | wc -l)
+    delCount=$(sed 's/^[[:space:]]*//' <<< $delCount)
+    if [[ $delCount -gt $MAX_DELETIONS ]]; then
+      errorLog "too many deletions ($delCount)"
+      rv=103
+    fi
+  fi
+
+  if [[ rv -eq 0 ]]; then
+    $RSYNC_CMD $options "$source" "$destination"
+    rv=$?
+    if [[ rv -ne 0 ]]; then
+      echo ""
+      errorLog "rsync returned $rv"
+    fi
+  fi
+
   if [[ $rv -eq 0 ]]; then
-    infoLog "backup: $SOURCE --> $DESTINATION"
+    infoLog "backup: $source --> $destination"
   else
-    echo " "
-    errorLog "rsync returned $rv"
     result=$rv
   fi
   echo " "
