@@ -31,6 +31,7 @@ DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
 # Include common configuration file
 source "$DIR/common.sh"
 
+# Configuration variables
 LOG_PREFIX="backup-files"
 LOG="$CFG_LOG_DIR/$LOG_PREFIX.log"
 RSYNC_CMD="rsync -avmu --delete"
