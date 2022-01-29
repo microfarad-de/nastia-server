@@ -32,6 +32,7 @@ _CONFIG="$_LIB_DIR/../etc/nastia-server"
 
 _TEMP_FILE="/tmp/nastia-server-config.tmp"
 
+
 # Configuration parser function
 # - Single line and inline comments;
 # - Trimming spaces around = (ie var = value will not fail);
@@ -41,7 +42,6 @@ _TEMP_FILE="/tmp/nastia-server-config.tmp"
 function parseConfig {
   local file="$1"
   local lhs rhs
-  echo "" > "$_TEMP_FILE"
   if [[ -f "$file" ]]; then
     while IFS='= ' read -r lhs rhs
     do
@@ -54,11 +54,15 @@ function parseConfig {
       fi
     done < $file
   fi
-  source "$_TEMP_FILE"
 }
+
+
+echo "" > "$_TEMP_FILE"
 
 # Main server configuration file
 parseConfig "$_CONFIG.conf"
 
 # Local configuration file has priority
 parseConfig "$_CONFIG.local"
+
+source "$_TEMP_FILE"
