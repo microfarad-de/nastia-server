@@ -28,9 +28,10 @@
 # Current directory where this script is located
 _LIB_DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
 
+# Configuration parameters
 _CONFIG="$_LIB_DIR/../etc/nastia-server"
-
 _TEMP_FILE="/tmp/nastia-server-config.tmp"
+_LOCK="/tmp/config.lock"
 
 
 # Configuration parser function
@@ -57,6 +58,8 @@ function parseConfig {
 }
 
 
+semaphoreLock "$_LOCK" "b"
+
 echo "" > "$_TEMP_FILE"
 
 # Main server configuration file
@@ -66,3 +69,5 @@ parseConfig "$_CONFIG.conf"
 parseConfig "$_CONFIG.local"
 
 source "$_TEMP_FILE"
+
+semaphoreRelease "$_LOCK"

@@ -34,6 +34,7 @@ source "$DIR/common.sh"
 # Configuration variables
 LOG_PREFIX="backup-files"
 LOG="$CFG_LOG_DIR/$LOG_PREFIX.log"
+LOCK="$CFG_TMPFS_DIR/backup-files.lock"
 RSYNC_CMD="rsync -avmu --delete"
 MAX_DELETIONS=100
 
@@ -64,6 +65,12 @@ function errorLog {
 #################
 ####  START  ####
 #################
+
+semaphoreLock "$LOCK"
+if [[ $? -ne 0 ]]; then
+  warningLog "an instance of the current script is already running (please remove $LOCK)"
+  exit 1
+fi
 
 result=0
 
@@ -120,6 +127,8 @@ for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
   echo " "
   echo " "
 done
+
+semaphoreRelease "$LOCK"
 
 exit $result
 
