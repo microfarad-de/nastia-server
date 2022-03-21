@@ -47,6 +47,7 @@ The following Linux packages need to be installed first:
 * `apt-get install imagemagick`
 * `apt-get install libimage-exiftool-perl`
 * `apt-get install lynx`
+* `apt-get install ssmtp`
 * `apt-get install python`
   - `pip install speedtest-cli`
   - `pip install pyserial`
