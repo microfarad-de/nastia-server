@@ -43,15 +43,8 @@ controls the CPU cooling fan over the Raspberry Pi's GPIO pin. This script runs 
 
 The following Linux packages need to be installed first:
 
-* `apt-get install rsync`
-* `apt-get install imagemagick`
-* `apt-get install libimage-exiftool-perl`
-* `apt-get install lynx`
-* `apt-get install ssmtp`
-* `apt-get install python`
-  - `pip install speedtest-cli`
-  - `pip install pyserial`
-  - `pip install ilock`
+* `sudo apt-get install rsync imagemagick libimage-exiftool-perl lynx ssmtp python`
+* `sudo pip install speedtest-cli pyserial ilock`
 
 ## Installation
 
