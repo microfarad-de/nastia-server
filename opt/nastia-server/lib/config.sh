@@ -70,4 +70,6 @@ parseConfig "$_CONFIG.local"
 
 source "$_TEMP_FILE"
 
+rm "$_TEMP_FILE"
+
 semaphoreRelease "$_LOCK"

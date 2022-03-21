@@ -42,9 +42,9 @@ SOURCE[0]="/opt/nastia-server"
 EXCLUDE[0]="nastia-server.local"
 SOURCE[1]="/etc/cron.d/nastia-server"
 SOURCE[2]="/etc/logrotate.d/nastia-server"
-SOURCE[3]="/etc/systemd/system/init.service"
-SOURCE[4]="/etc/systemd/system/fan.service"
-SOURCE[5]="/etc/systemd/system/ups.service"
+SOURCE[3]="/lib/systemd/system/init.service"
+SOURCE[4]="/lib/systemd/system/fan.service"
+SOURCE[5]="/lib/systemd/system/ups.service"
 
 # Convert array to string
 for i in "${!SOURCE[@]}"; do
