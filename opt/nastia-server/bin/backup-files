@@ -77,18 +77,21 @@ result=0
 for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
   source="${CFG_BACKUP_FILES_SOURCE[$i]}/"
   exclude=(${CFG_BACKUP_FILES_EXCLUDE[$i]})
+  options=(${CFG_BACKUP_FILES_OPTIONS[$i]})
   destination="${CFG_BACKUP_FILES_DESTINATION[$i]}/"
   rv=0
 
+  opt="${options[@]}"
   for x in "${exclude[@]}"; do
-      options="$options --exclude=$x"
+      opt="$opt --exclude=$x"
   done
 
   echo "############################"
   date
   echo "Source:      $source"
-  echo "Exclude:     ${exclude[@]}"
   echo "Destination: $destination"
+  echo "Exclude:     ${exclude[@]}"
+  echo "Options:     ${options[@]}"
   echo "############################"
   echo " "
 
@@ -102,7 +105,7 @@ for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
   fi
 
   if [[ rv -eq 0 ]]; then
-    delCount=$($RSYNC_CMD --dry-run $options "$source" "$destination" | grep deleting | wc -l)
+    delCount=$($RSYNC_CMD --dry-run $opt "$source" "$destination" | grep deleting | wc -l)
     delCount=$(sed 's/^[[:space:]]*//' <<< $delCount)
     if [[ $delCount -gt $MAX_DELETIONS ]]; then
       errorLog "too many deletions ($delCount)"
@@ -111,7 +114,7 @@ for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
   fi
 
   if [[ rv -eq 0 ]]; then
-    $RSYNC_CMD $options "$source" "$destination"
+    $RSYNC_CMD $opt "$source" "$destination"
     rv=$?
     if [[ rv -ne 0 ]]; then
       echo ""
