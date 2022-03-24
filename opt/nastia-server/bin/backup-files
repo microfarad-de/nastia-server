@@ -38,7 +38,6 @@ LOCK="$CFG_TMPFS_DIR/backup-files.lock"
 RSYNC_CMD="rsync -avmu --delete"
 MAX_DELETIONS="$CFG_BACKUP_FILES_MAX_DELETIONS"
 
-
 # Redirect stdout ( > ) into a named pipe ( >() ) running "tee"
 exec > >(tee -i -a "$LOG")
 exec 2>&1

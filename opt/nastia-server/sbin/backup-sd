@@ -95,8 +95,19 @@ else
   errorLog "failed to back-up $DEVICE (exit code $rv)"
 fi
 
+for path in "${CFG_BACKUP_SD_AUX_DIR[@]}"; do
+  install -d "$OUTDIR/$path"
+  rsync -avmu --delete "$path/" "$OUTDIR/$path/"
+  rv=$?
+  if [[ $rv -eq 0 ]]; then
+    infoLog "$path backed-up to $OUTDIR"
+  else
+    errorLog "failed to backup $path (exit code $rv)"
+  fi
+done
+
 # Set output ownership and permissions
-chown -R "$CFG_USER":"$CFG_GROUP" "$OUTDIR"
+chown -R "$CFG_USER":"$CFG_GROUP" "$OUTDIR/chunk_"*
 find "$OUTDIR" -type d -exec chmod "$CFG_DMODE" {} +
 find "$OUTDIR" -type f -exec chmod "$CFG_FMODE" {} +
 
