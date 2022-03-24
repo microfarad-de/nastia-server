@@ -46,7 +46,7 @@ Reads the status of the UPS and ensures a safe shutdown upon power loss (see www
 
 The following Linux packages need to be installed first:
 
-* `sudo apt-get install rsync imagemagick libimage-exiftool-perl lynx ssmtp python`
+* `sudo apt-get install rsync imagemagick libimage-exiftool-perl lynx msmtp python`
 * `sudo pip install speedtest-cli pyserial ilock`
 
 ## Installation
