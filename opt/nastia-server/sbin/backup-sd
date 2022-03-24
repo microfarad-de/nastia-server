@@ -66,18 +66,16 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-
-# Recreate output directory
-rm -rf "$OUTDIR"
-rv=$?
-if [[ $rv -ne 0 ]]; then
-  errorLog "failed to remove $OUTDIR (exit code $rv)"
-fi
-
-mkdir -p "$OUTDIR"
+install -d "$OUTDIR"
 rv=$?
 if [[ $rv -ne 0 ]]; then
   errorLog "failed to create $OUTDIR (exit code $rv)"
+fi
+
+rm -rf "$OUTDIR/chunk_"*
+rv=$?
+if [[ $rv -ne 0 ]]; then
+  errorLog "failed to remove $OUTDIR (exit code $rv)"
 fi
 
 cd "$OUTDIR"
@@ -108,8 +106,10 @@ done
 
 # Set output ownership and permissions
 chown -R "$CFG_USER":"$CFG_GROUP" "$OUTDIR/chunk_"*
-find "$OUTDIR" -type d -exec chmod "$CFG_DMODE" {} +
-find "$OUTDIR" -type f -exec chmod "$CFG_FMODE" {} +
+rv=$?
+if [[ $rv -ne 0 ]]; then
+  errorLog "failed to chown $OUTDIR (exit code $rv)"
+fi
 
 semaphoreRelease "$LOCK"
 exit 0
