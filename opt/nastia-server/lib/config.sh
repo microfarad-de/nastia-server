@@ -52,6 +52,7 @@ function parseConfig {
         rhs="${rhs%\"*}"     # Del opening string quotes 
         rhs="${rhs#\"*}"     # Del closing string quotes 
 	echo "CFG_$lhs"="\"$rhs\"" >> "$_TEMP_FILE"
+	echo "$lhs"="\"$rhs\"" >> "$_TEMP_FILE"
       fi
     done < $file
   fi
