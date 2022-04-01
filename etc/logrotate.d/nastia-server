@@ -7,6 +7,7 @@
 /var/log/nastia-server/photostream.log
 /var/log/nastia-server/backup-sd.log
 /var/log/nastia-server/backup-config.log 
+/var/log/nastia-server/backup-files.log 
 /var/log/nastia-server/check-images.log
 /var/log/nastia-server/dyndns.log
 /var/log/nastia-server/monitor.log
