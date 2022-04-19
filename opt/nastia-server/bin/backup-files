@@ -118,7 +118,7 @@ for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
     rv=$?
     if [[ rv -ne 0 ]]; then
       echo ""
-      errorLog "rsync returned $rv"
+      errorLog "$source --> $destination ($rv)"
     fi
   fi
 
