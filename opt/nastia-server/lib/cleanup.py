@@ -45,41 +45,41 @@ FREE_PERCENT = 5
 
 # Check for correct number of arguments
 if len(sys.argv) < 1:
-  print "usage: " + sys.argv[0] + " PATH [--dry-run]"
+  print ("usage: " + sys.argv[0] + " PATH [--dry-run]")
   sys.exit()
 
 # Parse arguments
 backupPath = sys.argv[1]
 dirList = []
 
-print " "
-print "cleaning-up backups folder:", backupPath, "..."
+print (" ")
+print ("cleaning-up backups folder:", backupPath, "...")
 
 # Check if dry run
 dryRun = 0
 if len(sys.argv) == 3:
   if sys.argv[2] == "--dry-run":
     dryRun = 1
-    print "dry run"
+    print ("dry run")
 
 
 
 # Print info log message
 def infoLog ( text ):
-  print text
-  popen( DIR + "/infoLog.sh \"" + text + "\" 'cleanup' '' 'c'" )
+  print (text)
+  popen ( DIR + "/infoLog.sh \"" + text + "\" 'cleanup' '' 'c'" )
 
 
 # Print warning log message
 def warningLog ( text ):
-  print "[WARNING] " + text
-  popen( DIR + "/warningLog.sh \"" + text + "\" 'cleanup' '' 'c'" )
+  print ("[WARNING] " + text)
+  popen ( DIR + "/warningLog.sh \"" + text + "\" 'cleanup' '' 'c'" )
 
 
 # Print error log message
 def errorLog ( text ):
-  print "[ERROR] " + text
-  popen( DIR + "/errorLog.sh \"" + text + "\" 'cleanup' '' 'c'" )
+  print ("[ERROR] " + text)
+  popen ( DIR + "/errorLog.sh \"" + text + "\" 'cleanup' '' 'c'" )
 
 
 
@@ -95,7 +95,7 @@ dirList.sort()
 # Initialize timestamps
 today = datetime.strptime(dirList[len(dirList)-1],"%Y-%m-%d-%H%M%S")
 today = today.replace(second = 0) # Round-down to the nearest minute
-lastT = datetime(1970,01,01)
+lastT = datetime(1970,1,1)
 
 # Iterate over backup directories and delete according to rules
 for dir in dirList:
@@ -105,10 +105,10 @@ for dir in dirList:
   delta = t - lastT
   fullPath=backupPath + "/" + dir
   if dryRun:
-    print dir + ":"
-    print "    time  = " + str(t.year) + "-" + str(t.month) + "-" + str(t.day) + " " + str(t.hour) + ":" + str(t.minute) + ":" + str(t.second)
-    print "    age   = " + str(age.days) + "d " + str(age.seconds) + "s"
-    print "    delta = " + str(delta.days) + "d " + str(delta.seconds) + "s"
+    print (dir + ":")
+    print ("    time  = " + str(t.year) + "-" + str(t.month) + "-" + str(t.day) + " " + str(t.hour) + ":" + str(t.minute) + ":" + str(t.second))
+    print ("    age   = " + str(age.days) + "d " + str(age.seconds) + "s")
+    print ("    delta = " + str(delta.days) + "d " + str(delta.seconds) + "s")
   if age.days > 2 and delta.days < 1:
     if dryRun == 0: shutil.rmtree(fullPath)
     infoLog( "removed " + fullPath )
@@ -133,8 +133,8 @@ i = 0
 # Free-up disk space by deleting oldest backups
 while freePercent < FREE_PERCENT:
   if i == 0:
-    print "available disk space: " + str(freeSpace) + " GB (" + str(freePercent) + "%)"
-    print "deleting old backups to free-up disk space:"
+    print ("available disk space: " + str(freeSpace) + " GB (" + str(round(freePercent)) + "%)")
+    print ("deleting old backups to free-up disk space:")
   fullPath = backupPath + "/" + dirList[i]
   if dryRun == 0: 
     shutil.rmtree(fullPath)
@@ -148,6 +148,6 @@ while freePercent < FREE_PERCENT:
   if i >= 5: break
   if i >= (len(dirList) - 1 ): break
 
-print "available disk space: " + str(freeSpace) + " GB (" + str(freePercent) + "%)"
+print ("available disk space: " + str(freeSpace) + " GB (" + str(round(freePercent)) + "%)")
 
-print "done"
+print ("done")

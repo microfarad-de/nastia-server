@@ -79,14 +79,14 @@ def read():
     rx = " "
     result = ""
     while len(rx) > 0:
-        rx = ser.readline()
+        rx = ser.readline().decode()
         result = result + rx
     time.sleep(0.1)
     return result
 
 # Write to the transmit buffer
 def write(str):
-    ser.write(str)
+    ser.write(str.encode())
     time.sleep(0.1)
 
 
@@ -102,7 +102,7 @@ def write(str):
 
 # Check for correct number of arguments
 if len(sys.argv) < 2:
-    print "usage: " + sys.argv[0] + " DEVICE BAUD_RATE"
+    print("usage: " + sys.argv[0] + " DEVICE BAUD_RATE")
     sys.exit()
 
 DEVICE    = sys.argv[1]    # RS232 device name
@@ -133,7 +133,7 @@ lastMeasResult = ""
 measCount = 0
 chargingFlag = False
 wasOnBatteryFlag = True
-lastChargeTime = datetime.datetime(1970,01,01)
+lastChargeTime = datetime.datetime(1970,1,1)
 
 # Main loop
 while 1:

@@ -37,14 +37,14 @@ def read():
     rx = " "
     result = ""
     while len(rx) > 0:
-        rx = ser.readline()
+        rx = ser.readline().decode()
         result = result + rx
     time.sleep(0.1)
     return result
 
 # Write to the transmit buffer
 def write(str):
-    ser.write(str)
+    ser.write(str.encode())
     time.sleep(0.1)
 
 # Handle Ctrl+C
@@ -64,7 +64,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # Check for correct number of arguments
 if len(sys.argv) < 3:
-    print "Usage: " + sys.argv[0] + " DEVICE BAUD_RATE\n"
+    print("Usage: " + sys.argv[0] + " DEVICE BAUD_RATE\n")
     sys.exit()
 
 DEVICE    = sys.argv[1]    # RS232 device name
@@ -94,6 +94,7 @@ while 1:
     with lock:
         write(tx)
         rx = read()
+
     sys.stdout.write(rx)
 
 
