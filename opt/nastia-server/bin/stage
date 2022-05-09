@@ -39,7 +39,7 @@ REPOSITORY="$CFG_GIT_REPOSITORY"
 
 # Source directories to be copied
 SOURCE[0]="/opt/nastia-server"
-EXCLUDE[0]="nastia-server.local"
+EXCLUDE[0]="nastia-server.local __pycache__"
 SOURCE[1]="/etc/cron.d/nastia-server"
 SOURCE[2]="/etc/logrotate.d/nastia-server"
 SOURCE[3]="/lib/systemd/system/init.service"
