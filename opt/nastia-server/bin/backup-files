@@ -108,7 +108,7 @@ for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
     delCount=$($RSYNC_CMD --dry-run $opt "$source" "$destination" | grep deleting | wc -l)
     delCount=$(sed 's/^[[:space:]]*//' <<< $delCount)
     if [[ $delCount -gt $MAX_DELETIONS ]]; then
-      errorLog "too many deletions ($delCount)"
+      errorLog "$source --> $destination (too many deletions $delCount)"
       rv=103
     fi
   fi
