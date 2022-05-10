@@ -108,8 +108,7 @@ for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
     delCount=$($RSYNC_CMD --dry-run $opt "$source" "$destination" | grep deleting | wc -l)
     delCount=$(sed 's/^[[:space:]]*//' <<< $delCount)
     if [[ $delCount -gt $MAX_DELETIONS ]]; then
-      errorLog "$source --> $destination (too many deletions $delCount)"
-      rv=103
+      warningLog "$source --> $destination (too many deletions $delCount)"
     fi
   fi
 
@@ -118,11 +117,15 @@ for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
     rv=$?
     if [[ rv -ne 0 ]]; then
       echo ""
-      errorLog "$source --> $destination ($rv)"
+      if [[ $rv -eq 24 ]]; then
+        warningLog "$source --> $destination (partial transfer due to vanished source files $rv)"
+      else
+        errorLog "$source --> $destination ($rv)"
+      fi
     fi
   fi
 
-  if [[ $rv -eq 0 ]]; then
+  if [[ $rv -eq 0 || $rv -eq 24 ]]; then
     infoLog "backup: $source --> $destination"
   else
     result=$rv
