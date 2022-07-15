@@ -156,7 +156,7 @@ while 1:
             if "CHARGING" in result and not chargingFlag:
                 chargeTime = datetime.datetime.now()
                 delta = chargeTime - lastChargeTime
-                deltaHours = delta.days*24 + delta.seconds/3600
+                deltaHours = round(delta.days*24 + delta.seconds/3600)
                 lastChargeTime = chargeTime
                 infoLog(result.rstrip() + " (delta = " + str(deltaHours) + "h)")
                 if deltaHours < BAD_BATTERY_THRESHOLD and not wasOnBatteryFlag:

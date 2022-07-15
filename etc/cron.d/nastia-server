@@ -32,5 +32,5 @@ MAILTO=""
 #     */5   *   *   *   *     pi    /usr/local/bin/speedtest --simple      > /home/pi/cron-test 2>&1
 
 # Test job
-#     */1   *   *   *   *     pi    echo "$(date)  shell:$0  path:$PATH  mailto:$MAILTO" >> /home/pi/cron-test
+#     */1   *   *   *   *     pi    echo "$(date)  shell:$0  path:$PATH  mailto:$MAILTO  $(locale)" >> /home/pi/cron-test
 
