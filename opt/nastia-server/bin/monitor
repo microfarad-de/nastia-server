@@ -284,7 +284,7 @@ function speed-test {
   mailLog "<tr><th></th><th>Ping</th><th>Download</th><th>Upload</th></tr>"
   while [[ count -lt $SPEED_TEST_RUNS ]]; do
     let count=count+1
-    result=$(/usr/local/bin/speedtest-cli --simple 2>&1)
+    result=$(/usr/local/bin/speedtest-cli --secure --simple 2>&1)
     rv=$?
     png=$(echo "$result" | grep "Ping" | cut -f2 -d" " | cut -f1 -d".")
     dl=$(echo "$result" | grep "Download" | cut -f2 -d" " | cut -f1 -d".")
