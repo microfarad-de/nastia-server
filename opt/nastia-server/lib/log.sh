@@ -27,7 +27,7 @@
 
 
 # Time and date stamp - usage: $(eval $LOG_STAMP)
-LOG_STAMP_STR="+%Y-%m-%d %T"
+LOG_STAMP_STR="+%Y-%m-%d %T %Z"
 LOG_STAMP="date '$LOG_STAMP_STR'"
 
 # Semaphore: temporary directory and tiemout in seconds
