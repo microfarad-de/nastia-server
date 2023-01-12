@@ -43,6 +43,7 @@ SUBJECT="$CFG_EMAIL_SUBJECT_PREFIX"                 # Prefix for the email subje
 FORMAT="$CFG_EMAIL_FORMAT"                          # Email message format
 DOMAIN_NAME="$CFG_DOMAIN_NAME"                      # IPv4 domain name for the ping test
 DOMAIN_NAME_V6="$CFG_DOMAIN_NAME"                   # IPv6 domain name for the ping test
+DNS="$CFG_MONITOR_DNS"                              # DNS resolver address 
 DISK_SPACE_THRESHOLD="$CFG_MONITOR_DISK_THRESHOLD"  # Threshold in percent of free disk space to trigger a disk warning
 DISK_SPACE_DISKS=("${CFG_MONITOR_DISK[@]}")         # List of disk mount points to be monitored
 SPEED_TEST_RUNS="$CFG_MONITOR_SPEED_RUNS"           # Number of internet speed test runs to be executed
@@ -61,6 +62,7 @@ TESTCASES=(
   "script-errors"
   "script-warnings"
   "script-info"
+  "dns"
   "ping-v4"
   "ping-v6"
   "service-status"
@@ -395,6 +397,28 @@ function script-info {
     echo "no info messages"
     mailLog "<p><font class='unsure'>[?]</font> no info messages</p>"
   fi
+  mailLog "<p>&nbsp;</p>"
+  echo ""
+  echo ""
+}
+
+
+# Check DNS connectivity
+function dns {
+  local result rv
+  echo "*** DNS Test ***"
+  mailLog "<h2>DNS Test</h2>"
+  result=$(dig "$DOMAIN_NAME" @"$DNS" 2>&1)
+  rv=$?
+  if [[ $rv -ne 0 ]]; then
+    errorLog "DNS resolver $DNS failed (exit code $rv)"
+  else
+    okLog "DNS resolver $DNS is good"
+  fi
+  echo "$result"
+  mailLog "<pre>"
+  mailLog "$result"
+  mailLog "</pre>"
   mailLog "<p>&nbsp;</p>"
   echo ""
   echo ""
