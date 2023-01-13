@@ -166,10 +166,10 @@ function sendMail {
   constructMail "$status" | /usr/bin/msmtp -a default "$RECIPIENT"
   local rv=${PIPESTATUS[1]}
   if [[ $rv -ne 0 ]]; then
-    errorLog "mail returned $rv while sending to $RECIPIENT"
+    errorLog "'mail' returned $rv while sending to $RECIPIENT"
     return 1
   else
-    infoLog "email sent to: $RECIPIENT"
+    infoLog "Email sent to: $RECIPIENT"
     return 0
   fi
 }
@@ -189,8 +189,8 @@ function execute {
       return $?
     fi
   done
-  errorLog "invalid test $testcase"
-  echo "available tests:"
+  errorLog "Invalid test $testcase"
+  echo "Available tests:"
   for command in "${TESTCASES[@]}"; do
     echo "  $command"
   done
@@ -314,19 +314,19 @@ function speed-test {
   mailLog "<tr><th>Best:</th><td>$pngMin ms</td><td>$dlMax Mbit/s</td><td>$ulMax Mbit/s</td></tr>"
   mailLog "<tr><th>Status:</th><td>"
   if [[ $pngMin -gt $SPEED_TEST_PING_THRESHOLD ]]; then
-    warningLog "slow ping ($pngMin ms)" "inline"
+    warningLog "Slow ping ($pngMin ms)" "inline"
   else
     okLog "OK" "inline"
   fi
   mailLog "</td><td>"
   if [[ $dlMax -lt $SPEED_TEST_DL_THRESHOLD ]]; then
-    warningLog "slow download speed ($dlMax Mbit/s)" "inline"
+    warningLog "Slow download speed ($dlMax Mbit/s)" "inline"
   else
     okLog "OK" "inline"
   fi
   mailLog "</td><td>"
   if [[ $ulMax -lt $SPEED_TEST_UL_THRESHOLD ]]; then
-    warningLog "slow upload speed ($ulMax Mbit/s)" "inline"
+    warningLog "Slow upload speed ($ulMax Mbit/s)" "inline"
   else
     okLog "OK" "inline"
   fi
@@ -344,14 +344,14 @@ function script-errors {
   mailLog "<h2>Error Messages</h2>"
   if [[ -e "$CFG_ERROR_LOG" ]]; then
     result=`cat "$CFG_ERROR_LOG"`
-    errorLog "the following errors occurred:"
-    infoLog "(the following out-of-sequence timestamps are copied from other log files)"$'\n'"$result"
+    errorLog "The following errors occurred:"
+    infoLog "(The following out-of-sequence timestamps are copied from other log files)"$'\n'"$result"
     mailLog "<pre>"
     mailLog "$result"
     mailLog "</pre>"
     SCRIPT_ERRORS=1
   else
-    okLog "no error messages"
+    okLog "No error messages"
   fi
   mailLog "<p>&nbsp;</p>"
   echo ""
@@ -366,14 +366,14 @@ function script-warnings {
   mailLog "<h2>Warning Messages</h2>"
   if [[ -e "$CFG_WARNING_LOG" ]]; then
     result=`cat "$CFG_WARNING_LOG"`
-    warningLog "the following warnings occurred:"
-    infoLog "(the following out-of-sequence timestamps are copied from other log files)"$'\n'"$result"
+    warningLog "The following warnings occurred:"
+    infoLog "(The following out-of-sequence timestamps are copied from other log files)"$'\n'"$result"
     mailLog "<pre>"
     mailLog "$result"
     mailLog "</pre>"
     SCRIPT_WARNINGS=1
   else
-    okLog "no warning messages"
+    okLog "No warning messages"
   fi
   mailLog "<p>&nbsp;</p>"
   echo ""
@@ -394,7 +394,7 @@ function script-info {
     mailLog "</pre>"
     SCRIPT_INFO=1
   else
-    echo "no info messages"
+    echo "No info messages"
     mailLog "<p><font class='unsure'>[?]</font> no info messages</p>"
   fi
   mailLog "<p>&nbsp;</p>"
@@ -433,9 +433,9 @@ function ping-v4 {
   result=$(ping -c 4 "$DOMAIN_NAME" -4 2>&1)
   rv=$?
   if [[ $rv -ne 0 ]]; then
-    errorLog "ping $DOMAIN_NAME failed (exit code $rv)"
+    errorLog "Ping $DOMAIN_NAME failed (exit code $rv)"
   else
-    okLog "ping is good"
+    okLog "Ping is good"
   fi
   echo "$result"
   mailLog "<pre>"
@@ -458,9 +458,9 @@ function ping-v6 {
   result=$(ping -c 4 "$DOMAIN_NAME_V6" -6 2>&1)
   rv=$?
   if [[ $rv -ne 0 ]]; then
-    errorLog "ping6 $DOMAIN_NAME_V6 failed (exit code $rv)"
+    errorLog "Ping $DOMAIN_NAME_V6 failed (exit code $rv)"
   else
-    okLog "ping is good"
+    okLog "Ping is good"
   fi
   echo "$result"
   mailLog "<pre>"
@@ -481,9 +481,9 @@ function service-status {
     echo "*** '$service' Service Status ***"
     mailLog "<h2>'$service' Service Status</h2>"
     if [[ $rv -ne 0 ]]; then
-      errorLog "service '$service' failed:"
+      errorLog "Service '$service' failed:"
     else
-      okLog "service '$service' is running"
+      okLog "Service '$service' is running"
     fi
     echo "$status"
     mailLog "<pre>"
@@ -526,9 +526,9 @@ function cron-check {
     mailLog "<td>$prefix</td><td>$interval d.<td>$delta d.</td>"
     mailLog "<td>"
     if [[ $delta -gt $interval ]]; then
-      warningLog "$prefix: cron job took $delta (>$interval) days to execute" "inline"
+      warningLog "$prefix: Cron job took $delta (>$interval) days to execute" "inline"
     else
-      okLog "$prefix: last run since $delta d." "inline"
+      okLog "$prefix: Last run since $delta d." "inline"
     fi
     mailLog "</td></tr>"
   done
@@ -549,14 +549,14 @@ function cron-check {
 # Check if the script is already running
 semaphoreLock "$LOCK"
 if [[ $? -ne 0 ]]; then
-  warningLog "an instance of the current script is already running (please remove $LOCK)"
+  warningLog "An instance of the current script is already running (please remove $LOCK)"
   exit 1
 fi
 
 # Pause all logging activities by locking the semaphore
 logSemaphoreLock
 if [[ $? -ne 0 ]]; then
-  warningLog "log semaphore locking timeout"
+  warningLog "Log semaphore locking timeout"
 fi
 
 # HTML header
@@ -621,7 +621,7 @@ fi
 # Resume the logging activities
 logSemaphoreRelease
 if [[ $? -ne 0 ]]; then
-  warningLog "log semaphore was not locked"
+  warningLog "Log semaphore was not locked"
 fi
 
 echo ""
