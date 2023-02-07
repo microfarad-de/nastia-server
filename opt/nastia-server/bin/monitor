@@ -206,16 +206,22 @@ function execute {
 
 # System statistics
 function system-status {
+  tmp="$CFG_TMPFS_DIR/monitor-system-status.tmp"
   echo "*** System Status ***"
   mailLog "<h2>System Status</h2>"
-  echo "Uptime: $(/usr/bin/uptime -p)"
-  echo "System time: $(date)"
-  echo "Load average: $(cat /proc/loadavg)"
-  echo "CPU temp.: $(vcgencmd measure_temp | cut -c6-)"
+  if [[ ! -f "$tmp" ]]; then
+    echo "Uptime:      $(/usr/bin/uptime -p)" > "$tmp"
+    echo "System time: $(/usr/bin/date)"     >> "$tmp"
+    warningLog "The system has been rebooted"
+  fi
   mailLog "<table>"
+  echo "Uptime: $(/usr/bin/uptime -p)"
   mailLog "<tr><th class='padded'>Uptime:</th><td class='padded'>$(/usr/bin/uptime -p)</td></tr>"
+  echo "System time: $(date)"
   mailLog "<tr><th class='padded'>System time:</th><td class='padded'>$(date)</td></tr>"
+  echo "Load average: $(cat /proc/loadavg)"
   mailLog "<tr><th class='padded'>Load average:</th><td class='padded'>$(cat /proc/loadavg)</td></tr>"
+  echo "CPU temp.: $(vcgencmd measure_temp | cut -c6-)"
   mailLog "<tr><th>CPU temp.:</th><td>$(vcgencmd measure_temp | cut -c6-)</td></tr>"
   mailLog "</table>"
   mailLog "<p>&nbsp;</p>"
