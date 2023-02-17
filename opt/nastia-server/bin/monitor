@@ -43,7 +43,7 @@ SUBJECT="$CFG_EMAIL_SUBJECT_PREFIX"                 # Prefix for the email subje
 FORMAT="$CFG_EMAIL_FORMAT"                          # Email message format
 DOMAIN_NAME="$CFG_DOMAIN_NAME"                      # IPv4 domain name for the ping test
 DOMAIN_NAME_V6="$CFG_DOMAIN_NAME"                   # IPv6 domain name for the ping test
-DNS="$CFG_MONITOR_DNS"                              # DNS resolver address 
+DNS="$CFG_MONITOR_DNS"                              # DNS resolver address
 DISK_SPACE_THRESHOLD="$CFG_MONITOR_DISK_THRESHOLD"  # Threshold in percent of free disk space to trigger a disk warning
 DISK_SPACE_DISKS=("${CFG_MONITOR_DISK[@]}")         # List of disk mount points to be monitored
 SPEED_TEST_RUNS="$CFG_MONITOR_SPEED_RUNS"           # Number of internet speed test runs to be executed
@@ -51,6 +51,7 @@ SPEED_TEST_PING_THRESHOLD="$CFG_MONITOR_SPEED_PING_THRESHOLD"  # Maximum accepta
 SPEED_TEST_DL_THRESHOLD="$CFG_MONITOR_SPEED_DL_THRESHOLD"      # Minimum acceptable downlink internet connection speed in Mbps
 SPEED_TEST_UL_THRESHOLD="$CFG_MONITOR_SPEED_UL_THRESHOLD"      # Minimum acceptable uplink internet connection speed in Mbps
 SERVICES=("${CFG_MONITOR_SERVICE[@]}")              # List of services to be checked
+PING_IPS=("${CFG_MONITOR_PING[@]}")                 # List of IP addresses to be pinged
 
 
 # List of available testcases
@@ -63,8 +64,7 @@ TESTCASES=(
   "script-warnings"
   "script-info"
   "dns"
-  "ping-v4"
-  "ping-v6"
+  "ping-test"
   "service-status"
 )
 
@@ -431,50 +431,27 @@ function dns {
 }
 
 
-# Check IPv4 network connectivity
-function ping-v4 {
-  local result rv
-  echo "*** IPv4 Ping ***"
-  mailLog "<h2>IPv4 Ping</h2>"
-  result=$(ping -c 4 "$DOMAIN_NAME" -4 2>&1)
-  rv=$?
-  if [[ $rv -ne 0 ]]; then
-    errorLog "Ping $DOMAIN_NAME failed (exit code $rv)"
-  else
-    okLog "Ping is good"
-  fi
-  echo "$result"
-  mailLog "<pre>"
-  mailLog "$result"
-  mailLog "</pre>"
-  mailLog "<p>&nbsp;</p>"
-  echo ""
-  echo ""
-}
-
-
-# Check IPv6 network connectivity
-function ping-v6 {
-  local result rv
-  if [[ "$DOMAIN_NAME_V6" == "" ]]; then
-    return
-  fi
-  echo "*** IPv6 Ping ***"
-  mailLog "<h2>IPv6 Ping</h2>"
-  result=$(ping -c 4 "$DOMAIN_NAME_V6" -6 2>&1)
-  rv=$?
-  if [[ $rv -ne 0 ]]; then
-    errorLog "Ping $DOMAIN_NAME_V6 failed (exit code $rv)"
-  else
-    okLog "Ping is good"
-  fi
-  echo "$result"
-  mailLog "<pre>"
-  mailLog "$result"
-  mailLog "</pre>"
-  mailLog "<p>&nbsp;</p>"
-  echo ""
-  echo ""
+# Check remote host connectivity via ping
+function ping-test {
+  local ip result rv
+  for ip in "${PING_IPS[@]}"; do
+    echo "*** Ping '$ip' ***"
+    mailLog "<h2>Ping '$ip'</h2>"
+    result=$(/usr/bin/ping -c 4 "$ip" -4 2>&1)
+    rv=$?
+    if [[ $rv -ne 0 ]]; then
+      errorLog "Ping $ip failed (exit code $rv)"
+    else
+      okLog "Ping $ip succeded"
+    fi
+    echo "$result"
+    mailLog "<pre>"
+    mailLog "$result"
+    mailLog "</pre>"
+    mailLog "<p>&nbsp;</p>"
+    echo ""
+    echo ""
+  done
 }
 
 
@@ -482,10 +459,10 @@ function ping-v6 {
 function service-status {
   local service status rv
   for service in "${SERVICES[@]}"; do
-    status=$(/usr/sbin/service "$service" status 2>&1)
-    rv=$?
     echo "*** '$service' Service Status ***"
     mailLog "<h2>'$service' Service Status</h2>"
+    status=$(/usr/sbin/service "$service" status 2>&1)
+    rv=$?
     if [[ $rv -ne 0 ]]; then
       errorLog "Service '$service' failed:"
     else
@@ -585,6 +562,7 @@ echo ""
 arg=$1
 exitCode=0
 
+
 # If no argument was given - execute all system tests
 if [[ "$arg" == "" ]]; then
   for command in "${CFG_MONITOR_TEST[@]}"; do
@@ -597,6 +575,7 @@ else
     exitCode=1
   fi
 fi
+
 
 # HTML closing tags
 mailLog "</body></html>"
