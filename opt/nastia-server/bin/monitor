@@ -52,7 +52,11 @@ SPEED_TEST_DL_THRESHOLD="$CFG_MONITOR_SPEED_DL_THRESHOLD"      # Minimum accepta
 SPEED_TEST_UL_THRESHOLD="$CFG_MONITOR_SPEED_UL_THRESHOLD"      # Minimum acceptable uplink internet connection speed in Mbps
 SERVICES=("${CFG_MONITOR_SERVICE[@]}")              # List of services to be checked
 PING_IPS=("${CFG_MONITOR_PING[@]}")                 # List of IP addresses to be pinged
-
+if [[ "$CFG_MONITOR_PING_ATTEMPTS" == "" ]]; then
+  PING_ATTEMPTS=4
+else
+  PING_ATTEMPTS="$CFG_MONITOR_PING_ATTEMPTS"
+fi
 
 # List of available testcases
 TESTCASES=(
@@ -417,9 +421,9 @@ function dns {
   result=$(dig "$DOMAIN_NAME" @"$DNS" 2>&1)
   rv=$?
   if [[ $rv -ne 0 ]]; then
-    errorLog "DNS resolver $DNS failed (exit code $rv)"
+    errorLog "DNS resolver '$DNS' failed (exit code $rv)"
   else
-    okLog "DNS resolver $DNS is good"
+    okLog "DNS resolver '$DNS' is good"
   fi
   echo "$result"
   mailLog "<pre>"
@@ -435,14 +439,14 @@ function dns {
 function ping-test {
   local ip result rv
   for ip in "${PING_IPS[@]}"; do
-    echo "*** Ping '$ip' ***"
-    mailLog "<h2>Ping '$ip'</h2>"
-    result=$(/usr/bin/ping -c 4 "$ip" -4 2>&1)
+    echo "*** PING '$ip' ***"
+    mailLog "<h2>PING '$ip'</h2>"
+    result=$(/usr/bin/ping -c "$PING_ATTEMPTS" "$ip" -4 2>&1)
     rv=$?
     if [[ $rv -ne 0 ]]; then
-      errorLog "Ping $ip failed (exit code $rv)"
+      errorLog "PING '$ip' failed (exit code $rv)"
     else
-      okLog "Ping $ip succeded"
+      okLog "PING '$ip' succeded"
     fi
     echo "$result"
     mailLog "<pre>"
