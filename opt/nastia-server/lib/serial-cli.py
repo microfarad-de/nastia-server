@@ -27,6 +27,7 @@
 
 import serial  # pip install pyserial
 import ilock   # pip install ilock
+from threading import Thread, Semaphore
 import sys
 import time
 import signal
@@ -39,64 +40,78 @@ def read():
     while len(rx) > 0:
         rx = ser.readline().decode()
         result = result + rx
-    time.sleep(0.1)
     return result
 
 # Write to the transmit buffer
 def write(str):
     ser.write(str.encode())
-    time.sleep(0.1)
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
-   print ("\nInterrupted by user\n")
-   raise SystemExit(0)
+    global terminate 
+    terminate = True
+    print ("\nInterrupted by user\n")
+    thread.join();
+    raise SystemExit(0)
+
+# Run receiving loop as a thread
+def rx_thread():
+    global terminate
+    while 1:
+        sema.acquire()
+        with lock:
+            rx = read()
+        sema.release()
+        time.sleep(0.1)
+        if rx:
+            sys.stdout.write(rx)
+        if terminate:
+            break
 
 
 #################
 ####  START  ####
 #################
+if __name__=='__main__':
 
-print("\nInteractive Serial Console\n")
+    print("\nInteractive Serial Console\n")
 
-# Handle Ctrl+C
-signal.signal(signal.SIGINT, signal_handler)
+    # Handle Ctrl+C
+    signal.signal(signal.SIGINT, signal_handler)
 
-# Check for correct number of arguments
-if len(sys.argv) < 3:
-    print("Usage: " + sys.argv[0] + " DEVICE BAUD_RATE\n")
-    sys.exit()
+    # Check for correct number of arguments
+    if len(sys.argv) < 2:
+        print("Usage: " + sys.argv[0] + " DEVICE [BAUD_RATE]\n")
+        sys.exit()
 
-DEVICE    = sys.argv[1]    # RS232 device name
-BAUD_RATE = sys.argv[2]    # Serial baud rate
+    DEVICE    = sys.argv[1] # RS232 device name
+    if len(sys.argv) < 3:
+        BAUD_RATE = 9600
+    else:
+        BAUD_RATE = sys.argv[2] # Serial baud rate
 
-# System-wide lock ensures mutually exclusive access to the serial port
-lock = ilock.ILock(DEVICE, timeout=600)
+    # System-wide lock ensures mutually exclusive access to the serial port
+    lock = ilock.ILock(DEVICE, timeout=600)
 
-# Initialize the serial port
-with lock:
-    ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-    print("Connected to " + str(DEVICE) + " at " + str(BAUD_RATE) + " baud")
-    print("Waiting for user input (press Ctrl+C to exit)...\n")
-
-
-# A serial connection will cause the MCU to reboot
-# The following will flush the initial boot message
-# and wait until the MCU is up and running
-time.sleep(2)
-with lock: # Ensure exclusive access through system-wide lock
-    rx = read()
-sys.stdout.write(rx)
-
-
-while 1:
-    tx = sys.stdin.readline()
+    # Initialize the serial port
     with lock:
-        write(tx)
-        rx = read()
+        ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
+        print("Connected to " + str(DEVICE) + " at " + str(BAUD_RATE) + " baud")
+        print("Waiting for user input (press Ctrl+C to exit)...\n")
 
-    sys.stdout.write(rx)
+    # Run receive routine as a thread
+    terminate = False
+    sema = Semaphore()
+    thread = Thread(target = rx_thread)
+    thread.start()
 
+    while 1:
+        tx = sys.stdin.readline()
+        sema.acquire()
+        with lock:
+            write(tx)
+        sema.release()
+        time.sleep(0.1)
 
 
 
