@@ -51,6 +51,7 @@ def signal_handler(sig, frame):
     global terminate 
     terminate = True
     print ("\nInterrupted by user\n")
+    time.sleep(0.3)
     thread.join();
     raise SystemExit(0)
 
@@ -112,6 +113,7 @@ if __name__=='__main__':
             write(tx)
         sema.release()
         time.sleep(0.1)
-
+        if terminate:
+            break
 
 
