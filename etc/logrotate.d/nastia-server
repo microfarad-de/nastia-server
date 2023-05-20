@@ -14,6 +14,7 @@
 /var/log/nastia-server/init.log
 /var/log/nastia-server/permissions.log
 /var/log/nastia-server/ups.log
+/var/log/nastia-server/bt-deamon.log
 {
   rotate 99
   size 1000k 
