@@ -1,0 +1,14 @@
+# KHr:
+# Type=idle  ->  Start after all services have started
+
+[Unit]
+Description=bluetooth terminal service
+
+[Service]
+Type=idle
+ExecStart=/opt/nastia-server/sbin/bt-daemon
+User=root
+
+[Install]
+WantedBy=multi-user.target
+

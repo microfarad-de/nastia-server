@@ -45,6 +45,7 @@ SOURCE[2]="/etc/logrotate.d/nastia-server"
 SOURCE[3]="/lib/systemd/system/init.service"
 SOURCE[4]="/lib/systemd/system/fan.service"
 SOURCE[5]="/lib/systemd/system/ups.service"
+SOURCE[6]="/lib/systemd/system/bt-daemon.service"
 
 # Convert array to string
 for i in "${!SOURCE[@]}"; do

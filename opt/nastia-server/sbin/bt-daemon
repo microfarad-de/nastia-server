@@ -25,6 +25,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+set -m # Enable Job Control
 
 # Path to the current directory where this script is located
 DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
@@ -70,7 +71,7 @@ function start {
 
   if [[ rv -eq 0 ]]; then
     infoLog "Connecting Bluetooth device (device=$device address=$address)"
-    $DEAMON_SCRIPT "$device" "$PREFIX" 
+    $DEAMON_SCRIPT "$device" "$PREFIX" &
   else
     errorLog "Failed to bind Bluetooth device (device=$device address=$address)"
   fi
@@ -92,6 +93,18 @@ for i in "${!CFG_BLUETOOTH[@]}"; do
   start "$device" "$address"
 done
 
+# Wait forever
+while [[ 1 ]]; do
+  sleep 1
+done
+
+# Wait for all jobs to finish
+#while [[ 1 ]]; do
+#  fg > /dev/null 2>&1
+#  if [[ $? == 1 ]]; then
+#    break
+#  fi
+#done
 
 exit 0
 

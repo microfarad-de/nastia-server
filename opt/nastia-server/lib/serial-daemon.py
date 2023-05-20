@@ -31,7 +31,7 @@ import sys
 import time
 import signal
 import os
-#import traceback
+import traceback
 
 # Current directory where this script is located
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -135,6 +135,8 @@ if __name__=='__main__':
       input = open(in_file, 'r')
       os.remove(in_file)
     except:
+      #print("DBG failed to open")
+      #print(traceback.format_exc())
       time.sleep(0.3)
       continue
 

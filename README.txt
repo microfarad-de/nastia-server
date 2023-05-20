@@ -5,3 +5,4 @@ List of files and directories:
 /lib/systemd/system/init.service 
 /lib/systemd/system/fan.service 
 /lib/systemd/system/ups.service 
+/lib/systemd/system/bt-daemon.service 
