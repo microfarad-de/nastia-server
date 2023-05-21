@@ -64,7 +64,7 @@ function start {
   local address="$2"
   local rv=0
 
-  if [[ ! -f "$device" ]]; then
+  if [[ ! -e "$device" ]]; then
     rfcomm bind "$device" "$address"
     rv=$?
   fi
