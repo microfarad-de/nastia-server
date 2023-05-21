@@ -135,6 +135,11 @@ if __name__=='__main__':
   print ("Input file: ", in_file)
   print ("Output file:", out_file)
 
+  try:
+    os.remove(out_file)
+  except:
+    pass
+
   while 1:
 
     try:
