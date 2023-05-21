@@ -58,7 +58,6 @@ def error_log ( text ):
 
 
 
-
 # Read the contents of the receive buffer
 def read():
   global DEVICE
@@ -72,8 +71,9 @@ def read():
     except:
       #print(traceback.format_exc())
       error_log("Failed to read from " + DEVICE)
-      time.sleep (1)
+      exit_failure ()
   return result
+
 
 # Write to the transmit buffer
 def write(str):
@@ -84,6 +84,8 @@ def write(str):
   except:
     #print(traceback.format_exc())
     error_log("Failed to write to " + DEVICE)
+    exit_failure ()
+
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
@@ -92,6 +94,17 @@ def signal_handler(sig, frame):
   print ("\nInterrupted by user\n")
   time.sleep (0.3)
   raise SystemExit (0)
+
+
+# Exit due to failure
+def exit_failure ():
+  global status_file
+  try:
+    os.remove(status_file)
+  except:
+    pass
+  sys.exit (1)
+
 
 
 #################
@@ -116,29 +129,31 @@ if __name__=='__main__':
   else:
     BAUD_RATE = sys.argv[2] # Serial baud rate
 
-  # System-wide lock ensures mutually exclusive access to the serial port
-  lock = ilock.ILock(DEVICE, timeout=600)
-
-  # Initialize the serial port
-  while 1:
-    try:
-      with lock:
-        ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-      info_log ("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
-      break;
-    except:
-      error_log("Failed to connect to " + DEVICE)
-      time.sleep (1)
-
-  in_file  = "/tmp/serial-daemon-in"  + DEVICE.replace("/", "-")
-  out_file = "/tmp/serial-deamon-out" + DEVICE.replace("/", "-")
+  in_file     = "/tmp/serial-daemon-in"     + DEVICE.replace("/", "-")
+  out_file    = "/tmp/serial-daemon-out"    + DEVICE.replace("/", "-")
+  status_file = "/tmp/serial-daemon-status" + DEVICE.replace("/", "-")
   print ("Input file: ", in_file)
   print ("Output file:", out_file)
+  print ("Status file:", status_file)
 
   try:
     os.remove(out_file)
   except:
     pass
+
+
+  # System-wide lock ensures mutually exclusive access to the serial port
+  lock = ilock.ILock(DEVICE, timeout=600)
+
+  # Initialize the serial port
+  try:
+    with lock:
+      ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
+    info_log ("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
+  except:
+    error_log("Failed to connect to " + DEVICE)
+    exit_failure ()
+
 
   while 1:
 

@@ -37,7 +37,7 @@ source "$DIR/common.sh"
 PREFIX="bt-daemon"                            # Log prefix
 LOG="$CFG_LOG_DIR/$PREFIX.log"                # Main log file
 DEAMON_SCRIPT="$DIR/../lib/serial-daemon.py"  # Script that handles a BT serial port
-
+STATUS="$CFG_TMPFS_DIR/serial-daemon-status"  # Status file
 
 
 
@@ -73,7 +73,10 @@ function start {
 
   if [[ rv -eq 0 ]]; then
     infoLog "Connecting Bluetooth device (device=$device address=$address)"
-    $DEAMON_SCRIPT "$device" "$PREFIX" &
+    $DEAMON_SCRIPT "$device" "$PREFIX" > /dev/null &
+    suffix=$(echo "$device" | tr '/' '-')
+    status="$STATUS$suffix"
+    touch "$status"
   else
     errorLog "Failed to bind Bluetooth device (device=$device address=$address)"
   fi
@@ -95,8 +98,18 @@ for i in "${!CFG_BLUETOOTH[@]}"; do
   start "$device" "$address"
 done
 
-# Wait forever
+# monitor services and restart if needed
 while [[ 1 ]]; do
+  for i in "${!CFG_BLUETOOTH[@]}"; do
+    config=(${CFG_BLUETOOTH[i]})
+    device="${config[0]}"
+    address="${config[1]}"
+    suffix=$(echo "$device" | tr '/' '-')
+    status="$STATUS$suffix"
+    if [[ ! -e "$status" ]]; then
+      start "$device" "$address"
+    fi
+  done
   sleep 1
 done
 
