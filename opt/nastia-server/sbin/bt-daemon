@@ -68,7 +68,7 @@ function start {
     infoLog "Binding $device"
     rfcomm bind "$device" "$address"
     rv=$?
-    sleep 5
+    sleep 15
   fi
 
   if [[ rv -eq 0 ]]; then
