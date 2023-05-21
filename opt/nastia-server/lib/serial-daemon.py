@@ -68,6 +68,7 @@ def read():
     try:
       rx = ser.readline().decode()
       result = result + rx
+      time.sleep (0.1)
     except:
       #print(traceback.format_exc())
       error_log("Failed to read from " + DEVICE)
