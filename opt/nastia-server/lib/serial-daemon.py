@@ -123,6 +123,7 @@ if __name__=='__main__':
     info_log ("Connected to " + str(DEVICE) + " at " + str(BAUD_RATE) + " baud")
   except:
     error_log("Failed to connect to " + str(DEVICE))
+    sys.exit(1)
 
   in_file  = "/tmp/serial-daemon-in"  + str(DEVICE).replace("/", "-")
   out_file = "/tmp/serial-deamon-out" + str(DEVICE).replace("/", "-")
