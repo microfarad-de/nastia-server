@@ -182,10 +182,14 @@ if __name__=='__main__':
     tx  = input.read()
     trx = tx
 
-    with lock:
-      write(tx)
-      rx  = read()
-      trx = trx + rx
+    try:
+      with lock:
+        write(tx)
+        rx  = read()
+        trx = trx + rx
+    except:
+      pass
+
     if rx:
       try:
         output = open(out_file, 'w')

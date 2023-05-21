@@ -7,7 +7,7 @@ DEV="$2"
 
 echo "$CMD" > "/tmp/serial-daemon-in-$DEV"
 sleep 1
-exit 1
+exit 0
 
 #sleep 2
 #head -n1 "/tmp/serial-daemon-out-$DEV"
