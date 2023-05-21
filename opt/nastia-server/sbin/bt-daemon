@@ -65,8 +65,10 @@ function start {
   local rv=0
 
   if [[ ! -e "$device" ]]; then
+    infoLog "Binding $device"
     rfcomm bind "$device" "$address"
     rv=$?
+    sleep 5
   fi
 
   if [[ rv -eq 0 ]]; then

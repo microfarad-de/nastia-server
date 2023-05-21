@@ -71,7 +71,8 @@ def read():
       result = result + rx
     except:
       #print(traceback.format_exc())
-      error_log("Failed to read from " + str(DEVICE))
+      error_log("Failed to read from " + DEVICE)
+      time.sleep (1)
   return result
 
 # Write to the transmit buffer
@@ -82,15 +83,15 @@ def write(str):
     ser.write(str.encode())
   except:
     #print(traceback.format_exc())
-    error_log("Failed to write to " + str(DEVICE))
+    error_log("Failed to write to " + DEVICE)
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
   global terminate
   terminate = True
   print ("\nInterrupted by user\n")
-  time.sleep(0.5)
-  raise SystemExit(0)
+  time.sleep (0.3)
+  raise SystemExit (0)
 
 
 #################
@@ -107,7 +108,7 @@ if __name__=='__main__':
     print("Usage: " + sys.argv[0] + " DEVICE LOG [BAUD_RATE]\n")
     sys.exit()
 
-  DEVICE = sys.argv[1] # Serial device name
+  DEVICE = str(sys.argv[1]) # Serial device name
   LOG    = sys.argv[2] # Log file prefix
 
   if len(sys.argv) < 4:
@@ -119,16 +120,18 @@ if __name__=='__main__':
   lock = ilock.ILock(DEVICE, timeout=600)
 
   # Initialize the serial port
-  try:
-    with lock:
-      ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-    info_log ("Connected to " + str(DEVICE) + " at " + str(BAUD_RATE) + " baud")
-  except:
-    error_log("Failed to connect to " + str(DEVICE))
-    sys.exit(1)
+  while 1:
+    try:
+      with lock:
+        ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
+      info_log ("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
+      break;
+    except:
+      error_log("Failed to connect to " + DEVICE)
+      time.sleep (1)
 
-  in_file  = "/tmp/serial-daemon-in"  + str(DEVICE).replace("/", "-")
-  out_file = "/tmp/serial-deamon-out" + str(DEVICE).replace("/", "-")
+  in_file  = "/tmp/serial-daemon-in"  + DEVICE.replace("/", "-")
+  out_file = "/tmp/serial-deamon-out" + DEVICE.replace("/", "-")
   print ("Input file: ", in_file)
   print ("Output file:", out_file)
 
@@ -140,7 +143,7 @@ if __name__=='__main__':
     except:
       #print("DBG failed to open")
       #print(traceback.format_exc())
-      time.sleep(0.3)
+      time.sleep (0.3)
       continue
 
     tx = input.read()
@@ -152,9 +155,12 @@ if __name__=='__main__':
 
     if rx:
       print(rx)
-      output = open(out_file, 'w')
-      output.write(rx)
-      output.close()
+      try:
+        output = open(out_file, 'w')
+        output.write(rx)
+        output.close()
+      except:
+        error_log("Failed to open file" + out_file)
 
     if terminate:
       break

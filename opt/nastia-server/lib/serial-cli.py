@@ -76,7 +76,7 @@ def rx_thread():
     except:
       continue
     sema.release()
-    time.sleep(0.1)
+    time.sleep (0.1)
     if rx:
       sys.stdout.write(rx)
     if terminate:
@@ -98,7 +98,8 @@ if __name__=='__main__':
     print("Usage: " + sys.argv[0] + " DEVICE [BAUD_RATE]\n")
     sys.exit()
 
-  DEVICE = sys.argv[1] # RS232 device name
+  DEVICE = str(sys.argv[1]) # Serial device name
+
   if len(sys.argv) < 3:
     BAUD_RATE = 9600
   else:
@@ -110,7 +111,7 @@ if __name__=='__main__':
   # Initialize the serial port
   with lock:
     ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-    print("Connected to " + str(DEVICE) + " at " + str(BAUD_RATE) + " baud")
+    print("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
     print("Waiting for user input (press Ctrl+C to exit)...\n")
 
   # Run receive routine as a thread
@@ -125,7 +126,7 @@ if __name__=='__main__':
     with lock:
       write(tx)
     sema.release()
-    time.sleep(0.1)
+    time.sleep (0.1)
     if terminate:
       break
 
