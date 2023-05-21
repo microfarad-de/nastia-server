@@ -93,7 +93,7 @@ def signal_handler(sig, frame):
   terminate = True
   print ("\nInterrupted by user\n")
   time.sleep (0.3)
-  raise SystemExit (0)
+  sys.exit (0)
 
 
 # Exit due to failure

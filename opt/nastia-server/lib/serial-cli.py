@@ -63,19 +63,19 @@ def signal_handler(sig, frame):
   print ("\nInterrupted by user\n")
   time.sleep(0.3)
   thread.join();
-  raise SystemExit(0)
+  sys.exit (0)
 
 # Run receiving loop as a thread
 def rx_thread():
   global terminate
   while 1:
-    sema.acquire()
     try:
+      sema.acquire()
       with lock:
         rx = read()
+      sema.release()
     except:
       continue
-    sema.release()
     time.sleep (0.1)
     if rx:
       sys.stdout.write(rx)
@@ -109,10 +109,14 @@ if __name__=='__main__':
   lock = ilock.ILock(DEVICE, timeout=600)
 
   # Initialize the serial port
-  with lock:
-    ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-    print("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
-    print("Waiting for user input (press Ctrl+C to exit)...\n")
+  try:
+    with lock:
+      ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
+      print("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
+      print("Waiting for user input (press Ctrl+C to exit)...\n")
+  except:
+    print ("Failed to connect to", DEVICE)
+    sys.exit (1)
 
   # Run receive routine as a thread
   terminate = False
@@ -122,10 +126,15 @@ if __name__=='__main__':
 
   while 1:
     tx = sys.stdin.readline()
-    sema.acquire()
-    with lock:
-      write(tx)
-    sema.release()
+    while 1:
+      try:
+        sema.acquire()
+        with lock:
+          write(tx)
+          sema.release()
+        break
+      except:
+        pass
     time.sleep (0.1)
     if terminate:
       break
