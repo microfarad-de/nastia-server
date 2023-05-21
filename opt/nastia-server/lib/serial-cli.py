@@ -69,14 +69,14 @@ def signal_handler(sig, frame):
 def rx_thread():
   global terminate
   while 1:
+    time.sleep (0.1)
     try:
       sema.acquire()
       with lock:
         rx = read()
       sema.release()
     except:
-      continue
-    time.sleep (0.1)
+      pass
     if rx:
       sys.stdout.write(rx)
     if terminate:
@@ -125,17 +125,16 @@ if __name__=='__main__':
   thread.start()
 
   while 1:
-    tx = sys.stdin.readline()
-    while 1:
-      try:
-        sema.acquire()
-        with lock:
-          write(tx)
-          sema.release()
-        break
-      except:
-        pass
     time.sleep (0.1)
+    tx = sys.stdin.readline()
+    try:
+      sema.acquire()
+      with lock:
+        write(tx)
+        sema.release()
+    except:
+      pass
+
     if terminate:
       break
 
