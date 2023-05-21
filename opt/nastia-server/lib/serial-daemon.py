@@ -36,6 +36,7 @@ import traceback
 # Current directory where this script is located
 DIR = os.path.dirname(os.path.abspath(__file__))
 
+
 # Print info log message
 def info_log ( text ):
   global LOG
@@ -55,6 +56,13 @@ def error_log ( text ):
   global LOG
   print ("[ERROR] " + text)
   os.popen ( DIR + "/errorLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'" )
+
+
+# Print transmit/receive log message
+def trx_log ( text ):
+  global LOG_TRX
+  print (text)
+  os.popen ( DIR + "/infoLog.sh \"\n" + text + "\" '" + LOG_TRX + "' '' 'd'" )
 
 
 
@@ -125,6 +133,7 @@ if __name__=='__main__':
   DEV_SHORT = str(sys.argv[1]).replace("/dev/", "")  # Serial device name without the /dev prefix
   DEV       = "/dev/" + DEV_SHORT                    # Serial device name
   LOG       = sys.argv[2]                            # Log file prefix
+  LOG_TRX   = LOG + "-trx"                           # Transmit/receive log
 
   if len(sys.argv) < 4:
     BAUD_RATE = 9600
@@ -158,6 +167,8 @@ if __name__=='__main__':
 
 
   while 1:
+    if terminate:
+      break
 
     try:
       input = open(in_file, 'r')
@@ -168,15 +179,14 @@ if __name__=='__main__':
       time.sleep (0.3)
       continue
 
-    tx = input.read()
-    print(tx)
+    tx  = input.read()
+    trx = tx
 
     with lock:
       write(tx)
-      rx = read()
-
+      rx  = read()
+      trx = trx + rx
     if rx:
-      print(rx)
       try:
         output = open(out_file, 'w')
         output.write(rx)
@@ -184,7 +194,5 @@ if __name__=='__main__':
       except:
         error_log("Failed to open file" + out_file)
 
-    if terminate:
-      break
-
+    trx_log(trx)
 

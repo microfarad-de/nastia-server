@@ -3,12 +3,15 @@
 # KHr
 
 CMD="$1"
+DEV="$2"
 
-echo "$CMD" > "/tmp/serial-daemon-in-dev-rfcomm0"
+echo "$CMD" > "/tmp/serial-daemon-in-$DEV"
 
-sleep 1
+sleep 2
 
-result=$(head -n1 "/tmp/serial-deamon-out-dev-rfcomm0" | grep "$CMD")
+head -n1 "/tmp/serial-daemon-out-$DEV"
+
+result=$(head -n1 "/tmp/serial-daemon-out-$DEV" | grep "$CMD")
 
 if [[ -n "$result" ]]; then
   echo "Success"
