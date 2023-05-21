@@ -64,18 +64,17 @@ function start {
   local address="$2"
   local rv=0
 
-  if [[ ! -e "$device" ]]; then
-    infoLog "Binding $device"
-    rfcomm bind "$device" "$address"
+  if [[ ! -e "/dev/$device" ]]; then
+    infoLog "Binding /dev/$device"
+    rfcomm bind "/dev/$device" "$address"
     rv=$?
     sleep 15
   fi
 
   if [[ rv -eq 0 ]]; then
-    infoLog "Connecting Bluetooth device (device=$device address=$address)"
+    infoLog "Connecting Bluetooth device (device=/dev/$device address=$address)"
     $DEAMON_SCRIPT "$device" "$PREFIX" > /dev/null &
-    suffix=$(echo "$device" | tr '/' '-')
-    status="$STATUS$suffix"
+    status="$STATUS-$device"
     touch "$status"
   else
     errorLog "Failed to bind Bluetooth device (device=$device address=$address)"
@@ -104,8 +103,7 @@ while [[ 1 ]]; do
     config=(${CFG_BLUETOOTH[i]})
     device="${config[0]}"
     address="${config[1]}"
-    suffix=$(echo "$device" | tr '/' '-')
-    status="$STATUS$suffix"
+    status="$STATUS-$device"
     if [[ ! -e "$status" ]]; then
       start "$device" "$address"
     fi
