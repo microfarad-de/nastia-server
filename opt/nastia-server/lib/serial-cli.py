@@ -35,20 +35,30 @@ import signal
 
 # Read the contents of the receive buffer
 def read():
+  global DEVICE
+  global ser
   rx = " "
   result = ""
   while len(rx) > 0:
-    rx = ser.readline().decode()
-    result = result + rx
+    try:
+      rx = ser.readline().decode()
+      result = result + rx
+    except:
+      print ("Failed to read from", DEVICE)
   return result
 
 # Write to the transmit buffer
 def write(str):
-  ser.write(str.encode())
+  global DEVICE
+  global ser
+  try:
+    ser.write(str.encode())
+  except:
+    print ("Failed to write to", DEVICE)
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
-  global terminate 
+  global terminate
   terminate = True
   print ("\nInterrupted by user\n")
   time.sleep(0.3)

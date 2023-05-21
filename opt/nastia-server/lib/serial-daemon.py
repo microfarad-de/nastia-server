@@ -62,6 +62,7 @@ def error_log ( text ):
 # Read the contents of the receive buffer
 def read():
   global DEVICE
+  global ser
   rx = " "
   result = ""
   while len(rx) > 0:
@@ -76,6 +77,7 @@ def read():
 # Write to the transmit buffer
 def write(str):
   global DEVICE
+  global ser
   try:
     ser.write(str.encode())
   except:
