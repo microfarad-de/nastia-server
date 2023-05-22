@@ -76,7 +76,7 @@ def rx_thread():
         rx = read()
       sema.release()
     except:
-      pass
+      rx = ""
     if rx:
       sys.stdout.write(rx)
     if terminate:

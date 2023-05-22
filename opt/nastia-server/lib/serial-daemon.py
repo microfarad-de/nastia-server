@@ -188,7 +188,7 @@ if __name__=='__main__':
         rx  = read()
         trx = trx + rx
     except:
-      pass
+      rx = ""
 
     if rx:
       try:
