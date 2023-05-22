@@ -34,51 +34,53 @@ import signal
 
 
 # Read the contents of the receive buffer
-def read():
+def read ():
   global DEVICE
   global ser
   rx = " "
   result = ""
   while len(rx) > 0:
     try:
-      rx = ser.readline().decode()
+      rx = ser.readline().decode ()
       result = result + rx
     except:
       print ("Failed to read from", DEVICE)
+      sys.exit (1)
   return result
 
 # Write to the transmit buffer
-def write(str):
+def write (str):
   global DEVICE
   global ser
   try:
-    ser.write(str.encode())
+    ser.write (str.encode ())
   except:
     print ("Failed to write to", DEVICE)
+    sys.exit (1)
 
 # Handle Ctrl+C
-def signal_handler(sig, frame):
+def signal_handler (sig, frame):
   global terminate
   terminate = True
   print ("\nInterrupted by user\n")
-  time.sleep(0.3)
-  thread.join();
+  time.sleep (0.3)
+  thread.join ();
   sys.exit (0)
 
 # Run receiving loop as a thread
-def rx_thread():
+def rx_thread ():
   global terminate
   while 1:
     time.sleep (0.1)
-    sema.acquire()
+    sema.acquire ()
     try:
       with lock:
-        rx = read()
+        rx = read ()
     except:
       rx = ""
-    sema.release()
+    sema.release ()
     if rx:
-      sys.stdout.write(rx)
+      sys.stdout.write (rx)
     if terminate:
       break
 
@@ -88,17 +90,17 @@ def rx_thread():
 #################
 if __name__=='__main__':
 
-  print("\nInteractive Serial Console\n")
+  print ("\nInteractive Serial Console\n")
 
   # Handle Ctrl+C
-  signal.signal(signal.SIGINT, signal_handler)
+  signal.signal (signal.SIGINT, signal_handler)
 
   # Check for correct number of arguments
-  if len(sys.argv) < 2:
-    print("Usage: " + sys.argv[0] + " DEVICE [BAUD_RATE]\n")
-    sys.exit()
+  if len (sys.argv) < 2:
+    print ("Usage: " + sys.argv[0] + " DEVICE [BAUD_RATE]\n")
+    sys.exit ()
 
-  DEVICE = str(sys.argv[1]) # Serial device name
+  DEVICE = str (sys.argv[1]) # Serial device name
 
   if len(sys.argv) < 3:
     BAUD_RATE = 9600
@@ -109,31 +111,34 @@ if __name__=='__main__':
   lock = ilock.ILock(DEVICE, timeout=600)
 
   # Initialize the serial port
-  try:
-    with lock:
-      ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-      print("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
-      print("Waiting for user input (press Ctrl+C to exit)...\n")
-  except:
-    print ("Failed to connect to", DEVICE)
-    sys.exit (1)
+  while 1:
+    try:
+      with lock:
+        ser = serial.Serial (DEVICE, BAUD_RATE, timeout=0.1)
+        print ("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
+        print ("Waiting for user input (press Ctrl+C to exit)...\n")
+        break
+    except Exception as ex:
+      if type(ex).__name__ != "PermissionError":
+        print ("Failed to connect to " + DEVICE)
+        sys.exit (1)
 
   # Run receive routine as a thread
   terminate = False
   sema = Semaphore()
   thread = Thread(target = rx_thread)
-  thread.start()
+  thread.start ()
 
   while 1:
     time.sleep (0.1)
-    tx = sys.stdin.readline()
-    sema.acquire()
+    tx = sys.stdin.readline ()
+    sema.acquire ()
     try:
       with lock:
-        write(tx)
+        write (tx)
     except:
       pass
-    sema.release()
+    sema.release ()
     if terminate:
       break
 

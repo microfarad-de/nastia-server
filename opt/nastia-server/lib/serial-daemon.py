@@ -38,31 +38,31 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 # Print info log message
-def info_log ( text ):
+def info_log(text):
   global LOG
-  print (text)
-  os.popen ( DIR + "/infoLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'" )
+  print(text)
+  os.popen(DIR + "/infoLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'")
 
 
 # Print warning log message
-def warning_log ( text ):
+def warning_log(text):
   global LOG
-  print ("[WARNING] " + text)
-  os.popen ( DIR + "/warningLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'" )
+  print("[WARNING] " + text)
+  os.popen(DIR + "/warningLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'")
 
 
 # Print error log message
-def error_log ( text ):
+def error_log(text):
   global LOG
-  print ("[ERROR] " + text)
-  os.popen ( DIR + "/errorLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'" )
+  print("[ERROR] " + text)
+  os.popen(DIR + "/errorLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'")
 
 
 # Print transmit/receive log message
-def trx_log ( text ):
+def trx_log(text):
   global LOG_TRX
-  print (text)
-  os.popen ( DIR + "/infoLog.sh \"\n" + text + "\" '" + LOG_TRX + "' '' 'd'" )
+  print(text)
+  os.popen(DIR + "/infoLog.sh \"\n" + text + "\" '" + LOG_TRX + "' '' 'd'")
 
 
 
@@ -76,11 +76,11 @@ def read():
     try:
       rx = ser.readline().decode()
       result = result + rx
-      time.sleep (0.1)
+      time.sleep(0.1)
     except:
       #print(traceback.format_exc())
       error_log("Failed to read from " + DEV)
-      exit_failure ()
+      exit_failure()
   return result
 
 
@@ -93,26 +93,26 @@ def write(str):
   except:
     #print(traceback.format_exc())
     error_log("Failed to write to " + DEV)
-    exit_failure ()
+    exit_failure()
 
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
   global terminate
   terminate = True
-  print ("\nInterrupted by user\n")
+  print("\nInterrupted by user\n")
   time.sleep (0.3)
   sys.exit (0)
 
 
 # Exit due to failure
-def exit_failure ():
+def exit_failure():
   global status_file
   try:
     os.remove(status_file)
   except:
     pass
-  sys.exit (1)
+  sys.exit(1)
 
 
 
@@ -143,9 +143,9 @@ if __name__=='__main__':
   in_file     = "/tmp/serial-daemon-in-"     + DEV_SHORT
   out_file    = "/tmp/serial-daemon-out-"    + DEV_SHORT
   status_file = "/tmp/serial-daemon-status-" + DEV_SHORT
-  print ("Input file: ", in_file)
-  print ("Output file:", out_file)
-  print ("Status file:", status_file)
+  print("Input file: ", in_file)
+  print("Output file:", out_file)
+  print("Status file:", status_file)
 
   try:
     os.remove(out_file)
@@ -161,12 +161,12 @@ if __name__=='__main__':
     try:
       with lock:
         ser = serial.Serial(DEV, BAUD_RATE, timeout=0.1)
-      info_log ("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
+      info_log("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
       break
     except Exception as ex:
       if type(ex).__name__ != "PermissionError":
         error_log("Failed to connect to " + DEV)
-        exit_failure ()
+        exit_failure()
 
 
   while 1:
@@ -180,7 +180,7 @@ if __name__=='__main__':
     except:
       #print("DBG failed to open")
       #print(traceback.format_exc())
-      time.sleep (0.3)
+      time.sleep(0.3)
       continue
 
     trx = ""
