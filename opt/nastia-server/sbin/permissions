@@ -67,17 +67,21 @@ function main {
   if [[ $rv -ne 0 ]]; then
     errorLog "chown $user:$group $dir failed (exit code $rv)"
   fi
-  echo find "$dir" -type d -exec chmod "$dmode" {} +
-  find "$dir" -type d -exec chmod "$dmode" {} +
-  rv=$?
-  if [[ $rv -ne 0 ]]; then
-    errorLog "chmod $dmode $dir (d) failed (exit code $rv)"
+  if [[ ! -z "$dmode" ]]; then
+    echo find "$dir" -type d -exec chmod "$dmode" {} +
+    find "$dir" -type d -exec chmod "$dmode" {} +
+    rv=$?
+    if [[ $rv -ne 0 ]]; then
+      errorLog "chmod $dmode $dir (d) failed (exit code $rv)"
+    fi
   fi
-  echo find "$dir" -type f -exec chmod "$fmode" {} +
-  find "$dir" -type f -exec chmod "$fmode" {} +
-  rv=$?
-  if [[ $rv -ne 0 ]]; then
-    errorLog "chmod $fmode $dir (f) failed (exit code $rv)"
+  if [[ ! -z "$fmode" ]]; then
+    echo find "$dir" -type f -exec chmod "$fmode" {} +
+    find "$dir" -type f -exec chmod "$fmode" {} +
+    rv=$?
+    if [[ $rv -ne 0 ]]; then
+      errorLog "chmod $fmode $dir (f) failed (exit code $rv)"
+    fi
   fi
 }
 
