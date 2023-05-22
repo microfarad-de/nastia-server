@@ -45,7 +45,7 @@ def read():
             result = result + rx
         except:
             print("Failed to read from", DEVICE)
-            sys.exit(1)
+            signal_handler(0, 0)
     return result
 
 
@@ -57,14 +57,15 @@ def write(str):
         ser.write(str.encode())
     except:
         print("Failed to write to", DEVICE)
-        sys.exit(1)
+        signal_handler(0, 0)
 
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
     global terminate
+    global thread
     terminate = True
-    print("\nInterrupted by user\n")
+    print("\nSerial console exited\n")
     time.sleep(0.3)
     thread.join()
     sys.exit(0)
@@ -114,18 +115,14 @@ if __name__ == '__main__':
     lock = ilock.ILock(DEVICE, timeout=600)
 
     # Initialize the serial port
-    while 1:
-        try:
-            with lock:
-                ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-                print("Connected to " + DEVICE + " at " + str(BAUD_RATE) +
-                      " baud")
-                print("Waiting for user input (press Ctrl+C to exit)...\n")
-                break
-        except Exception as ex:
-            if type(ex).__name__ != "PermissionError":
-                print("Failed to connect to " + DEVICE)
-                sys.exit(1)
+    try:
+        with lock:
+            ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
+        print("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
+        print("Waiting for user input (press Ctrl+C to exit)...\n")
+    except:
+        print("Failed to connect to " + DEVICE)
+        sys.exit(1)
 
     # Run receive routine as a thread
     terminate = False
