@@ -157,13 +157,16 @@ if __name__=='__main__':
   lock = ilock.ILock(DEV, timeout=600)
 
   # Initialize the serial port
-  try:
-    with lock:
-      ser = serial.Serial(DEV, BAUD_RATE, timeout=0.1)
-    info_log ("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
-  except:
-    error_log("Failed to connect to " + DEV)
-    exit_failure ()
+  while 1:
+    try:
+      with lock:
+        ser = serial.Serial(DEV, BAUD_RATE, timeout=0.1)
+      info_log ("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
+      break
+    except Exception as ex:
+      if type(ex).__name__ != "PermissionError":
+        error_log("Failed to connect to " + DEV)
+        exit_failure ()
 
 
   while 1:
@@ -172,6 +175,7 @@ if __name__=='__main__':
 
     try:
       input = open(in_file, 'r')
+      tx    = input.read()
       os.remove(in_file)
     except:
       #print("DBG failed to open")
@@ -179,16 +183,17 @@ if __name__=='__main__':
       time.sleep (0.3)
       continue
 
-    tx  = input.read()
-    trx = tx
+    trx = ""
 
-    try:
-      with lock:
-        write(tx)
-        rx  = read()
-        trx = trx + rx
-    except:
-      rx = ""
+    while 1:
+      try:
+        with lock:
+          write(tx)
+          rx  = read()
+          trx = tx + rx
+          break
+      except:
+        pass
 
     if rx:
       try:
@@ -198,5 +203,6 @@ if __name__=='__main__':
       except:
         error_log("Failed to open file" + out_file)
 
-    trx_log(trx)
+    if trx:
+      trx_log(trx)
 
