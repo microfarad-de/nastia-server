@@ -133,7 +133,7 @@ if __name__=='__main__':
   DEV_SHORT = str(sys.argv[1]).replace("/dev/", "")  # Serial device name without the /dev prefix
   DEV       = "/dev/" + DEV_SHORT                    # Serial device name
   LOG       = sys.argv[2]                            # Log file prefix
-  LOG_TRX   = LOG + "-trx"                           # Transmit/receive log
+  LOG_TRX   = LOG + "-" + DEV_SHORT                  # Transmit/receive log
 
   if len(sys.argv) < 4:
     BAUD_RATE = 9600
