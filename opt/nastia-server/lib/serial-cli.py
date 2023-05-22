@@ -70,13 +70,13 @@ def rx_thread():
   global terminate
   while 1:
     time.sleep (0.1)
+    sema.acquire()
     try:
-      sema.acquire()
       with lock:
         rx = read()
-      sema.release()
     except:
       rx = ""
+    sema.release()
     if rx:
       sys.stdout.write(rx)
     if terminate:
@@ -127,14 +127,13 @@ if __name__=='__main__':
   while 1:
     time.sleep (0.1)
     tx = sys.stdin.readline()
+    sema.acquire()
     try:
-      sema.acquire()
       with lock:
         write(tx)
-        sema.release()
     except:
       pass
-
+    sema.release()
     if terminate:
       break
 
