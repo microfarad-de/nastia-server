@@ -31,16 +31,14 @@
 #
 
 import serial  # pip install pyserial
-import ilock   # pip install ilock
+import ilock  # pip install ilock
 import sys
 import os
 import time
 import datetime
 
-
 # Current directory where this script is located
 DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 # Polling interval in seconds
 INTERVAL = 5
@@ -64,7 +62,7 @@ def warningLog(text):
 
 
 # Print error log message
-def errorLog (text):
+def errorLog(text):
     print("[ERROR] " + text.rstrip())
     os.popen(DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
 
@@ -84,29 +82,24 @@ def read():
     time.sleep(0.1)
     return result
 
+
 # Write to the transmit buffer
 def write(str):
     ser.write(str.encode())
     time.sleep(0.1)
 
 
-
-
-
-
-
 #################
 ####  START  ####
 #################
-
 
 # Check for correct number of arguments
 if len(sys.argv) < 2:
     print("usage: " + sys.argv[0] + " DEVICE BAUD_RATE")
     sys.exit()
 
-DEVICE    = sys.argv[1]    # RS232 device name
-BAUD_RATE = sys.argv[2]    # Serial baud rate
+DEVICE = sys.argv[1]  # RS232 device name
+BAUD_RATE = sys.argv[2]  # Serial baud rate
 
 # System-wide lock ensures mutually exclusive access to the serial port
 lock = ilock.ILock(DEVICE, timeout=600)
@@ -114,9 +107,8 @@ lock = ilock.ILock(DEVICE, timeout=600)
 infoLog("UPS service started")
 
 # Initialize the serial port
-with lock: # Ensure exclusive access through system-wide lock
+with lock:  # Ensure exclusive access through system-wide lock
     ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-
 
 # A serial connection will cause the MCU to reboot
 # The following will flush the initial boot message
@@ -127,13 +119,12 @@ with lock:
 sys.stdout.write(result)
 time.sleep(2)
 
-
 lastResult = ""
 lastMeasResult = ""
 measCount = 0
 chargingFlag = False
 wasOnBatteryFlag = True
-lastChargeTime = datetime.datetime(1970,1,1)
+lastChargeTime = datetime.datetime(1970, 1, 1)
 
 # Main loop
 while 1:
@@ -156,11 +147,13 @@ while 1:
             if "CHARGING" in result and not chargingFlag:
                 chargeTime = datetime.datetime.now()
                 delta = chargeTime - lastChargeTime
-                deltaHours = round(delta.days*24 + delta.seconds/3600)
+                deltaHours = round(delta.days * 24 + delta.seconds / 3600)
                 lastChargeTime = chargeTime
-                infoLog(result.rstrip() + " (delta = " + str(deltaHours) + "h)")
+                infoLog(result.rstrip() + " (delta = " + str(deltaHours) +
+                        "h)")
                 if deltaHours < BAD_BATTERY_THRESHOLD and not wasOnBatteryFlag:
-                    warningLog ("bad battery (delta = " + str(deltaHours) + "h)")
+                    warningLog("bad battery (delta = " + str(deltaHours) +
+                               "h)")
                 chargingFlag = True
                 wasOnBatteryFlag = False
             elif "CHARGING" in result:
@@ -196,5 +189,3 @@ while 1:
             measCount = 0
 
     time.sleep(INTERVAL)
-
-

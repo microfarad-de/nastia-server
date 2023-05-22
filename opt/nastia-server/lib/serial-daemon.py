@@ -26,7 +26,7 @@
 #
 
 import serial  # pip install pyserial
-import ilock   # pip install ilock
+import ilock  # pip install ilock
 import sys
 import time
 import signal
@@ -39,170 +39,166 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Print info log message
 def info_log(text):
-  global LOG
-  print(text)
-  os.popen(DIR + "/infoLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'")
+    global LOG
+    print(text)
+    os.popen(DIR + "/infoLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'")
 
 
 # Print warning log message
 def warning_log(text):
-  global LOG
-  print("[WARNING] " + text)
-  os.popen(DIR + "/warningLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'")
+    global LOG
+    print("[WARNING] " + text)
+    os.popen(DIR + "/warningLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'")
 
 
 # Print error log message
 def error_log(text):
-  global LOG
-  print("[ERROR] " + text)
-  os.popen(DIR + "/errorLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'")
+    global LOG
+    print("[ERROR] " + text)
+    os.popen(DIR + "/errorLog.sh \"" + text + "\" '" + LOG + "' '' 'cd'")
 
 
 # Print transmit/receive log message
 def trx_log(text):
-  global LOG_TRX
-  print(text)
-  os.popen(DIR + "/infoLog.sh \"\n" + text + "\" '" + LOG_TRX + "' '' 'd'")
-
+    global LOG_TRX
+    print(text)
+    os.popen(DIR + "/infoLog.sh \"\n" + text + "\" '" + LOG_TRX + "' '' 'd'")
 
 
 # Read the contents of the receive buffer
 def read():
-  global DEV
-  global ser
-  rx = " "
-  result = ""
-  while len(rx) > 0:
-    try:
-      rx = ser.readline().decode()
-      result = result + rx
-      time.sleep(0.1)
-    except:
-      #print(traceback.format_exc())
-      error_log("Failed to read from " + DEV)
-      exit_failure()
-  return result
+    global DEV
+    global ser
+    rx = " "
+    result = ""
+    while len(rx) > 0:
+        try:
+            rx = ser.readline().decode()
+            result = result + rx
+            time.sleep(0.1)
+        except:
+            #print(traceback.format_exc())
+            error_log("Failed to read from " + DEV)
+            exit_failure()
+    return result
 
 
 # Write to the transmit buffer
 def write(str):
-  global DEV
-  global ser
-  try:
-    ser.write(str.encode())
-  except:
-    #print(traceback.format_exc())
-    error_log("Failed to write to " + DEV)
-    exit_failure()
+    global DEV
+    global ser
+    try:
+        ser.write(str.encode())
+    except:
+        #print(traceback.format_exc())
+        error_log("Failed to write to " + DEV)
+        exit_failure()
 
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
-  global terminate
-  terminate = True
-  print("\nInterrupted by user\n")
-  time.sleep (0.3)
-  sys.exit (0)
+    global terminate
+    terminate = True
+    print("\nInterrupted by user\n")
+    time.sleep(0.3)
+    sys.exit(0)
 
 
 # Exit due to failure
 def exit_failure():
-  global status_file
-  try:
-    os.remove(status_file)
-  except:
-    pass
-  sys.exit(1)
-
+    global status_file
+    try:
+        os.remove(status_file)
+    except:
+        pass
+    sys.exit(1)
 
 
 #################
 ####  START  ####
 #################
-if __name__=='__main__':
+if __name__ == '__main__':
 
-  # Handle Ctrl+C
-  signal.signal(signal.SIGINT, signal_handler)
-  terminate = False
+    # Handle Ctrl+C
+    signal.signal(signal.SIGINT, signal_handler)
+    terminate = False
 
-  # Check for correct number of arguments
-  if len(sys.argv) < 3:
-    print("Usage: " + sys.argv[0] + " DEVICE LOG [BAUD_RATE]\n")
-    sys.exit()
+    # Check for correct number of arguments
+    if len(sys.argv) < 3:
+        print("Usage: " + sys.argv[0] + " DEVICE LOG [BAUD_RATE]\n")
+        sys.exit()
 
-  DEV_SHORT = str(sys.argv[1]).replace("/dev/", "")  # Serial device name without the /dev prefix
-  DEV       = "/dev/" + DEV_SHORT                    # Serial device name
-  LOG       = sys.argv[2]                            # Log file prefix
-  LOG_TRX   = LOG + "-" + DEV_SHORT                  # Transmit/receive log
+    DEV_SHORT = str(sys.argv[1]).replace(
+        "/dev/", "")  # Serial device name without the /dev prefix
+    DEV = "/dev/" + DEV_SHORT  # Serial device name
+    LOG = sys.argv[2]  # Log file prefix
+    LOG_TRX = LOG + "-" + DEV_SHORT  # Transmit/receive log
 
-  if len(sys.argv) < 4:
-    BAUD_RATE = 9600
-  else:
-    BAUD_RATE = sys.argv[2]  # Serial baud rate
+    if len(sys.argv) < 4:
+        BAUD_RATE = 9600
+    else:
+        BAUD_RATE = sys.argv[2]  # Serial baud rate
 
-  in_file     = "/tmp/serial-daemon-in-"     + DEV_SHORT
-  out_file    = "/tmp/serial-daemon-out-"    + DEV_SHORT
-  status_file = "/tmp/serial-daemon-status-" + DEV_SHORT
-  print("Input file: ", in_file)
-  print("Output file:", out_file)
-  print("Status file:", status_file)
-
-  try:
-    os.remove(out_file)
-  except:
-    pass
-
-
-  # System-wide lock ensures mutually exclusive access to the serial port
-  lock = ilock.ILock(DEV, timeout=600)
-
-  # Initialize the serial port
-  while 1:
-    try:
-      with lock:
-        ser = serial.Serial(DEV, BAUD_RATE, timeout=0.1)
-      info_log("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
-      break
-    except Exception as ex:
-      if type(ex).__name__ != "PermissionError":
-        error_log("Failed to connect to " + DEV)
-        exit_failure()
-
-
-  while 1:
-    if terminate:
-      break
+    in_file = "/tmp/serial-daemon-in-" + DEV_SHORT
+    out_file = "/tmp/serial-daemon-out-" + DEV_SHORT
+    status_file = "/tmp/serial-daemon-status-" + DEV_SHORT
+    print("Input file: ", in_file)
+    print("Output file:", out_file)
+    print("Status file:", status_file)
 
     try:
-      input = open(in_file, 'r')
-      tx    = input.read()
-      os.remove(in_file)
+        os.remove(out_file)
     except:
-      #print("DBG failed to open")
-      #print(traceback.format_exc())
-      time.sleep(0.3)
-      continue
-
-    trx = ""
-
-    while 1:
-      try:
-        with lock:
-          write(tx)
-          rx  = read()
-          trx = tx + rx
-          break
-      except:
         pass
 
-    if rx:
-      try:
-        output = open(out_file, 'w')
-        output.write(rx)
-        output.close()
-      except:
-        error_log("Failed to open file" + out_file)
+    # System-wide lock ensures mutually exclusive access to the serial port
+    lock = ilock.ILock(DEV, timeout=600)
 
-    if trx:
-      trx_log(trx)
+    # Initialize the serial port
+    while 1:
+        try:
+            with lock:
+                ser = serial.Serial(DEV, BAUD_RATE, timeout=0.1)
+            info_log("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
+            break
+        except Exception as ex:
+            if type(ex).__name__ != "PermissionError":
+                error_log("Failed to connect to " + DEV)
+                exit_failure()
 
+    while 1:
+        if terminate:
+            break
+
+        try:
+            input = open(in_file, 'r')
+            tx = input.read()
+            os.remove(in_file)
+        except:
+            #print("DBG failed to open")
+            #print(traceback.format_exc())
+            time.sleep(0.3)
+            continue
+
+        trx = ""
+
+        while 1:
+            try:
+                with lock:
+                    write(tx)
+                    rx = read()
+                    trx = tx + rx
+                    break
+            except:
+                pass
+
+        if rx:
+            try:
+                output = open(out_file, 'w')
+                output.write(rx)
+                output.close()
+            except:
+                error_log("Failed to open file" + out_file)
+
+        if trx:
+            trx_log(trx)
