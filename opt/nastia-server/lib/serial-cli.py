@@ -37,6 +37,7 @@ import signal
 def read():
     global DEVICE
     global ser
+    global terminate
     rx = " "
     result = ""
     while len(rx) > 0:
@@ -45,7 +46,8 @@ def read():
             result = result + rx
         except:
             print("Failed to read from", DEVICE)
-            signal_handler(0, 0)
+            terminate = True
+            break
     return result
 
 
@@ -53,26 +55,26 @@ def read():
 def write(str):
     global DEVICE
     global ser
+    global terminate
     try:
         ser.write(str.encode())
     except:
         print("Failed to write to", DEVICE)
-        signal_handler(0, 0)
-
+        terminate = True
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
     global terminate
     global thread
+    print("\nInterrupted by user\n")
     terminate = True
-    print("\nSerial console exited\n")
-    time.sleep(0.3)
     thread.join()
     sys.exit(0)
 
 
 # Run receiving loop as a thread
 def rx_thread():
+    global sema
     global terminate
     while 1:
         time.sleep(0.1)
@@ -102,7 +104,8 @@ class ILockE(ilock.ILock):
                 break
             except PermissionError:
                 pass
-
+            except FileNotFoundError:
+                break
 
 #################
 ####  START  ####
@@ -149,6 +152,7 @@ if __name__ == '__main__':
         time.sleep(0.1)
         tx = sys.stdin.readline()
         rx = ""
+
         sema.acquire()
         with lock:
             write(tx)
@@ -159,4 +163,5 @@ if __name__ == '__main__':
             sys.stdout.write(rx)
 
         if terminate:
-            break
+            thread.join()
+            sys.exit(0)

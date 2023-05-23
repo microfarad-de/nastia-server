@@ -117,6 +117,8 @@ class ILockE(ilock.ILock):
                 break
             except PermissionError:
                 pass
+            except FileNotFoundError:
+                break
 
 
 #################
