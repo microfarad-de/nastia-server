@@ -114,6 +114,24 @@ def exit_failure():
     sys.exit(1)
 
 
+# Extends ILock with exception handling
+class ILockE(ilock.ILock):
+    def __enter__(self):
+        while 1:
+            try:
+                super(ILockE, self).__enter__()
+                break
+            except PermissionError:
+                pass
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        while 1:
+            try:
+                super(ILockE, self).__exit__(exc_type, exc_val, exc_tb)
+                break
+            except PermissionError:
+                pass
+
+
 #################
 ####  START  ####
 #################
@@ -152,19 +170,16 @@ if __name__ == '__main__':
         pass
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = ilock.ILock(DEV, timeout=600)
+    lock = ILockE(DEV, timeout=600)
 
     # Initialize the serial port
-    while 1:
-        try:
-            with lock:
-                ser = serial.Serial(DEV, BAUD_RATE, timeout=0.1)
-            info_log ("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
-            break
-        except Exception as ex:
-            if type(ex).__name__ != "PermissionError":
-                error_log("Failed to connect to " + DEV)
-                exit_failure ()
+    try:
+        with lock:
+            ser = serial.Serial(DEV, BAUD_RATE, timeout=0.1)
+        info_log ("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
+    except:
+        error_log("Failed to connect to " + DEV)
+        exit_failure ()
 
     while 1:
         if terminate:
@@ -181,16 +196,10 @@ if __name__ == '__main__':
 
         trx = ""
 
-        while 1:
-            try:
-                with lock:
-                    write(tx)
-                    rx = read()
-                    trx = tx + rx
-                    break
-            except Exception as ex:
-                if type(ex).__name__ != "PermissionError":
-                    exit_failure()
+        with lock:
+            write(tx)
+            rx = read()
+            trx = tx + rx
 
         if rx:
             try:

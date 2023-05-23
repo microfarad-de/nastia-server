@@ -77,16 +77,31 @@ def rx_thread():
     while 1:
         time.sleep(0.1)
         sema.acquire()
-        try:
-            with lock:
-                rx = read()
-        except:
-            rx = ""
+        with lock:
+            rx = read()
         sema.release()
         if rx:
             sys.stdout.write(rx)
         if terminate:
             break
+
+
+# Extends ILock with exception handling
+class ILockE(ilock.ILock):
+    def __enter__(self):
+        while 1:
+            try:
+                super(ILockE, self).__enter__()
+                break
+            except PermissionError:
+                pass
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        while 1:
+            try:
+                super(ILockE, self).__exit__(exc_type, exc_val, exc_tb)
+                break
+            except PermissionError:
+                pass
 
 
 #################
@@ -112,20 +127,17 @@ if __name__ == '__main__':
         BAUD_RATE = sys.argv[2]  # Serial baud rate
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = ilock.ILock(DEVICE, timeout=600)
+    lock = ILockE(DEVICE, timeout=600)
 
     # Initialize the serial port
-    while 1:
-        try:
-            with lock:
-                ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-            print("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
-            print("Waiting for user input (press Ctrl+C to exit)...\n")
-            break
-        except Exception as ex:
-            if type(ex).__name__ != "PermissionError":
-                print("Failed to connect to " + DEVICE)
-                sys.exit(1)
+    try:
+        with lock:
+            ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
+        print("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
+        print("Waiting for user input (press Ctrl+C to exit)...\n")
+    except:
+        print("Failed to connect to " + DEVICE)
+        sys.exit(1)
 
     # Run receive routine as a thread
     terminate = False
@@ -138,15 +150,9 @@ if __name__ == '__main__':
         tx = sys.stdin.readline()
         rx = ""
         sema.acquire()
-        while 1:
-            try:
-                with lock:
-                    write(tx)
-                    rx = read()
-                break
-            except Exception as ex:
-                if type(ex).__name__ != "PermissionError":
-                    signal_handler(0, 0)
+        with lock:
+            write(tx)
+            rx = read()
         sema.release()
 
         if rx:
