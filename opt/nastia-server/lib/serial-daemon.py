@@ -126,7 +126,7 @@ if __name__ == '__main__':
     # Check for correct number of arguments
     if len(sys.argv) < 3:
         print("Usage: " + sys.argv[0] + " DEVICE LOG [BAUD_RATE]\n")
-        sys.exit()
+        sys.exit(1)
 
     DEV_SHORT = str(sys.argv[1]).replace(
         "/dev/", "")  # Serial device name without the /dev prefix
@@ -155,13 +155,16 @@ if __name__ == '__main__':
     lock = ilock.ILock(DEV, timeout=600)
 
     # Initialize the serial port
-    try:
-        with lock:
-            ser = serial.Serial(DEV, BAUD_RATE, timeout=0.1)
-        info_log ("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
-    except:
-        error_log("Failed to connect to " + DEV)
-        exit_failure ()
+    while 1:
+        try:
+            with lock:
+                ser = serial.Serial(DEV, BAUD_RATE, timeout=0.1)
+            info_log ("Connected to " + DEV + " at " + str(BAUD_RATE) + " baud")
+            break
+        except Exception as ex:
+            if type(ex).__name__ != "PermissionError":
+                error_log("Failed to connect to " + DEV)
+                exit_failure ()
 
     while 1:
         if terminate:
