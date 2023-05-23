@@ -74,19 +74,49 @@ def measLog(text):
 
 # Read the contents of the receive buffer
 def read():
+    global DEVICE
+    global ser
     rx = " "
     result = ""
     while len(rx) > 0:
-        rx = ser.readline().decode()
-        result = result + rx
+        try:
+            rx = ser.readline().decode()
+            result = result + rx
+        except:
+            print("Failed to read from", DEVICE)
+            sys.exit(1)
     time.sleep(0.1)
     return result
 
 
 # Write to the transmit buffer
 def write(str):
-    ser.write(str.encode())
+    global DEVICE
+    global ser
+    try:
+        ser.write(str.encode())
+    except:
+        print("Failed to write to", DEVICE)
+        sys.exit(1)
     time.sleep(0.1)
+
+
+# Extends ILock with exception handling
+class ILockE(ilock.ILock):
+    def __enter__(self):
+        while 1:
+            try:
+                super(ILockE, self).__enter__()
+                break
+            except PermissionError:
+                pass
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        while 1:
+            try:
+                super(ILockE, self).__exit__(exc_type, exc_val, exc_tb)
+                break
+            except PermissionError:
+                pass
 
 
 #################
@@ -102,7 +132,7 @@ DEVICE = sys.argv[1]  # RS232 device name
 BAUD_RATE = sys.argv[2]  # Serial baud rate
 
 # System-wide lock ensures mutually exclusive access to the serial port
-lock = ilock.ILock(DEVICE, timeout=600)
+lock = ILockE(DEVICE, timeout=600)
 
 infoLog("UPS service started")
 
