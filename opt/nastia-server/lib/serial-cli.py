@@ -27,11 +27,10 @@
 
 import serial  # pip install pyserial
 import ilock  # pip install ilock
-from threading import Thread, Semaphore
 import sys
-import time
 import signal
-
+from threading import Thread, Semaphore
+from time import sleep, gmtime, strftime
 
 # Read the contents of the receive buffer
 def read():
@@ -76,14 +75,19 @@ def signal_handler(sig, frame):
 def rx_thread():
     global sema
     global terminate
+    global timestamp
     while 1:
-        time.sleep(0.1)
+        sleep(0.1)
         sema.acquire()
         with lock:
             rx = read()
         sema.release()
         if rx:
-            sys.stdout.write(rx)
+            if timestamp:
+                ts = strftime("%Y-%m-%d %H:%M:%S %Z\r\n", gmtime())
+            else:
+                ts = ""
+            sys.stdout.write(ts + rx)
         if terminate:
             break
 
@@ -117,17 +121,28 @@ if __name__ == '__main__':
     # Handle Ctrl+C
     signal.signal(signal.SIGINT, signal_handler)
 
+    timestamp = False
+
     # Check for correct number of arguments
     if len(sys.argv) < 2:
-        print("Usage: " + sys.argv[0] + " DEVICE [BAUD_RATE]\n")
+        print("Usage: " + sys.argv[0] + " DEVICE [BAUD_RATE] [-t]\n")
         sys.exit(1)
 
     DEVICE = str(sys.argv[1])  # Serial device name
 
     if len(sys.argv) < 3:
         BAUD_RATE = 9600
-    else:
-        BAUD_RATE = sys.argv[2]  # Serial baud rate
+
+    if len(sys.argv) >= 3:
+        if sys.argv[2] == "-t":
+            timestamp = True  # Use time stamps
+            BAUD_RATE = 9600  # Serial baud rate
+        else:
+            BAUD_RATE = sys.argv[2]
+
+    if len(sys.argv) >= 4:
+        if sys.argv[3] == "-t":
+            timestamp = True
 
     # System-wide lock ensures mutually exclusive access to the serial port
     lock = ILockE(DEVICE, timeout=600)
@@ -149,7 +164,7 @@ if __name__ == '__main__':
     thread.start()
 
     while 1:
-        time.sleep(0.1)
+        sleep(0.1)
         tx = sys.stdin.readline()
         rx = ""
 
@@ -160,7 +175,11 @@ if __name__ == '__main__':
         sema.release()
 
         if rx:
-            sys.stdout.write(rx)
+            if timestamp:
+                ts = strftime("%Y-%m-%d %H:%M:%S %Z\r\n", gmtime())
+            else:
+                ts = ""
+            sys.stdout.write(ts + rx)
 
         if terminate:
             thread.join()
