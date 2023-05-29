@@ -37,6 +37,8 @@ Runs extensive system diagnostics every night and sends an automated test report
 Controls the CPU cooling fan over the Raspberry Pi's GPIO pin. This script runs as a service with `service fan start`.
 * UPS control [`ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/ups): 
 Reads the status of the UPS and ensures a safe shutdown upon power loss (see www.microfarad.de/pi-ups). This script runs as a service with `service ups start`.
+* Serial communication over Bluetooth [`bt-daemon`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/bt-daemon): 
+Sends text commends over a bluetooth interface and retrieves its answers. This script runs as a service with `service bt-daemon start`.
 * System configuration parameters are stored in the centralized configuration file under 
 [`nastia-server.conf`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/etc/nastia-server.conf).
 * If not stated otherwise, the above scripts are executed unsing cron jobs which are configured under
