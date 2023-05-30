@@ -29,12 +29,14 @@ import serial  # pip install pyserial
 import ilock  # pip install ilock
 import sys
 import signal
+#import traceback
 from threading import Thread, Semaphore
 from time import sleep, gmtime, strftime
+from optparse import OptionParser
 
 # Read the contents of the receive buffer
 def read():
-    global DEVICE
+    global device
     global ser
     global terminate
     rx = " "
@@ -44,7 +46,7 @@ def read():
             rx = ser.readline().decode()
             result = result + rx
         except:
-            print("Failed to read from", DEVICE)
+            print("Failed to read from", device)
             terminate = True
             break
     return result
@@ -52,13 +54,13 @@ def read():
 
 # Write to the transmit buffer
 def write(str):
-    global DEVICE
+    global device
     global ser
     global terminate
     try:
         ser.write(str.encode())
     except:
-        print("Failed to write to", DEVICE)
+        print("Failed to write to", device)
         terminate = True
 
 # Handle Ctrl+C
@@ -70,6 +72,13 @@ def signal_handler(sig, frame):
     thread.join()
     sys.exit(0)
 
+# Timestamp generator
+def ts():
+    global timestamp
+    if timestamp:
+        return strftime("%Y-%m-%d %H:%M:%S %Z:\r\n", gmtime())
+    else:
+        return ""
 
 # Run receiving loop as a thread
 def rx_thread():
@@ -83,11 +92,7 @@ def rx_thread():
             rx = read()
         sema.release()
         if rx:
-            if timestamp:
-                ts = strftime("%Y-%m-%d %H:%M:%S %Z\r\n", gmtime())
-            else:
-                ts = ""
-            sys.stdout.write(ts + rx)
+            sys.stdout.write(ts() + rx)
         if terminate:
             break
 
@@ -116,45 +121,48 @@ class ILockE(ilock.ILock):
 #################
 if __name__ == '__main__':
 
-    print("\nInteractive Serial Console\n")
-
     # Handle Ctrl+C
     signal.signal(signal.SIGINT, signal_handler)
 
-    timestamp = False
+    print("\nInteractive Serial Console\n")
+    usage = "Usage: " + sys.argv[0] + " [options] device [baud rate]"
+
+    parser = OptionParser("Usage: %prog [options] device [baud rate]")
+
+    parser.add_option("-t", "--timestamp" ,
+                      action="store_true",
+                      dest="timestamp",
+                      default=False,
+                      help="Add time stamps to console output")
+
+    (options, args) = parser.parse_args()
+
+    timestamp = options.timestamp
 
     # Check for correct number of arguments
-    if len(sys.argv) < 2:
-        print("Usage: " + sys.argv[0] + " DEVICE [BAUD_RATE] [-t]\n")
+    if len(args) < 1:
+        parser.print_help()
         sys.exit(1)
 
-    DEVICE = str(sys.argv[1])  # Serial device name
+    device = str(args[0])  # Serial device name
 
-    if len(sys.argv) < 3:
-        BAUD_RATE = 9600
-
-    if len(sys.argv) >= 3:
-        if sys.argv[2] == "-t":
-            timestamp = True  # Use time stamps
-            BAUD_RATE = 9600  # Serial baud rate
-        else:
-            BAUD_RATE = sys.argv[2]
-
-    if len(sys.argv) >= 4:
-        if sys.argv[3] == "-t":
-            timestamp = True
+    if len(args) < 2:
+        baud_rate = 9600
+    else:
+        baud_rate = args[1]
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = ILockE(DEVICE, timeout=600)
+    lock = ILockE(device, timeout=600)
 
     # Initialize the serial port
     try:
         with lock:
-            ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
-        print("Connected to " + DEVICE + " at " + str(BAUD_RATE) + " baud")
+            ser = serial.Serial(device, baud_rate, timeout=0.1)
+        print("Connected to " + device + " at " + str(baud_rate) + " baud")
         print("Waiting for user input (press Ctrl+C to exit)...\n")
     except:
-        print("Failed to connect to " + DEVICE)
+        print("Failed to connect to " + device)
+        #traceback.print_exc()
         sys.exit(1)
 
     # Run receive routine as a thread
@@ -175,11 +183,7 @@ if __name__ == '__main__':
         sema.release()
 
         if rx:
-            if timestamp:
-                ts = strftime("%Y-%m-%d %H:%M:%S %Z\r\n", gmtime())
-            else:
-                ts = ""
-            sys.stdout.write(ts + rx)
+            sys.stdout.write(ts() + rx)
 
         if terminate:
             thread.join()
