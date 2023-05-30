@@ -125,9 +125,8 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
 
     print("\nInteractive Serial Console\n")
-    usage = "Usage: " + sys.argv[0] + " [options] device [baud rate]"
 
-    parser = OptionParser("Usage: %prog [options] device [baud rate]")
+    parser = OptionParser("Usage: %prog device [baud rate] [options]")
 
     parser.add_option("-t", "--timestamp" ,
                       action="store_true",
