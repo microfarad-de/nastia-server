@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
     # Check for correct number of arguments
     if len(sys.argv) < 3:
-        print("Usage: " + sys.argv[0] + " device log [baud rate]\n")
+        print("Usage: " + sys.argv[0] + " <device> <log> [baud rate]\n")
         sys.exit(1)
 
     dev_short = str(sys.argv[1]).replace(

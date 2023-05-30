@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# RS232 Serial Port Console
+# Serial Port Console
 #
 # This source file is part of the follwoing repository:
 # http://www.github.com/microfarad-de/nastia-server
@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
     print("\nInteractive Serial Console\n")
 
-    parser = OptionParser("Usage: %prog device [baud rate] [options]")
+    parser = OptionParser("Usage: %prog <device> [baud rate] [options]")
 
     parser.add_option("-t", "--timestamp" ,
                       action="store_true",
