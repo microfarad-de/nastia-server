@@ -187,6 +187,10 @@ if __name__ == '__main__':
         if terminate:
             break
 
+        tx  = ""
+        rx  = ""
+        trx = ""
+
         try:
             input = open(in_file, 'r')
             tx = input.read()
@@ -194,17 +198,14 @@ if __name__ == '__main__':
         except:
             #print(traceback.format_exc())
             time.sleep(0.3)
-            continue
-
-        rx  = ""
-        trx = ""
 
         with lock:
-            write(tx)
+            if tx:
+                write(tx)
             rx = read()
             trx = tx + rx
 
-        if rx:
+        if tx and rx:
             try:
                 output = open(out_file, 'w')
                 output.write(rx)
