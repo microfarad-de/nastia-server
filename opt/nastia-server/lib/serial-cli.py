@@ -34,6 +34,7 @@ from threading import Thread, Semaphore
 from time import sleep, gmtime, strftime
 from optparse import OptionParser
 
+
 # Read the contents of the receive buffer
 def read():
     global device
@@ -63,6 +64,7 @@ def write(str):
         print("Failed to write to", device)
         terminate = True
 
+
 # Handle Ctrl+C
 def signal_handler(sig, frame):
     global terminate
@@ -72,6 +74,7 @@ def signal_handler(sig, frame):
     thread.join()
     sys.exit(0)
 
+
 # Timestamp generator
 def ts():
     global timestamp
@@ -80,11 +83,11 @@ def ts():
     else:
         return ""
 
+
 # Run receiving loop as a thread
 def rx_thread():
     global sema
     global terminate
-    global timestamp
     while 1:
         sleep(0.1)
         sema.acquire()
@@ -115,6 +118,7 @@ class ILockE(ilock.ILock):
                 pass
             except FileNotFoundError:
                 break
+
 
 #################
 ####  START  ####
