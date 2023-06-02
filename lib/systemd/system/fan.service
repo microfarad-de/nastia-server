@@ -6,8 +6,8 @@ Description=fan control service
 
 [Service]
 Type=idle
-ExecStart=/opt/nastia-server/bin/fan
-User=pi
+ExecStart=/opt/nastia-server/sbin/fan
+User=root
 
 [Install]
 WantedBy=multi-user.target

@@ -33,9 +33,9 @@ Following is the list of available scripts:
 Communicates the server's public IP address to the Dynamic DNS service.
 * System diagnostics [`monitor`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/monitor): 
 Runs extensive system diagnostics every night and sends an automated test report via email.
-* Fan control [`fan`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/fan): 
+* Fan control [`fan`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/fan): 
 Controls the CPU cooling fan over the Raspberry Pi's GPIO pin. This script runs as a service with `service fan start`.
-* UPS control [`ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/bin/ups): 
+* UPS control [`ups`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/ups): 
 Reads the status of the UPS and ensures a safe shutdown upon power loss (see www.microfarad.de/pi-ups). This script runs as a service with `service ups start`.
 * Serial communication over Bluetooth [`bt-daemon`](https://github.com/microfarad-de/nastia-server/blob/master/opt/nastia-server/sbin/bt-daemon): 
 Sends text commends over a bluetooth interface and retrieves its answers. This script runs as a service with `service bt-daemon start`.
