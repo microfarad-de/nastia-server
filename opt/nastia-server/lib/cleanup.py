@@ -120,12 +120,9 @@ for d in dirList:
     fullPath = backupPath + "/" + d
     if dryRun:
         print(d + ":")
-        print("    time  = " + str(t.year) + "-" + str(t.month) + "-" +
-              str(t.day) + " " + str(t.hour) + ":" + str(t.minute) + ":" +
-              str(t.second))
+        print("    time  =", t.strftime("%Y-%m-%d %H:%M:%S"))
         print("    age   = " + str(age.days) + "d " + str(age.seconds) + "s")
-        print("    delta = " + str(delta.days) + "d " + str(delta.seconds) +
-              "s")
+        print("    delta = " + str(delta.days) + "d " + str(delta.seconds) + "s")
     if age.days > 2 and delta.days < 1:
         if dryRun == 0: shutil.rmtree(fullPath)
         infoLog("removed " + fullPath)
