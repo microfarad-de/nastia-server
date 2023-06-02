@@ -45,7 +45,7 @@ FREE_PERCENT = 5
 
 # Check for correct number of arguments
 if len(sys.argv) < 1:
-    print("usage: " + sys.argv[0] + " PATH [--dry-run]")
+    print("usage: " + sys.argv[0] + " <path> [--dry-run]")
     sys.exit()
 
 # Parse arguments

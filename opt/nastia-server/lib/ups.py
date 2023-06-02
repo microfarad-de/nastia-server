@@ -127,7 +127,7 @@ class ILockE(ilock.ILock):
 
 # Check for correct number of arguments
 if len(sys.argv) < 2:
-    print("usage: " + sys.argv[0] + " DEVICE BAUD_RATE")
+    print("usage: " + sys.argv[0] + " <device> <baud rate>")
     sys.exit()
 
 DEVICE = sys.argv[1]  # RS232 device name
