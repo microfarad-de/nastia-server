@@ -136,7 +136,7 @@ if __name__ == '__main__':
                       action="store_true",
                       dest="timestamp",
                       default=False,
-                      help="Add time stamps to console output")
+                      help="add time stamps to console output")
 
     (options, args) = parser.parse_args()
 

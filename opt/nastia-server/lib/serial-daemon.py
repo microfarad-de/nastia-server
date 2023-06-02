@@ -32,6 +32,7 @@ import time
 import signal
 import os
 import traceback
+import re
 
 # Current directory where this script is located
 dir = os.path.dirname(os.path.abspath(__file__))
@@ -61,6 +62,8 @@ def error_log(text):
 # Print transmit/receive log message
 def trx_log(text):
     global log_trx
+    # Remove empty lines
+    text = re.sub(r'\n\s*\n','\n',text,re.MULTILINE)
     print(text)
     os.popen(dir + "/infoLog.sh \"\n" + text + "\" '" + log_trx + "' '' 'd'")
 
