@@ -184,7 +184,7 @@ if __name__ == '__main__':
             result = read()
 
         # Trace the UPS status
-        if result != lastResult:
+        if result != "" and result != lastResult:
             lastResult = result
             if "BATTERY" in result:
                 wasOnBatteryFlag = True
@@ -198,7 +198,7 @@ if __name__ == '__main__':
                     delta = chargeTime - lastChargeTime
                     deltaHours = round(delta.days * 24 + delta.seconds / 3600)
                     lastChargeTime = chargeTime
-                    infoLog(result.rstrip() + " (delta = " + str(deltaHours) + "h)")
+                    infoLog(result + " (delta = " + str(deltaHours) + "h)")
                     if deltaHours < BAD_BATTERY_THRESHOLD and not wasOnBatteryFlag:
                         warningLog("bad battery (delta = " + str(deltaHours) + "h)")
                     chargingFlag = True
@@ -226,7 +226,7 @@ if __name__ == '__main__':
             result = read()
 
         # Trace the UPS measurements
-        if result != lastMeasResult:
+        if result != "" and result != lastMeasResult:
             lastMeasResult = result
             if measCount == 0:
                 measLog("V_in   V_ups  V_batt I_batt PWM")
