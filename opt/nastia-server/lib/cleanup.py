@@ -30,12 +30,14 @@ import sys
 import re
 import shutil
 import os
+import logging
+from systemd.journal import JournalHandler
 from datetime import datetime
 from os import listdir
 from os import popen
 
 # Current directory where this script is located
-DIR = os.path.dirname(os.path.abspath(__file__))
+dir = os.path.dirname(os.path.abspath(__file__))
 
 # Minimum allowed free backup disk space in percent
 FREE_PERCENT = 5
@@ -52,6 +54,11 @@ if len(sys.argv) < 1:
 backupPath = sys.argv[1]
 dirList = []
 
+# Initialize logger
+logger = logging.getLogger('cleanup')
+logger.addHandler(JournalHandler())
+logger.setLevel(logging.INFO)
+
 print(" ")
 print("cleaning-up backups folder:", backupPath, "...")
 
@@ -65,20 +72,29 @@ if len(sys.argv) == 3:
 
 # Print info log message
 def infoLog(text):
+    global dir
+    global logger
+    logger.info(text)
     print(text)
-    popen(DIR + "/infoLog.sh \"" + text + "\" 'cleanup' '' 'c'")
+    popen(dir + "/infoLog.sh \"" + text + "\" 'cleanup' '' 'c'")
 
 
 # Print warning log message
 def warningLog(text):
+    global dir
+    global logger
+    logger.warning(text)
     print("[WARNING] " + text)
-    popen(DIR + "/warningLog.sh \"" + text + "\" 'cleanup' '' 'c'")
+    popen(dir + "/warningLog.sh \"" + text + "\" 'cleanup' '' 'c'")
 
 
 # Print error log message
 def errorLog(text):
+    global dir
+    global logger
+    logger.error(text)
     print("[ERROR] " + text)
-    popen(DIR + "/errorLog.sh \"" + text + "\" 'cleanup' '' 'c'")
+    popen(dir + "/errorLog.sh \"" + text + "\" 'cleanup' '' 'c'")
 
 
 # Collect the backup folders
@@ -96,14 +112,14 @@ today = today.replace(second=0)  # Round-down to the nearest minute
 lastT = datetime(1970, 1, 1)
 
 # Iterate over backup directories and delete according to rules
-for dir in dirList:
-    t = datetime.strptime(dir, "%Y-%m-%d-%H%M%S")
+for d in dirList:
+    t = datetime.strptime(d, "%Y-%m-%d-%H%M%S")
     t = t.replace(second=0)  # Round-down to the nearest minute
     age = today - t
     delta = t - lastT
-    fullPath = backupPath + "/" + dir
+    fullPath = backupPath + "/" + d
     if dryRun:
-        print(dir + ":")
+        print(d + ":")
         print("    time  = " + str(t.year) + "-" + str(t.month) + "-" +
               str(t.day) + " " + str(t.hour) + ":" + str(t.minute) + ":" +
               str(t.second))

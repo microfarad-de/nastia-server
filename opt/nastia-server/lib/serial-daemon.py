@@ -33,6 +33,8 @@ import signal
 import os
 import traceback
 import re
+import logging
+from systemd.journal import JournalHandler
 
 # Current directory where this script is located
 dir = os.path.dirname(os.path.abspath(__file__))
@@ -40,21 +42,30 @@ dir = os.path.dirname(os.path.abspath(__file__))
 
 # Print info log message
 def info_log(text):
+    global dir
     global log
+    global logger
+    logger.info(text)
     print(text)
     os.popen(dir + "/infoLog.sh \"" + text + "\" '" + log + "' '' 'cd'")
 
 
 # Print warning log message
 def warning_log(text):
+    global dir
     global log
+    global logger
+    logger.warning(text)
     print("[WARNING] " + text)
     os.popen(dir + "/warningLog.sh \"" + text + "\" '" + log + "' '' 'cd'")
 
 
 # Print error log message
 def error_log(text):
+    global dir
     global log
+    global logger
+    logger.error(text)
     print("[ERROR] " + text)
     os.popen(dir + "/errorLog.sh \"" + text + "\" '" + log + "' '' 'cd'")
 
@@ -156,6 +167,9 @@ if __name__ == '__main__':
     dev = "/dev/" + dev_short  # Serial device name
     log = sys.argv[2]  # Log file prefix
     log_trx = log + "-" + dev_short  # Transmit/receive log
+    logger = logging.getLogger(log)
+    logger.addHandler(JournalHandler())
+    logger.setLevel(logging.INFO)
 
     if len(sys.argv) < 4:
         baud_rate = 9600

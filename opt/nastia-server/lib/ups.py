@@ -36,9 +36,11 @@ import sys
 import os
 import time
 import datetime
+import logging
+from systemd.journal import JournalHandler
 
 # Current directory where this script is located
-DIR = os.path.dirname(os.path.abspath(__file__))
+dir = os.path.dirname(os.path.abspath(__file__))
 
 # Polling interval in seconds
 INTERVAL = 5
@@ -51,30 +53,40 @@ BAD_BATTERY_THRESHOLD = 48
 
 # Print info log message
 def infoLog(text):
+    global dir
+    global loggger
+    logger.info(text.rstrip())
     print(text.rstrip())
-    os.popen(DIR + "/infoLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
+    os.popen(dir + "/infoLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
 
 
 # Print warning log message
 def warningLog(text):
+    global dir
+    global logger
+    logger.warning(text.rstrip())
     print("[WARNING] " + text.rstrip())
-    os.popen(DIR + "/warningLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
+    os.popen(dir + "/warningLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
 
 
 # Print error log message
 def errorLog(text):
+    global dir
+    global logger
+    logger.error(text.rstrip())
     print("[ERROR] " + text.rstrip())
-    os.popen(DIR + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
+    os.popen(dir + "/errorLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
 
 
 # Print a log message to the measurements log file
 def measLog(text):
-    os.popen(DIR + "/infoLog.sh \"" + text.rstrip() + "\" 'ups-meas' '' 'd'")
+    global dir
+    os.popen(dir + "/infoLog.sh \"" + text.rstrip() + "\" 'ups-meas' '' 'd'")
 
 
 # Read the contents of the receive buffer
 def read():
-    global DEVICE
+    global device
     global ser
     rx = " "
     result = ""
@@ -83,7 +95,7 @@ def read():
             rx = ser.readline().decode()
             result = result + rx
         except:
-            print("Failed to read from", DEVICE)
+            print("Failed to read from", device)
             sys.exit(1)
     time.sleep(0.1)
     return result
@@ -91,12 +103,12 @@ def read():
 
 # Write to the transmit buffer
 def write(str):
-    global DEVICE
+    global device
     global ser
     try:
         ser.write(str.encode())
     except:
-        print("Failed to write to", DEVICE)
+        print("Failed to write to", device)
         sys.exit(1)
     time.sleep(0.1)
 
@@ -124,100 +136,103 @@ class ILockE(ilock.ILock):
 #################
 ####  START  ####
 #################
+if __name__ == '__main__':
 
-# Check for correct number of arguments
-if len(sys.argv) < 2:
-    print("usage: " + sys.argv[0] + " <device> <baud rate>")
-    sys.exit()
+    logger = logging.getLogger('ups')
+    logger.addHandler(JournalHandler())
+    logger.setLevel(logging.INFO)
 
-DEVICE = sys.argv[1]  # RS232 device name
-BAUD_RATE = sys.argv[2]  # Serial baud rate
+    # Check for correct number of arguments
+    if len(sys.argv) < 2:
+        print("usage: " + sys.argv[0] + " <device> <baud rate>")
+        sys.exit()
 
-# System-wide lock ensures mutually exclusive access to the serial port
-lock = ILockE(DEVICE, timeout=600)
+    device = sys.argv[1]  # RS232 device name
+    baud_rate = sys.argv[2]  # Serial baud rate
 
-infoLog("UPS service started")
+    # System-wide lock ensures mutually exclusive access to the serial port
+    lock = ILockE(device, timeout=600)
 
-# Initialize the serial port
-with lock:  # Ensure exclusive access through system-wide lock
-    ser = serial.Serial(DEVICE, BAUD_RATE, timeout=0.1)
+    infoLog("UPS service started")
 
-# A serial connection will cause the MCU to reboot
-# The following will flush the initial boot message
-# and wait until the MCU is up and running
-time.sleep(2)
-with lock:
-    result = read()
-sys.stdout.write(result)
-time.sleep(2)
+    # Initialize the serial port
+    with lock:  # Ensure exclusive access through system-wide lock
+        ser = serial.Serial(device, baud_rate, timeout=0.1)
 
-lastResult = ""
-lastMeasResult = ""
-measCount = 0
-chargingFlag = False
-wasOnBatteryFlag = True
-lastChargeTime = datetime.datetime(1970, 1, 1)
-
-# Main loop
-while 1:
-
-    # Read the UPS status
+    # A serial connection will cause the MCU to reboot
+    # The following will flush the initial boot message
+    # and wait until the MCU is up and running
+    time.sleep(2)
     with lock:
-        write("stat\n")
         result = read()
+    sys.stdout.write(result)
+    time.sleep(2)
 
-    # Trace the UPS status
-    if result != lastResult:
-        lastResult = result
-        if "BATTERY" in result:
-            wasOnBatteryFlag = True
-            warningLog(result)
-        elif "ERROR" in result:
-            errorLog(result)
-        else:
-            # Bad battery detection
-            if "CHARGING" in result and not chargingFlag:
-                chargeTime = datetime.datetime.now()
-                delta = chargeTime - lastChargeTime
-                deltaHours = round(delta.days * 24 + delta.seconds / 3600)
-                lastChargeTime = chargeTime
-                infoLog(result.rstrip() + " (delta = " + str(deltaHours) +
-                        "h)")
-                if deltaHours < BAD_BATTERY_THRESHOLD and not wasOnBatteryFlag:
-                    warningLog("bad battery (delta = " + str(deltaHours) +
-                               "h)")
-                chargingFlag = True
-                wasOnBatteryFlag = False
-            elif "CHARGING" in result:
-                infoLog(result)
-            else:
-                chargingFlag = False
-                infoLog(result)
+    lastResult = ""
+    lastMeasResult = ""
+    measCount = 0
+    chargingFlag = False
+    wasOnBatteryFlag = True
+    lastChargeTime = datetime.datetime(1970, 1, 1)
 
-    # Handle low battery condition
-    if "BATTERY 0" in result:
+    # Main loop
+    while 1:
+
+        # Read the UPS status
         with lock:
-            write("halt\n")
+            write("stat\n")
             result = read()
-        if "SHUTDOWN" in result:
-            errorLog(result)
-            os.popen("sudo halt")
-        else:
-            errorLog("shutdown failed")
 
-    # Read the UPS measurements
-    with lock:
-        write("meas\n")
-        result = read()
+        # Trace the UPS status
+        if result != lastResult:
+            lastResult = result
+            if "BATTERY" in result:
+                wasOnBatteryFlag = True
+                warningLog(result)
+            elif "ERROR" in result:
+                errorLog(result)
+            else:
+                # Bad battery detection
+                if "CHARGING" in result and not chargingFlag:
+                    chargeTime = datetime.datetime.now()
+                    delta = chargeTime - lastChargeTime
+                    deltaHours = round(delta.days * 24 + delta.seconds / 3600)
+                    lastChargeTime = chargeTime
+                    infoLog(result.rstrip() + " (delta = " + str(deltaHours) + "h)")
+                    if deltaHours < BAD_BATTERY_THRESHOLD and not wasOnBatteryFlag:
+                        warningLog("bad battery (delta = " + str(deltaHours) + "h)")
+                    chargingFlag = True
+                    wasOnBatteryFlag = False
+                elif "CHARGING" in result:
+                    infoLog(result)
+                else:
+                    chargingFlag = False
+                    infoLog(result)
 
-    # Trace the UPS measurements
-    if result != lastMeasResult:
-        lastMeasResult = result
-        if measCount == 0:
-            measLog("V_in   V_ups  V_batt I_batt PWM")
-        measLog(result)
-        measCount += 1
-        if measCount >= 20:
-            measCount = 0
+        # Handle low battery condition
+        if "BATTERY 0" in result:
+            with lock:
+                write("halt\n")
+                result = read()
+            if "SHUTDOWN" in result:
+                errorLog(result)
+                os.popen("sudo halt")
+            else:
+                errorLog("shutdown failed")
 
-    time.sleep(INTERVAL)
+        # Read the UPS measurements
+        with lock:
+            write("meas\n")
+            result = read()
+
+        # Trace the UPS measurements
+        if result != lastMeasResult:
+            lastMeasResult = result
+            if measCount == 0:
+                measLog("V_in   V_ups  V_batt I_batt PWM")
+            measLog(result)
+            measCount += 1
+            if measCount >= 20:
+                measCount = 0
+
+        time.sleep(INTERVAL)
