@@ -6,7 +6,7 @@ Description=ups control service
 
 [Service]
 Type=idle
-ExecStart=/opt/nastia-server/sbin/ups
+ExecStart=/opt/nastia-server/bin/ups
 User=root
 
 [Install]
