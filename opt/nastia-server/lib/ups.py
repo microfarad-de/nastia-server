@@ -198,7 +198,7 @@ if __name__ == '__main__':
                     delta = chargeTime - lastChargeTime
                     deltaHours = round(delta.days * 24 + delta.seconds / 3600)
                     lastChargeTime = chargeTime
-                    infoLog(result + " (delta = " + str(deltaHours) + "h)")
+                    infoLog(result.rstrip() + " (delta = " + str(deltaHours) + "h)")
                     if deltaHours < BAD_BATTERY_THRESHOLD and not wasOnBatteryFlag:
                         warningLog("bad battery (delta = " + str(deltaHours) + "h)")
                     chargingFlag = True
