@@ -63,6 +63,7 @@ function start {
   local device="$1"
   local address="$2"
   local rv=0
+  local status
 
   if [[ ! -e "/dev/$device" ]]; then
     infoLog "Binding /dev/$device"
@@ -111,14 +112,6 @@ while [[ 1 ]]; do
   done
   sleep 1
 done
-
-# Wait for all jobs to finish
-#while [[ 1 ]]; do
-#  fg > /dev/null 2>&1
-#  if [[ $? == 1 ]]; then
-#    break
-#  fi
-#done
 
 exit 0
 
