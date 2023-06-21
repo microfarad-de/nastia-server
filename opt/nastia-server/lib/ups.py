@@ -83,6 +83,12 @@ def measLog(text):
     global dir
     os.popen(dir + "/infoLog.sh \"" + text.rstrip() + "\" 'ups-meas' '' 'd'")
 
+# Print info log to systemd
+def systemLog(text):
+    global dir
+    global logger
+    logger.info(text.rstrip())
+
 
 # Read the contents of the receive buffer
 def read():
@@ -174,6 +180,7 @@ if __name__ == '__main__':
     chargingFlag = False
     wasOnBatteryFlag = True
     lastChargeTime = datetime.datetime(1970, 1, 1)
+    logCount = 0
 
     # Main loop
     while 1:
@@ -182,6 +189,10 @@ if __name__ == '__main__':
         with lock:
             write("stat\n")
             result = read()
+            logCount += 1
+            if logCount == 12:
+              logCount = 0
+              systemLog(result)
 
         # Trace the UPS status
         if result != "" and result != lastResult:
