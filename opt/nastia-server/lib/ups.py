@@ -54,7 +54,7 @@ BAD_BATTERY_THRESHOLD = 48
 # Print info log message
 def infoLog(text):
     global dir
-    global loggger
+    global logger
     logger.info(text.rstrip())
     print(text.rstrip())
     os.popen(dir + "/infoLog.sh \"" + text.rstrip() + "\" 'ups' '' 'cd'")
