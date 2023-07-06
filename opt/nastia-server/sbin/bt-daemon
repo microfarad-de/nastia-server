@@ -106,7 +106,7 @@ while [[ 1 ]]; do
     address="${config[1]}"
     status="$STATUS-$device"
     if [[ ! -e "$status" ]]; then
-      sleep 5
+      sleep 15
       start "$device" "$address"
     fi
   done
