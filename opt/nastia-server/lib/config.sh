@@ -30,7 +30,7 @@ _LIB_DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
 
 # Configuration parameters
 _CONFIG="$_LIB_DIR/../etc/nastia-server"
-_TEMP_FILE="/tmp/nastia-server-config.tmp"
+_TEMP_FILE="/tmp/nastia-server-config"
 _LOCK="/tmp/config.lock"
 
 
