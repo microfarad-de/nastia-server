@@ -210,7 +210,7 @@ function execute {
 
 # System statistics
 function system-status {
-  tmp="$CFG_TMPFS_DIR/monitor-system-status.tmp"
+  tmp="$CFG_TMPFS_DIR/monitor-system-status"
   echo "*** System Status ***"
   mailLog "<h2>System Status</h2>"
   if [[ ! -f "$tmp" ]]; then
