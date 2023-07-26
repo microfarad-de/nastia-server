@@ -34,7 +34,7 @@ source "$DIR/common.sh"
 
 
 # Configuration parameters
-DEVICE="$CFG_UPS_DEVICE"            # Serial port device name
+DEVICE="/dev/$CFG_UPS_DEVICE"       # Serial port device name
 BAUD_RATE="$CFG_UPS_BAUD_RATE"      # Serial port baud rate
 SCRIPT="$DIR/../lib/serial-cli.py"  # Python script
 
