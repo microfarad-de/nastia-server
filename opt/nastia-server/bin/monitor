@@ -441,7 +441,7 @@ function ping-test {
   for ip in "${PING_IPS[@]}"; do
     echo "*** Ping '$ip' ***"
     mailLog "<h2>Ping '$ip'</h2>"
-    result=$(/usr/bin/ping -c "$PING_ATTEMPTS" "$ip" -4 2>&1)
+    result=$(/usr/bin/ping -c "$PING_ATTEMPTS" "$ip" 2>&1)
     rv=$?
     if [[ $rv -ne 0 ]]; then
       errorLog "Ping '$ip' failed (exit code $rv)"
