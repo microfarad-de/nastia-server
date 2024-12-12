@@ -74,6 +74,14 @@ fi
 
 result=0
 
+echo " "
+echo " "
+echo "##############################################"
+echo " BACKUP STARTED:" $(date)
+echo "##############################################"
+echo " "
+echo " "
+
 for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
   source="${CFG_BACKUP_FILES_SOURCE[$i]}/"
   exclude=(${CFG_BACKUP_FILES_EXCLUDE[$i]})
