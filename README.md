@@ -50,7 +50,7 @@ Sends text commends over a bluetooth interface and retrieves its answers. This s
 The following Linux packages need to be installed first:
 
 * `sudo apt-get install rsync imagemagick libimage-exiftool-perl lynx msmtp python`
-* `sudo pip install speedtest-cli pyserial ilock`
+* `sudo pip install speedtest-cli pyserial ilock --break-system-packages`
 
 ## Installation
 
