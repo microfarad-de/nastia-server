@@ -83,16 +83,25 @@ function main {
   fi
 
   # Create the output directory
-  mkdir -p "$DESTINATION/$dir"
+  if [[ -n "$HOST" ]]; then
+    ssh "$HOST" "mkdir -p '$DESTINATION/$dir'"
+  else
+    mkdir -p "$DESTINATION/$dir"
+  fi
+
   rv=$?
   if [[ $rv -ne 0 ]]; then
-    errorLog "failed to create $DESTINATION/$source (exit code $rv)"
+    errorLog "failed to create $DESTINATION/$dir (exit code $rv)"
   fi
 
   echo ""
   echo ""
   echo "$dir/$file:"
-  rsync -rltDv --delete-excluded $options $dir/$file $DESTINATION/$dir
+  if [[ -n "$HOST" ]]; then
+    rsync -rltDv --delete-excluded $options $dir/$file $HOST:$DESTINATION/$dir
+  else
+    rsync -rltDv --delete-excluded $options $dir/$file $DESTINATION/$dir
+  fi
   local rv=$?
   if [[ $rv -ne 0 ]]; then
     errorLog "failed to copy $source (exit code $rv)"
@@ -101,7 +110,11 @@ function main {
   if [[ "$options" != "" ]]; then
     options="($options)"
   fi
-  echo "$source $options" >> "$README"
+  if [[ -n "$HOST" ]]; then
+    ssh "$HOST" "echo '$source $options' >> '$README'"
+  else
+    echo "$source $options" >> "$README"
+  fi
 }
 
 
@@ -135,6 +148,15 @@ fi
 CHMOD="$5"   # chmod: change source file permissions
 
 
+# Check if destination on SSH remote host.
+IFS=":" read -r s1 s2 <<< "$DESTINATION"
+HOST=""
+if [[ -n "$s2" ]]; then
+  HOST="$s1"
+  DESTINATION="$s2"
+fi
+
+
 # Readme file name
 README="$DESTINATION/README.txt"
 
@@ -146,11 +168,23 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-
+# Create the output directory
+if [[ -n "$HOST" ]]; then
+  ssh "$HOST" "mkdir -p '$DESTINATION'"
+else
+  mkdir -p "$DESTINATION"
+fi
+rv=$?
+if [[ $rv -ne 0 ]]; then
+  errorLog "failed to create $DESTINATION (exit code $rv)"
+fi
 
 # Update the readme file
-echo "List of files and directories:" > "$README"
-
+if [[ -n "$HOST" ]]; then
+  ssh "$HOST"  "echo 'List of files and directories:' > '$README'"
+else
+  echo "List of files and directories:" > "$README"
+fi
 
 # Loop over sources
 for i in "${!SOURCE[@]}"; do

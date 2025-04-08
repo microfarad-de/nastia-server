@@ -70,8 +70,11 @@ $DIR/../lib/copy.sh "$SOURCE" "$EXCLUDE" "$DESTINATION" "$LOG_PREFIX" "chmod"
 rv=$?
 
 # Set output ownership and permissions
-chown -R "$USER":"$GROUP" "$DESTINATION"
-find "$DESTINATION" -type d -exec chmod "$DMODE" {} +
-find "$DESTINATION" -type f -exec chmod "$FMODE" {} +
+# Skip for destinations behind SSH
+if [[ "$DESTINATION" != *:* ]]; then
+  chown -R "$USER":"$GROUP" "$DESTINATION"
+  find "$DESTINATION" -type d -exec chmod "$DMODE" {} +
+  find "$DESTINATION" -type f -exec chmod "$FMODE" {} +
+fi
 
 exit $rv
