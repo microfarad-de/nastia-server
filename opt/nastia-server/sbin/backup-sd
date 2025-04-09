@@ -36,6 +36,7 @@ source "$DIR/common.sh"
 # Configuration parameters
 OUTDIR="$CFG_BACKUP_SD_DESTINATION"
 DEVICE="$CFG_BACKUP_SD_DEVICE"
+OUTFILE="sd_card.img"
 LOCK="$CFG_TMPFS_DIR/backup-sd.lock"
 LOG="$CFG_LOG_DIR/backup-sd.log"
 
@@ -72,20 +73,8 @@ if [[ $rv -ne 0 ]]; then
   errorLog "failed to create $OUTDIR (exit code $rv)"
 fi
 
-rm -rf "$OUTDIR/chunk_"*
-rv=$?
-if [[ $rv -ne 0 ]]; then
-  errorLog "failed to remove $OUTDIR (exit code $rv)"
-fi
-
-cd "$OUTDIR"
-rv=$?
-if [[ $rv -ne 0 ]]; then
-  errorLog "failed to open $OUTDIR (exit code $rv)"
-fi
-
 # Read disk image and split into chunks
-dd if="$DEVICE" | split -b 1000m - chunk_
+dd if="$DEVICE" of="$OUTDIR/$OUTFILE" bs=4M status=progress
 rv=${PIPESTATUS[0]}
 if [[ $rv -eq 0 ]]; then
   infoLog "$DEVICE backed-up to $OUTDIR"
@@ -105,11 +94,19 @@ for path in "${CFG_BACKUP_SD_AUX_DIR[@]}"; do
 done
 
 # Set output ownership and permissions
-chown -R "$CFG_USER":"$CFG_GROUP" "$OUTDIR/chunk_"*
+chown -R "$CFG_USER":"$CFG_GROUP" "$OUTDIR"
 rv=$?
 if [[ $rv -ne 0 ]]; then
   errorLog "failed to chown $OUTDIR (exit code $rv)"
 fi
+
+# Shrink the disk image
+$DIR/../lib/pishrink.sh "$OUTDIR/$OUTFILE"
+rv=$?
+if [[ $rv -ne 0 ]]; then
+  errorLog "failed to shrink $OUTDIR/$OUTFILE (exit code $rv)"
+fi
+
 
 semaphoreRelease "$LOCK"
 exit 0
