@@ -34,7 +34,10 @@ import os
 import traceback
 import re
 import logging
-from systemd.journal import JournalHandler
+try:
+    from systemd.journal import JournalHandler
+except:
+   JournalHandler=None
 
 # Current directory where this script is located
 dir = os.path.dirname(os.path.abspath(__file__))
@@ -168,7 +171,8 @@ if __name__ == '__main__':
     log = sys.argv[2]  # Log file prefix
     log_trx = log + "-" + dev_short  # Transmit/receive log
     logger = logging.getLogger(log)
-    logger.addHandler(JournalHandler())
+    if JournalHandler is not None:
+        logger.addHandler(JournalHandler())
     logger.setLevel(logging.INFO)
 
     if len(sys.argv) < 4:

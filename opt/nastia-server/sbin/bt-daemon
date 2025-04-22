@@ -66,7 +66,7 @@ function start {
   local status
 
   if [[ ! -e "/dev/$device" ]]; then
-    infoLog "Binding /dev/$device"
+    infoLog "Binding /dev/$device to $address"
     rfcomm bind "/dev/$device" "$address"
     rv=$?
     sleep 30
@@ -83,6 +83,31 @@ function start {
 }
 
 
+# Start a serial daemon for a BLE device
+function bleStart {
+  local device="$1"
+  local address="$2"
+  local rv=0
+  local status
+
+  if [[ ! -e "/dev/$device" ]]; then
+    infoLog "Binding BLE /dev/$device to $address"
+    python3 -m ble_serial -d "$address" -p "/dev/$device" &
+    sleep 5
+  fi
+
+  if [[ -e "/dev/$device" ]]; then
+    infoLog "Connecting BLE device (device=/dev/$device address=$address)"
+    $DEAMON_SCRIPT "$device" "$PREFIX" > /dev/null &
+    status="$STATUS-$device"
+    touch "$status"
+  else
+    errorLog "Failed to bind BLE device (device=$device address=$address)"
+  fi
+}
+
+
+
 
 
 #################
@@ -95,7 +120,12 @@ for i in "${!CFG_BLUETOOTH[@]}"; do
   config=(${CFG_BLUETOOTH[i]})
   device="${config[0]}"
   address="${config[1]}"
-  start "$device" "$address"
+  mode="${config[2]}"
+  if [[ "$mode" == "ble" ]]; then
+    bleStart "$device" "$address"
+  else
+    start "$device" "$address"
+  fi
 done
 
 # monitor services and restart if needed
@@ -104,10 +134,15 @@ while [[ 1 ]]; do
     config=(${CFG_BLUETOOTH[i]})
     device="${config[0]}"
     address="${config[1]}"
+    mode="${config[2]}"
     status="$STATUS-$device"
     if [[ ! -e "$status" ]]; then
-      sleep 300
-      start "$device" "$address"
+      if [[ "$mode" == "ble" ]]; then
+        bleStart "$device" "$address"
+      else
+        sleep 300
+        start "$device" "$address"
+      fi
     fi
   done
   sleep 1
