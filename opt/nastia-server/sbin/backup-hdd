@@ -35,7 +35,7 @@ source "$DIR/common.sh"
 # Configuration parameters
 SRC="${CFG_BACKUP_SOURCE[*]}"
 DST="$CFG_BACKUP_DESTINATION"
-EXCLUDE="$CFG_BACKUP_EXCLUDE"
+EXCLUDE=($CFG_BACKUP_EXCLUDE)
 OPTIONS="-av" # -a = -rlptgoD
 LOCK="$CFG_TMPFS_DIR/backup-hdd.lock"
 LOG="$CFG_LOG_DIR/backup-hdd.log"
@@ -103,9 +103,8 @@ fi
 
 
 # Process excluded file list
-read -r -a exclude_array <<< "$EXCLUDE"
-for x in "${exclude_array[@]}"; do
-    OPTIONS="$OPTIONS --exclude=$x"
+for x in "${EXCLUDE[@]}"; do
+  OPTIONS="$OPTIONS --exclude=$x"
 done
 
 # Remove temprary folders

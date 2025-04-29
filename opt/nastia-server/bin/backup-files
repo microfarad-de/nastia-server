@@ -155,4 +155,3 @@ done
 semaphoreRelease "$LOCK"
 
 exit $result
-

@@ -225,8 +225,8 @@ function system-status {
   mailLog "<tr><th class='padded'>System time:</th><td class='padded'>$(date)</td></tr>"
   echo "Load average: $(cat /proc/loadavg)"
   mailLog "<tr><th class='padded'>Load average:</th><td class='padded'>$(cat /proc/loadavg)</td></tr>"
-  echo "CPU temp.: $(vcgencmd measure_temp | cut -c6-)"
-  mailLog "<tr><th>CPU temp.:</th><td>$(vcgencmd measure_temp | cut -c6-)</td></tr>"
+  echo "CPU temp.: $(echo "$(echo "scale=1; $(cat /sys/class/thermal/thermal_zone0/temp) / 1000" | bc) °C")"
+  mailLog "<tr><th>CPU temp.:</th><td>$(echo "$(echo "scale=1; $(cat /sys/class/thermal/thermal_zone0/temp) / 1000" | bc) °C")</td></tr>"
   mailLog "</table>"
   mailLog "<p>&nbsp;</p>"
   echo ""
@@ -245,24 +245,24 @@ function disk-space {
     mailLog "<tr>"
     mailLog "<td>$disk</td>"
     if mount | grep "$disk" > /dev/null; then
-      freeSpace=$(df --block-size=1G  "$disk" | tail -1 | awk '{print $4}')
-      totalSpace=$(df --block-size=1G  "$disk" | tail -1 | awk '{print $2}')
+      freeSpace=$(df "$disk" | tail -1 | awk '{print $4}')
+      totalSpace=$(df "$disk" | tail -1 | awk '{print $2}')
       rv=$?
       freePercent=$(( freeSpace * 100 / totalSpace ))
-      mailLog "<td>${totalSpace}G</td><td>${freeSpace}G</td><td>${freePercent}%</td>"
+      mailLog "<td>${totalSpace}</td><td>${freeSpace}</td><td>${freePercent}%</td>"
       if [[ $rv -ne 0 ]]; then
         mailLog "<td>"
         errorLog "df failed with error code $rv while checking $disk" "inline"
         mailLog "</td>"
       else
         if [[ $freePercent -lt $DISK_SPACE_THRESHOLD ]]; then
-          echo "$disk: $freeSpace GB ($freePercent%) free"
+          echo "$disk: $freeSpace ($freePercent%) free"
           mailLog "<td>"
           warningLog "$disk is running out of space" "inline"
           mailLog "</td>"
         else
           mailLog "<td>"
-          okLog "$disk: $freeSpace GB ($freePercent%) free" "inline"
+          okLog "$disk: $freeSpace ($freePercent%) free" "inline"
           mailLog "</td>"
         fi
       fi

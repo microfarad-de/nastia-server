@@ -98,9 +98,9 @@ function main {
   echo ""
   echo "$dir/$file:"
   if [[ -n "$HOST" ]]; then
-    rsync -aAXv --delete-excluded $options $dir/$file $HOST:$DESTINATION/$dir
+    rsync -rltDv --delete-excluded $options $dir/$file $HOST:$DESTINATION/$dir
   else
-    rsync -aAXv --delete-excluded $options $dir/$file $DESTINATION/$dir
+    rsync -rltDv --delete-excluded $options $dir/$file $DESTINATION/$dir
   fi
   local rv=$?
   if [[ $rv -ne 0 ]]; then
