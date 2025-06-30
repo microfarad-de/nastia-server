@@ -74,7 +74,7 @@ function start {
 
   if [[ rv -eq 0 ]]; then
     infoLog "Connecting Bluetooth device (device=/dev/$device address=$address)"
-    $DEAMON_SCRIPT "$device" "$PREFIX" &
+    exec $DEAMON_SCRIPT "$device" "$PREFIX"
     status="$STATUS-$device"
     touch "$status"
   else
@@ -92,13 +92,13 @@ function bleStart {
 
   if [[ ! -e "/dev/$device" ]]; then
     infoLog "Binding BLE /dev/$device to $address"
-    python3 -m ble_serial -d "$address" -p "/dev/$device" &
+    exec python3 -m ble_serial -d "$address" -p "/dev/$device"
     sleep 5
   fi
 
   if [[ -e "/dev/$device" ]]; then
     infoLog "Connecting BLE device (device=/dev/$device address=$address)"
-    $DEAMON_SCRIPT "$device" "$PREFIX" &
+    exec $DEAMON_SCRIPT "$device" "$PREFIX"
     status="$STATUS-$device"
     touch "$status"
   else

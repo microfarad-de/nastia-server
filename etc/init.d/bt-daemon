@@ -20,7 +20,7 @@ start() {
         echo "Already running (PID $(cat $PIDFILE))"
         return 1
     fi
-    nohup $SCRIPT_PATH >> /dev/null 2>&1 &
+    $SCRIPT_PATH >> /dev/null 2>&1 &
     echo $! > $PIDFILE
     echo "Started with PID $(cat $PIDFILE)"
 }
