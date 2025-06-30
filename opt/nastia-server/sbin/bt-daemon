@@ -74,7 +74,7 @@ function start {
 
   if [[ rv -eq 0 ]]; then
     infoLog "Connecting Bluetooth device (device=/dev/$device address=$address)"
-    $DEAMON_SCRIPT "$device" "$PREFIX" > /dev/null &
+    $DEAMON_SCRIPT "$device" "$PREFIX" &
     status="$STATUS-$device"
     touch "$status"
   else
@@ -98,7 +98,7 @@ function bleStart {
 
   if [[ -e "/dev/$device" ]]; then
     infoLog "Connecting BLE device (device=/dev/$device address=$address)"
-    $DEAMON_SCRIPT "$device" "$PREFIX" > /dev/null &
+    $DEAMON_SCRIPT "$device" "$PREFIX" &
     status="$STATUS-$device"
     touch "$status"
   else
@@ -138,9 +138,10 @@ while [[ 1 ]]; do
     status="$STATUS-$device"
     if [[ ! -e "$status" ]]; then
       if [[ "$mode" == "ble" ]]; then
+        sleep 1
         bleStart "$device" "$address"
       else
-        sleep 300
+        sleep 5
         start "$device" "$address"
       fi
     fi

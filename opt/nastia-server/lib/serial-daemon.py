@@ -2,6 +2,9 @@
 #
 # Serial port daemon, sends commands and check the response
 #
+# This version has been adapted for instable rfcoomm serial
+# connection on Victron Venus OS
+#
 # This source file is part of the follwoing repository:
 # http://www.github.com/microfarad-de/nastia-server
 #
@@ -165,8 +168,7 @@ if __name__ == '__main__':
         print("Usage: " + sys.argv[0] + " <device> <log> [baud rate]\n")
         sys.exit(1)
 
-    dev_short = str(sys.argv[1]).replace(
-        "/dev/", "")  # Serial device name without the /dev prefix
+    dev_short = str(sys.argv[1]).replace("/dev/", "")  # Serial device name without the /dev prefix
     dev = "/dev/" + dev_short  # Serial device name
     log = sys.argv[2]  # Log file prefix
     log_trx = log + "-" + dev_short  # Transmit/receive log
@@ -195,11 +197,11 @@ if __name__ == '__main__':
     # System-wide lock ensures mutually exclusive access to the serial port
     lock = ILockE(dev, timeout=600)
 
-    # Initialize the serial port
+    # Test the serial connection
     try:
         with lock:
-            ser = serial.Serial(dev, baud_rate, timeout=0.1)
-        info_log ("Connected to " + dev + " at " + str(baud_rate) + " baud")
+            with serial.Serial(dev, baud_rate, timeout=0.1):
+                info_log ("Connected to " + dev + " at " + str(baud_rate) + " baud")
     except:
         error_log("Failed to connect to " + dev)
         exit_failure ()
@@ -213,24 +215,30 @@ if __name__ == '__main__':
         trx = ""
 
         try:
-            input = open(in_file, 'r')
-            tx = input.read()
-            os.remove(in_file)
+            with open(in_file, 'r') as f:
+                tx = f.read()
+                os.remove(in_file)
         except:
-            #print(traceback.format_exc())
-            time.sleep(0.3)
+            time.sleep(1)
 
-        with lock:
-            if tx:
-                write(tx)
-            rx = read()
-            trx = tx + rx
+        if tx:
+            with lock:
+                with serial.Serial(dev, baud_rate, timeout=0.1) as ser:
+                    time.sleep(1)
+                    write(tx)
+                    count = 0
+                    while not rx:
+                        time.sleep(1)
+                        rx = read()
+                        count += 1
+                        if count >= 10:
+                            break
+                    trx = tx + rx
 
         if tx and rx:
             try:
-                output = open(out_file, 'w')
-                output.write(rx)
-                output.close()
+                with open(out_file, 'w') as f:
+                    f.write(rx)
             except:
                 error_log("Failed to open file" + out_file)
 
