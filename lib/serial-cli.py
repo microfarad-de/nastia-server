@@ -69,9 +69,11 @@ def write(str):
 def signal_handler(sig, frame):
     global terminate
     global thread
+    global ser
     print("\nInterrupted by user\n")
     terminate = True
     thread.join()
+    ser.close()
     sys.exit(0)
 
 
@@ -190,4 +192,5 @@ if __name__ == '__main__':
 
         if terminate:
             thread.join()
+            ser.close()
             sys.exit(0)

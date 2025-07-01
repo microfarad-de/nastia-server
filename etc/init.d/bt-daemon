@@ -20,7 +20,7 @@ start() {
         echo "Already running (PID $(cat $PIDFILE))"
         return 1
     fi
-    $SCRIPT_PATH >> /dev/null 2>&1 &
+    nohup $SCRIPT_PATH bind >> /dev/null 2>&1 &
     echo $! > $PIDFILE
     echo "Started with PID $(cat $PIDFILE)"
 }
@@ -28,7 +28,9 @@ start() {
 stop() {
     echo "Stopping bt-daemon..."
     if [ -f $PIDFILE ]; then
-        kill $(cat $PIDFILE)
+        PID=$(cat $PIDFILE)
+        pkill -P "$PID"  # Kill child processes
+        kill "$PID"      # Kill main process
         rm -f $PIDFILE
         echo "Stopped."
     else

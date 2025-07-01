@@ -36,22 +36,19 @@ import signal
 import os
 import traceback
 import re
-import logging
-try:
-    from systemd.journal import JournalHandler
-except:
-   JournalHandler=None
+
 
 # Current directory where this script is located
 dir = os.path.dirname(os.path.abspath(__file__))
+
+# Enable transmit/receive logging
+TRX_LOG = False
 
 
 # Print info log message
 def info_log(text):
     global dir
     global log
-    global logger
-    logger.info(text)
     print(text)
     os.popen(dir + "/infoLog.sh \"" + text + "\" '" + log + "' '' 'cd'")
 
@@ -60,8 +57,6 @@ def info_log(text):
 def warning_log(text):
     global dir
     global log
-    global logger
-    logger.warning(text)
     print("[WARNING] " + text)
     os.popen(dir + "/warningLog.sh \"" + text + "\" '" + log + "' '' 'cd'")
 
@@ -70,8 +65,6 @@ def warning_log(text):
 def error_log(text):
     global dir
     global log
-    global logger
-    logger.error(text)
     print("[ERROR] " + text)
     os.popen(dir + "/errorLog.sh \"" + text + "\" '" + log + "' '' 'cd'")
 
@@ -79,16 +72,18 @@ def error_log(text):
 # Print transmit/receive log message
 def trx_log(text):
     global log_trx
-    # Remove empty lines
-    text = re.sub(r'\n\s*\n','\n',text,re.MULTILINE)
-    print(text)
-    os.popen(dir + "/infoLog.sh \"\n" + text + "\" '" + log_trx + "' '' 'd'")
+    if TRX_LOG:
+        # Remove empty lines
+        text = re.sub(r'\n\s*\n','\n',text,re.MULTILINE)
+        print(text)
+        os.popen(dir + "/infoLog.sh \"\n" + text + "\" '" + log_trx + "' '' 'd'")
 
 
 # Read the contents of the receive buffer
 def read():
     global dev
     global ser
+    global success
     rx = " "
     result = ""
     while len(rx) > 0:
@@ -96,10 +91,11 @@ def read():
             rx = ser.readline().decode()
             result = result + rx
             time.sleep(0.1)
+            success = True
         except:
-            #print(traceback.format_exc())
-            error_log("Failed to read from " + dev)
-            exit_failure()
+            info_log("Failed to read from " + dev)
+            success = False
+            break
     return result
 
 
@@ -107,13 +103,13 @@ def read():
 def write(str):
     global dev
     global ser
+    global success
     try:
         ser.write(str.encode())
+        success = True
     except:
-        #print(traceback.format_exc())
-        error_log("Failed to write to " + dev)
-        exit_failure()
-
+        info_log("Failed to write to " + dev)
+        success = False
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
@@ -122,16 +118,6 @@ def signal_handler(sig, frame):
     print("\nInterrupted by user\n")
     time.sleep(0.3)
     sys.exit(0)
-
-
-# Exit due to failure
-def exit_failure():
-    global status_file
-    try:
-        os.remove(status_file)
-    except:
-        pass
-    sys.exit(1)
 
 
 # Extends ILock with exception handling
@@ -172,10 +158,6 @@ if __name__ == '__main__':
     dev = "/dev/" + dev_short  # Serial device name
     log = sys.argv[2]  # Log file prefix
     log_trx = log + "-" + dev_short  # Transmit/receive log
-    logger = logging.getLogger(log)
-    if JournalHandler is not None:
-        logger.addHandler(JournalHandler())
-    logger.setLevel(logging.INFO)
 
     if len(sys.argv) < 4:
         baud_rate = 9600
@@ -184,10 +166,8 @@ if __name__ == '__main__':
 
     in_file = "/tmp/serial-daemon-in-" + dev_short
     out_file = "/tmp/serial-daemon-out-" + dev_short
-    status_file = "/tmp/serial-daemon-status-" + dev_short
     print("Input file: ", in_file)
     print("Output file:", out_file)
-    print("Status file:", status_file)
 
     try:
         os.remove(out_file)
@@ -198,15 +178,22 @@ if __name__ == '__main__':
     lock = ILockE(dev, timeout=600)
 
     # Test the serial connection
-    try:
-        with lock:
-            with serial.Serial(dev, baud_rate, timeout=0.1):
-                info_log ("Connected to " + dev + " at " + str(baud_rate) + " baud")
-    except:
-        error_log("Failed to connect to " + dev)
-        exit_failure ()
+    retry = 10
+    while retry > 0:
+        try:
+            with lock:
+                with serial.Serial(dev, baud_rate, timeout=0.1):
+                    info_log ("Connected to " + dev + " at " + str(baud_rate) + " baud")
+                    break
+        except:
+            error_log("Failed to connect to " + dev)
+            time.sleep(5)
+            retry -= 1
 
-    while 1:
+    if retry == 0:
+        sys.exit(1)
+
+    while True:
         if terminate:
             break
 
@@ -222,18 +209,23 @@ if __name__ == '__main__':
             time.sleep(1)
 
         if tx:
-            with lock:
-                with serial.Serial(dev, baud_rate, timeout=0.1) as ser:
-                    time.sleep(1)
-                    write(tx)
-                    count = 0
-                    while not rx:
+            retry   = 10
+            success = False
+            while not success and retry > 0:
+                with lock:
+                    with serial.Serial(dev, baud_rate, timeout=0.5) as ser:
                         time.sleep(1)
-                        rx = read()
-                        count += 1
-                        if count >= 10:
-                            break
-                    trx = tx + rx
+                        write(tx)
+                        count = 10
+                        while not rx and count > 0:
+                            if not success:
+                                break
+                            time.sleep(1)
+                            rx = read()
+                            count -= 1
+                        retry -= 1
+            trx = tx + rx
+
 
         if tx and rx:
             try:

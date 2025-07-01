@@ -37,8 +37,6 @@ source "$DIR/common.sh"
 PREFIX="bt-daemon"                            # Log prefix
 LOG="$CFG_LOG_DIR/$PREFIX.log"                # Main log file
 DEAMON_SCRIPT="$DIR/../lib/serial-daemon.py"  # Script that handles a BT serial port
-STATUS="$CFG_TMPFS_DIR/serial-daemon-status"  # Status file
-
 
 
 # Print info message to log file
@@ -62,6 +60,7 @@ function errorLog {
 function start {
   local device="$1"
   local address="$2"
+  local justBind="$3"
   local rv=0
   local status
 
@@ -72,11 +71,13 @@ function start {
     sleep 30
   fi
 
+  if [[ "$justBind" == "bind" ]]; then
+    return
+  fi
+
   if [[ rv -eq 0 ]]; then
     infoLog "Connecting Bluetooth device (device=/dev/$device address=$address)"
-    exec $DEAMON_SCRIPT "$device" "$PREFIX"
-    status="$STATUS-$device"
-    touch "$status"
+    $DEAMON_SCRIPT "$device" "$PREFIX" &
   else
     errorLog "Failed to bind Bluetooth device (device=$device address=$address)"
   fi
@@ -92,15 +93,17 @@ function bleStart {
 
   if [[ ! -e "/dev/$device" ]]; then
     infoLog "Binding BLE /dev/$device to $address"
-    exec python3 -m ble_serial -d "$address" -p "/dev/$device"
+    python3 -m ble_serial -d "$address" -p "/dev/$device" &
     sleep 5
+  fi
+
+  if [[ "$justBind" == "bind" ]]; then
+    return
   fi
 
   if [[ -e "/dev/$device" ]]; then
     infoLog "Connecting BLE device (device=/dev/$device address=$address)"
-    exec $DEAMON_SCRIPT "$device" "$PREFIX"
-    status="$STATUS-$device"
-    touch "$status"
+    $DEAMON_SCRIPT "$device" "$PREFIX" &
   else
     errorLog "Failed to bind BLE device (device=$device address=$address)"
   fi
@@ -121,33 +124,21 @@ for i in "${!CFG_BLUETOOTH[@]}"; do
   device="${config[0]}"
   address="${config[1]}"
   mode="${config[2]}"
+  justBind="$1"
   if [[ "$mode" == "ble" ]]; then
-    bleStart "$device" "$address"
+    bleStart "$device" "$address" "$justBind"
   else
-    start "$device" "$address"
+    start "$device" "$address" "$justBind"
   fi
 done
 
-# monitor services and restart if needed
-while [[ 1 ]]; do
-  for i in "${!CFG_BLUETOOTH[@]}"; do
-    config=(${CFG_BLUETOOTH[i]})
-    device="${config[0]}"
-    address="${config[1]}"
-    mode="${config[2]}"
-    status="$STATUS-$device"
-    if [[ ! -e "$status" ]]; then
-      if [[ "$mode" == "ble" ]]; then
-        sleep 1
-        bleStart "$device" "$address"
-      else
-        sleep 5
-        start "$device" "$address"
-      fi
-    fi
-  done
-  sleep 1
+if [[ "$justBind" == "bind" ]]; then
+  exit 0
+fi
+
+# Loop forever until process stopped
+while true; do
+   sleep 1
 done
 
-exit 0
 
