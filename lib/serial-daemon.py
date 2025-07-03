@@ -83,7 +83,6 @@ def trx_log(text):
 def read():
     global dev
     global ser
-    global success
     rx = " "
     result = ""
     while len(rx) > 0:
@@ -91,11 +90,9 @@ def read():
             rx = ser.readline().decode()
             result = result + rx
             time.sleep(0.1)
-            success = True
         except:
-            info_log("Failed to read from " + dev)
-            success = False
-            break
+            error_log("Failed to read from " + dev)
+            raise
     return result
 
 
@@ -103,18 +100,14 @@ def read():
 def write(str):
     global dev
     global ser
-    global success
     try:
         ser.write(str.encode())
-        success = True
     except:
-        info_log("Failed to write to " + dev)
-        success = False
+        error_log("Failed to write to " + dev)
+        raise
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
-    global terminate
-    terminate = True
     print("\nInterrupted by user\n")
     time.sleep(0.3)
     sys.exit(0)
@@ -147,7 +140,6 @@ if __name__ == '__main__':
 
     # Handle Ctrl+C
     signal.signal(signal.SIGINT, signal_handler)
-    terminate = False
 
     # Check for correct number of arguments
     if len(sys.argv) < 3:
@@ -177,62 +169,46 @@ if __name__ == '__main__':
     # System-wide lock ensures mutually exclusive access to the serial port
     lock = ILockE(dev, timeout=600)
 
-    # Test the serial connection
+
     retry = 10
     while retry > 0:
         try:
-            with lock:
-                with serial.Serial(dev, baud_rate, timeout=0.1):
-                    info_log ("Connected to " + dev + " at " + str(baud_rate) + " baud")
-                    break
+            with serial.Serial(dev, baud_rate, timeout=0.1) as ser:
+                info_log ("Connected to " + dev + " at " + str(baud_rate) + " baud")
+                while True:
+                    tx  = ""
+                    rx  = ""
+                    trx = ""
+
+                    try:
+                        with open(in_file, 'r') as f:
+                            tx = f.read()
+                            os.remove(in_file)
+                    except:
+                        time.sleep(1)
+
+                    if tx:
+                        with lock:
+                            write(tx)
+                            time.sleep(0.2)
+                            rx = read()
+                        trx = tx + rx
+
+                    if tx and rx:
+                        try:
+                            with open(out_file, 'w') as f:
+                                f.write(rx)
+                        except:
+                            error_log("Failed to open file" + out_file)
+
+                    if trx:
+                        trx_log(trx)
+
+                    retry = 10
+
         except:
             error_log("Failed to connect to " + dev)
             time.sleep(5)
             retry -= 1
 
-    if retry == 0:
-        sys.exit(1)
-
-    while True:
-        if terminate:
-            break
-
-        tx  = ""
-        rx  = ""
-        trx = ""
-
-        try:
-            with open(in_file, 'r') as f:
-                tx = f.read()
-                os.remove(in_file)
-        except:
-            time.sleep(1)
-
-        if tx:
-            retry   = 10
-            success = False
-            while not success and retry > 0:
-                with lock:
-                    with serial.Serial(dev, baud_rate, timeout=0.5) as ser:
-                        time.sleep(1)
-                        write(tx)
-                        count = 10
-                        while not rx and count > 0:
-                            if not success:
-                                break
-                            time.sleep(1)
-                            rx = read()
-                            count -= 1
-                        retry -= 1
-            trx = tx + rx
-
-
-        if tx and rx:
-            try:
-                with open(out_file, 'w') as f:
-                    f.write(rx)
-            except:
-                error_log("Failed to open file" + out_file)
-
-        if trx:
-            trx_log(trx)
+    sys.exit(1)

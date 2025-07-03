@@ -88,6 +88,7 @@ function start {
 function bleStart {
   local device="$1"
   local address="$2"
+  local justBind="$3"
   local rv=0
   local status
 
