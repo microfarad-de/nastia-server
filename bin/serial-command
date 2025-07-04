@@ -77,6 +77,9 @@ class ILockE(ilock.ILock):
                 break
             except PermissionError:
                 pass
+            except ilock.ILockException:
+                if DEBUG: print(f"ilock timeout exception")
+                sys.exit(2)
     def __exit__(self, exc_type, exc_val, exc_tb):
         while 1:
             try:
@@ -104,7 +107,7 @@ if __name__ == '__main__':
     command   = sys.argv[3]
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = ILockE(device, timeout=600)
+    lock = ILockE(device, timeout=30)
 
     tx      = command
     rx      = ""
@@ -135,8 +138,8 @@ if __name__ == '__main__':
     if rx and success:
         sys.exit(0)
     elif not rx:
-        sys.exit(2)
-    elif not success:
         sys.exit(3)
+    elif not success:
+        sys.exit(4)
 
 
