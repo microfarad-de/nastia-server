@@ -78,7 +78,7 @@ class ILockE(ilock.ILock):
             except PermissionError:
                 pass
             except ilock.ILockException:
-                if DEBUG: print(f"ilock timeout exception")
+                print("ilock timeout exception", file=sys.stderr)
                 sys.exit(2)
     def __exit__(self, exc_type, exc_val, exc_tb):
         while 1:
@@ -118,28 +118,33 @@ if __name__ == '__main__':
         while not success and retry > 0:
             if DEBUG: print(f"Start: {retry=}")
             with lock:
-                with serial.Serial(device, baud_rate, timeout=0.5) as ser:
-                    time.sleep(1)
-                    write(tx + "\r\n")
-                    if DEBUG: print(f"Write: tx='{tx}'")
-                    count = 10
-                    if DEBUG: count = 3
-                    while not rx and count > 0:
-                        if not success:
-                            break
+                try:
+                    with serial.Serial(device, baud_rate, timeout=0.5) as ser:
                         time.sleep(1)
-                        rx = read()
-                        if DEBUG: print(f"Read: rx='{rx}', {count=}, {success=}")
-                        count -= 1
-                    retry -= 1
+                        write(tx + "\r\n")
+                        if DEBUG: print(f"Write: tx='{tx}'")
+                        count = 10
+                        if DEBUG: count = 3
+                        while not rx and count > 0:
+                            if not success:
+                                break
+                            time.sleep(1)
+                            rx = read()
+                            if DEBUG: print(f"Read: rx='{rx}', {count=}, {success=}")
+                            count -= 1
+                        retry -= 1
+                except:
+                    success = False
 
     print(rx)
 
     if rx and success:
         sys.exit(0)
     elif not rx:
+        print("No response", file=sys.stderr)
         sys.exit(3)
     elif not success:
+        print("Serial I/O error", file=sys.stderr)
         sys.exit(4)
 
 
