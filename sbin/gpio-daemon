@@ -5,7 +5,7 @@
 # The gpio command is written into the file /tmp/gpio
 # with the following format: <pin> <value>
 #
-# Example: echo "26 1" > /tmp/gpio 
+# Example: echo "26 1" > /tmp/gpio
 #
 # This source file is part of the follwoing repository:
 # http://www.github.com/microfarad-de/nastia-server
@@ -29,10 +29,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-#!/bin/sh
-
-#!/bin/sh
 
 GPIO_FILE="/tmp/gpio"
 
