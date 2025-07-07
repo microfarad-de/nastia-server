@@ -34,8 +34,9 @@ import sys
 import time
 import signal
 import os
-import traceback
 import re
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from lib.ulock import ULock, ULockException
 
 
 # Current directory where this script is located
@@ -108,29 +109,23 @@ def write(str):
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
+    global terminate
     print("\nInterrupted by user\n")
-    time.sleep(0.3)
+    terminate = True
     sys.exit(0)
 
 
-# Extends ILock with exception handling
-class ILockE(ilock.ILock):
+# Extends ULock with exception handling
+class Lock(ULock):
     def __enter__(self):
-        while 1:
-            try:
-                super(ILockE, self).__enter__()
-                break
-            except PermissionError:
-                pass
+        try:
+            return super().__enter__()
+        except ULockException as e:
+            error_log(str(e))
+            raise
+
     def __exit__(self, exc_type, exc_val, exc_tb):
-        while 1:
-            try:
-                super(ILockE, self).__exit__(exc_type, exc_val, exc_tb)
-                break
-            except PermissionError:
-                pass
-            except FileNotFoundError:
-                break
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
 
 #################
@@ -139,6 +134,7 @@ class ILockE(ilock.ILock):
 if __name__ == '__main__':
 
     # Handle Ctrl+C
+    terminate = False
     signal.signal(signal.SIGINT, signal_handler)
 
     # Check for correct number of arguments
@@ -167,16 +163,15 @@ if __name__ == '__main__':
         pass
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = ILockE(dev, timeout=600)
+    lock = Lock(dev, timeout=30)
 
-
+    tx = ""
     retry = 10
     while retry > 0:
         try:
             with serial.Serial(dev, baud_rate, timeout=0.1) as ser:
                 info_log ("Connected to " + dev + " at " + str(baud_rate) + " baud")
                 while True:
-                    tx  = ""
                     rx  = ""
                     trx = ""
 
@@ -204,11 +199,16 @@ if __name__ == '__main__':
                     if trx:
                         trx_log(trx)
 
+                    tx = ""
                     retry = 10
 
         except:
-            error_log("Failed to connect to " + dev)
-            time.sleep(5)
-            retry -= 1
+            if terminate:
+                sys.exit(0)
+            else:
+                error_log("Failed to connect to " + dev)
+                time.sleep(5)
+                retry -= 1
+
 
     sys.exit(1)

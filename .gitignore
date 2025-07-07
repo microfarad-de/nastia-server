@@ -1,3 +1,4 @@
 *.swp
-
 *.local
+__pycache__
+

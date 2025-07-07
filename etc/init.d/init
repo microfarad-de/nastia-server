@@ -1,0 +1,57 @@
+#!/bin/sh
+# KHr
+### BEGIN INIT INFO
+# Provides:          init
+# Required-Start:    $remote_fs $syslog $network
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start init on boot
+# Description:       Starts the Python script to run MQTT integration
+### END INIT INFO
+SCRIPT_PATH="/opt/nastia-server/sbin/init"
+PIDFILE="/var/run/init.pid"
+LOGFILE="/var/log/init.log"
+USER="root"  # Or another user if appropriate
+
+start() {
+    echo "Starting init..."
+    if [ -f $PIDFILE ]; then
+        echo "Already running (PID $(cat $PIDFILE))"
+        return 1
+    fi
+    nohup $SCRIPT_PATH bind >> /dev/null 2>&1 &
+    echo $! > $PIDFILE
+    echo "Started with PID $(cat $PIDFILE)"
+}
+
+stop() {
+    echo "Stopping init..."
+    if [ -f $PIDFILE ]; then
+        PID=$(cat $PIDFILE)
+        pkill -P "$PID"  # Kill child processes
+        kill "$PID"      # Kill main process
+        rm -f $PIDFILE
+        echo "Stopped."
+    else
+        echo "Not running."
+    fi
+}
+
+status() {
+    if [ -f $PIDFILE ]; then
+        echo "init is running (PID $(cat $PIDFILE))"
+    else
+        echo "init is not running."
+    fi
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) stop && start ;;
+    status) status ;;
+    *) echo "Usage: $0 {start|stop|restart|status}" ;;
+esac
+
+exit 0

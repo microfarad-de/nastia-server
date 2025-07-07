@@ -26,14 +26,14 @@
 #
 
 import serial  # pip install pyserial
-import ilock  # pip install ilock
+import os
 import sys
 import signal
-#import traceback
 from threading import Thread, Semaphore
 from time import sleep, gmtime, strftime
 from optparse import OptionParser
-
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from lib.ulock import ULock, ULockException
 
 # Read the contents of the receive buffer
 def read():
@@ -102,24 +102,17 @@ def rx_thread():
             break
 
 
-# Extends ILock with exception handling
-class ILockE(ilock.ILock):
+# Extends ULock with exception handling
+class Lock(ULock):
     def __enter__(self):
-        while 1:
-            try:
-                super(ILockE, self).__enter__()
-                break
-            except PermissionError:
-                pass
+        try:
+            return super().__enter__()
+        except ULockException as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(2)
+
     def __exit__(self, exc_type, exc_val, exc_tb):
-        while 1:
-            try:
-                super(ILockE, self).__exit__(exc_type, exc_val, exc_tb)
-                break
-            except PermissionError:
-                pass
-            except FileNotFoundError:
-                break
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
 
 #################
@@ -157,7 +150,7 @@ if __name__ == '__main__':
         baud_rate = args[1]
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = ILockE(device, timeout=600)
+    lock = Lock(device, timeout=600)
 
     # Initialize the serial port
     try:
@@ -171,6 +164,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Run receive routine as a thread
+    sleep(1)
     terminate = False
     sema = Semaphore()
     thread = Thread(target=rx_thread)
