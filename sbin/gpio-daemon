@@ -33,7 +33,7 @@
 GPIO_FILE="/tmp/gpio"
 
 log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
+    echo "$(date): $1"
 }
 
 init_gpio() {

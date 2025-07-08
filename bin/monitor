@@ -215,7 +215,7 @@ function system-status {
   mailLog "<h2>System Status</h2>"
   if [[ ! -f "$tmp" ]]; then
     echo "Uptime:      $(/usr/bin/uptime)" > "$tmp"
-    echo "System time: $(/usr/bin/date)"     >> "$tmp"
+    echo "System time: $(/bin/date)"     >> "$tmp"
     warningLog "The system has been rebooted"
   fi
   mailLog "<table>"
@@ -465,7 +465,7 @@ function service-status {
   for service in "${SERVICES[@]}"; do
     echo "*** '$service' Service Status ***"
     mailLog "<h2>'$service' Service Status</h2>"
-    status=$(/usr/sbin/service "$service" status 2>&1)
+    status=$(/etc/init.d/$service status 2>&1)
     rv=$?
     if [[ $rv -ne 0 ]]; then
       errorLog "Service '$service' failed:"
