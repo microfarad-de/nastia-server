@@ -91,7 +91,7 @@ def rx_thread():
     global sema
     global terminate
     while 1:
-        sleep(0.1)
+        sleep(0.3)
         sema.acquire()
         with lock:
             rx = read()
@@ -171,20 +171,22 @@ if __name__ == '__main__':
     thread.start()
 
     while 1:
-        sleep(0.1)
+        sleep(0.3)
         tx = sys.stdin.readline()
         rx = ""
 
         sema.acquire()
         with lock:
             write(tx)
+            sleep(0.3)
             rx = read()
         sema.release()
 
         if rx:
             sys.stdout.write(ts() + rx)
 
+        # Terminate upon exceptions
         if terminate:
             thread.join()
             ser.close()
-            sys.exit(0)
+            sys.exit(1)
