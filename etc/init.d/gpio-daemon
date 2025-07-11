@@ -38,15 +38,24 @@ stop() {
     fi
 }
 
+
 status() {
     if [ -f $PIDFILE ]; then
-        echo "$DESC is running (PID $(cat $PIDFILE))"
-        exit 0
+        PID=$(cat $PIDFILE)
+        if kill -0 "$PID" 2>/dev/null; then
+            echo "$DESC is running (PID $PID)"
+            exit 0
+        else
+            echo "$DESC is not running, but PID file exists. Cleaning up."
+            rm -f $PIDFILE
+            exit 2
+        fi
     else
         echo "$DESC is not running."
         exit 3
     fi
 }
+
 
 case "$1" in
     start) start ;;
