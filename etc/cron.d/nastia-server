@@ -19,7 +19,7 @@ MAILTO=""
        10   0   *   *   *     root   /opt/nastia-server/bin/backup-files     > /dev/null
         0   1   *   *   *     root   /usr/sbin/logrotate /etc/logrotate.conf > /dev/null
        17   3   *   *   *     root   /opt/nastia-server/bin/monitor          > /dev/null
-
+      */5   *   *   *   *     root   /opt/nastia-server/bin/serial-command /dev/rfcomm0 9600 s 1>/dev/null  2>>/tmp/bt-watchdog || { rm -rf /tmp/ulock-*.lock; echo; date; /etc/init.d/bluetooth restart; echo; } >> /tmp/bt-watchdog 2>&1
 #       5 */3   *   *   *     root   /opt/nastia-server/sbin/backup-hdd    > /dev/null
 #       0   1   *   *   *     root   /opt/nastia-server/sbin/permissions   > /dev/null
 #       5   1   *   *   Sun   root   /opt/nastia-server/sbin/backup-sd     > /dev/null
