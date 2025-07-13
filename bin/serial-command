@@ -138,5 +138,8 @@ if __name__ == '__main__':
     elif not success:
         print("Serial I/O error", file=sys.stderr)
         sys.exit(4)
+    else:
+        print("Unknown error", file=sys.stderr)
+        sys.exit(5)
 
 
