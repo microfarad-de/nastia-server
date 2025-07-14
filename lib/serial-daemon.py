@@ -163,7 +163,7 @@ if __name__ == '__main__':
         pass
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = Lock(dev, timeout=30)
+    lock = Lock(dev, timeout=45, stale_timeout=30)
 
     tx = ""
     retry = 10

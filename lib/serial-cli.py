@@ -150,7 +150,7 @@ if __name__ == '__main__':
         baud_rate = args[1]
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = Lock(device, timeout=600)
+    lock = Lock(device, timeout=45, stale_timeout=30)
 
     # Initialize the serial port
     try:

@@ -98,7 +98,7 @@ if __name__ == '__main__':
     command   = sys.argv[3]
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = Lock(device, timeout=30)
+    lock = Lock(device, timeout=45, stale_timeout=30)
 
     tx      = command
     rx      = ""
