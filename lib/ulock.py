@@ -78,5 +78,5 @@ class ULock:
         except FileNotFoundError:
             pass  # Already deleted
         except PermissionError:
-            raise ULockException('Failed to remove the lock due to permission error')
+            pass
 

@@ -11,7 +11,7 @@
 ### END INIT INFO
 SCRIPT_PATH="/opt/nastia-server/sbin/bt-daemon"
 PIDFILE="/var/run/bt-daemon.pid"
-LOGFILE="/var/log/bt-daemon.log"
+LOGFILE="/tmp/bt-daemon.log"
 DESC="bt-daemon"
 
 start() {
@@ -19,7 +19,7 @@ start() {
     if [ -f $PIDFILE ]; then
         echo "Already running (PID $(cat $PIDFILE))"
     else
-        nohup $SCRIPT_PATH bind >> /dev/null 2>&1 &
+        nohup $SCRIPT_PATH >> /dev/null 2>&1 &
         echo $! > $PIDFILE
         echo "Started with PID $(cat $PIDFILE)"
     fi

@@ -51,9 +51,8 @@ def read():
             time.sleep(0.1)
             success = True
         except:
-            if DEBUG: print(f"Failed to read from {device}")
-            success = False
-            break
+            if DEBUG: print(f"Failed to read from {device}", file=sys.stderr)
+            raise
     return result
 
 
@@ -66,8 +65,8 @@ def write(str):
         ser.write(str.encode())
         success = True
     except:
-        if DEBUG: print(f"Failed to write to {device}")
-        success = False
+        if DEBUG: print(f"Failed to write to {device}", file=sys.stderr)
+        raise
 
 
 # Extends ULock with exception handling
@@ -108,25 +107,33 @@ if __name__ == '__main__':
     if tx:
         retry = 10
         while not success and retry > 0:
-            if DEBUG: print(f"Start: {retry=}")
+            if DEBUG: print(f"Start: {retry=}", file=sys.stderr)
+
             with lock:
                 try:
-                    with serial.Serial(device, baud_rate, timeout=0.5) as ser:
-                        time.sleep(1)
-                        write(tx + "\r\n")
-                        if DEBUG: print(f"Write: tx='{tx}'")
-                        count = 10
-                        if DEBUG: count = 3
-                        while not rx and count > 0:
-                            if not success:
-                                break
-                            time.sleep(1)
-                            rx = read()
-                            if DEBUG: print(f"Read: rx='{rx}', {count=}, {success=}")
-                            count -= 1
-                        retry -= 1
+                    ser = serial.Serial(device, baud_rate, timeout=0.5)
                 except:
+                    if DEBUG: print(f"Failed to connect to {device}", file=sys.stderr)
+                    retry -= 1
                     success = False
+                    continue
+
+                time.sleep(1)
+
+                try:
+                    write(tx + "\r\n")
+                    if DEBUG: print(f"Write: tx='{tx}'", file=sys.stderr)
+                    count = 10
+                    while not rx and count > 0:
+                        time.sleep(1)
+                        rx = read()
+                        if DEBUG: print(f"Read: rx='{rx}', {count=}, {success=}", file=sys.stderr)
+                        count -= 1
+                except:
+                    retry -= 1
+                    success = False
+
+                ser.close()
 
     print(rx)
 
@@ -138,8 +145,5 @@ if __name__ == '__main__':
     elif not success:
         print("Serial I/O error", file=sys.stderr)
         sys.exit(4)
-    else:
-        print("Unknown error", file=sys.stderr)
-        sys.exit(5)
 
 

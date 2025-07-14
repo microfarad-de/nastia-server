@@ -36,6 +36,8 @@ source "$DIR/common.sh"
 # Configuration parameters
 PREFIX="bt-daemon"                            # Log prefix
 LOG="$CFG_LOG_DIR/$PREFIX.log"                # Main log file
+WATCHDOG="$CFG_BLUETOOTH_WATCHDOG"            # Bluetooth watchdog enable flag
+BIND_ONLY="$CFG_BLUETOOTH_BIND_ONLY"          # Just bind and don't spawn any serial daemons
 DEAMON_SCRIPT="$DIR/../lib/serial-daemon.py"  # Script that handles a BT serial port
 
 
@@ -69,9 +71,11 @@ function start {
     rfcomm bind "/dev/$device" "$address"
     rv=$?
     sleep 30
+  else
+    infoLog "/dev/$device already bound"
   fi
 
-  if [[ "$justBind" == "bind" ]]; then
+  if [[ $justBind -eq 1 ]]; then
     return
   fi
 
@@ -98,10 +102,6 @@ function bleStart {
     sleep 5
   fi
 
-  if [[ "$justBind" == "bind" ]]; then
-    return
-  fi
-
   if [[ -e "/dev/$device" ]]; then
     infoLog "Connecting BLE device (device=/dev/$device address=$address)"
     $DEAMON_SCRIPT "$device" "$PREFIX" &
@@ -118,6 +118,7 @@ function bleStart {
 ####  START  ####
 #################
 
+infoLog "Starting bluetooth daemon"
 
 # Loop over configurations
 for i in "${!CFG_BLUETOOTH[@]}"; do
@@ -125,7 +126,7 @@ for i in "${!CFG_BLUETOOTH[@]}"; do
   device="${config[0]}"
   address="${config[1]}"
   mode="${config[2]}"
-  justBind="$1"
+  justBind="$BIND_ONLY"
   if [[ "$mode" == "ble" ]]; then
     bleStart "$device" "$address" "$justBind"
   else
@@ -139,7 +140,45 @@ fi
 
 # Loop forever until process stopped
 while true; do
-   sleep 1
+  if [[ $WATCHDOG == 1 ]]; then
+    timeout=60
+    tmpFile="/tmp/bt-daemon.tmp"
+    config=(${CFG_BLUETOOTH[0]})
+    device="/dev/${config[0]}"
+
+    echo
+    date
+
+    # Run command in background
+    /opt/nastia-server/bin/serial-command "$device" 9600 s 2> >(tee "$tmpFile" >&2) &
+    cmdPid=$!
+
+    # Start watchdog to kill the command after timeout
+    {
+      sleep "$timeout"
+      kill  "$cmdPid"
+    } &
+    watchdogPid=$!
+
+    wait "$cmdPid"
+    rv=$?
+
+    # Clean up watchdog
+    kill "$watchdogPid" 2>/dev/null
+
+    stderr=$(cat "$tmpFile")
+    rm -f  "$tmpFile"
+
+    if [[ rv -ne 0 ]]; then
+      if [[ -z "$stderr" ]]; then
+        stderr="Timeout reached while calling serial-command"
+      fi
+      infoLog "$stderr - restarting bluetooth"
+      rm -rf /tmp/ulock-*.lock
+      /etc/init.d/bluetooth restart
+    fi
+  fi
+  sleep 370
 done
 
 
