@@ -76,42 +76,6 @@ if [[ $CFG_WLAN_DISABLE -eq 1 ]]; then
 fi
 
 
-# Initialize GPIO
-for i in "${!CFG_GPIO[@]}"; do
-  config=(${CFG_GPIO[i]})
-  pin="${config[0]}"
-  direction="${config[1]}"
-
-  # Initialize pin
-  if [[ ! -e "/sys/class/gpio/gpio$pin" ]]; then
-    echo "$pin" > "/sys/class/gpio/export"
-    rv=$?
-    if [[ $rv -ne 0 ]]; then
-      errorLog "failed to initialize GPIO pin $pin (exit code $rv)"
-    else
-      infoLog "initialized GPIO pin $pin"
-    fi
-  else
-    infoLog "GPIO pin $pin already initialized"
-  fi
-
-  curDirection=$(cat "/sys/class/gpio/gpio$pin/direction")
-
-  # Set the pin direction
-  if [[ "$curDirection" != "$direction" ]]; then
-    echo "$direction" > "/sys/class/gpio/gpio$pin/direction"
-    rv=$?
-    if [[ $rv -ne 0 ]]; then
-      errorLog "failed to set GPIO pin $pin direction (exit code $rv)"
-    else
-      infoLog "GPIO pin $pin direction set to 'out'"
-    fi
-  else
-    infoLog "GPIO pin $pin direction already set to '$direction'"
-  fi
-
-done
-
 exit 0
 
 

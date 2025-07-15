@@ -29,50 +29,125 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# Current directory where this script is located
+DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
 
-GPIO_FILE="/tmp/gpio"
+# Include common configuration file
+source "$DIR/common.sh"
 
-log() {
-    echo "$(date): $1"
+
+# Configuration parameters
+LOG="$CFG_LOG_DIR/gpio-daemon.log"  # Main log file
+OUT_FILE="/tmp/gpio-out"            # GPIO out control file
+IN_DIR="/tmp/gpio"                  # GPIO in diretory
+
+# Print info message to log file
+function infoLog {
+  _infoLog "$1" "init" "$LOG" "ecdp"
 }
 
-init_gpio() {
-    PIN=$1
-    if [ ! -d "/sys/class/gpio/gpio${PIN}" ]; then
-        echo "$PIN" > /sys/class/gpio/export
-        sleep 0.1
-    fi
+# Print warning message to log file
+function warningLog {
+  _warningLog "$1" "init" "$LOG" "ecdp"
+}
 
-    # Set direction to out if not already
-    CURRENT_DIR=$(cat /sys/class/gpio/gpio${PIN}/direction)
-    if [ "$CURRENT_DIR" != "out" ]; then
-        echo "out" > "/sys/class/gpio/gpio${PIN}/direction"
+# Print error message to log file
+function errorLog {
+  _errorLog "$1" "init" "$LOG" "ecdp"
+  exit 1
+}
+
+
+
+#################
+####  START  ####
+#################
+
+infoLog "GPIO daemon started."
+
+mkdir -p "$IN_DIR"
+
+# Initialize perconfigured GPIO pins
+for i in "${!CFG_GPIO[@]}"; do
+  config=(${CFG_GPIO[i]})
+  pin="${config[0]}"
+  direction="${config[1]}"
+
+  # Initialize pin
+  if [[ ! -e "/sys/class/gpio/gpio$pin" ]]; then
+    echo "$pin" > "/sys/class/gpio/export"
+    rv=$?
+    if [[ $rv -ne 0 ]]; then
+      errorLog "failed to initialize GPIO pin $pin (exit code $rv)"
+    else
+      infoLog "initialized GPIO pin $pin"
     fi
+  else
+    infoLog "GPIO pin $pin already initialized"
+  fi
+
+  curDirection=$(cat "/sys/class/gpio/gpio$pin/direction")
+
+  # Set the pin direction
+  if [[ "$curDirection" != "$direction" ]]; then
+    echo "$direction" > "/sys/class/gpio/gpio$pin/direction"
+    rv=$?
+    if [[ $rv -ne 0 ]]; then
+      errorLog "failed to set GPIO pin $pin direction (exit code $rv)"
+    else
+      infoLog "GPIO pin $pin direction set to 'out'"
+    fi
+  else
+    infoLog "GPIO pin $pin direction already set to '$direction'"
+  fi
+
+done
+
+
+
+init_gpio() {
+  pin=$1
+  if [ ! -d "/sys/class/gpio/gpio${pin}" ]; then
+    echo "$pin" > "/sys/class/gpio/export"
+    sleep 0.1
+  fi
+
+  # Set direction to out if not already
+  dir=$(cat "/sys/class/gpio/gpio${pin}/direction")
+  if [ "$dir" != "out" ]; then
+    echo "out" > "/sys/class/gpio/gpio${pin}/direction"
+  fi
 }
 
 set_gpio_value() {
-    PIN=$1
-    VALUE=$2
-    echo "$VALUE" > "/sys/class/gpio/gpio${PIN}/value"
-    log "Set GPIO $PIN to $VALUE"
+  pin=$1
+  val=$2
+  echo "$val" > "/sys/class/gpio/gpio${pin}/value"
+  infoLog "Set GPIO $pin to $val"
 }
 
-log "GPIO daemon started."
 
 while true; do
-    if [ -f "$GPIO_FILE" ]; then
-        while read -r PIN VALUE; do
-            # Validate inputs
-            if echo "$PIN" | grep -Eq '^[0-9]+$' && { [ "$VALUE" = "0" ] || [ "$VALUE" = "1" ]; }; then
-                init_gpio "$PIN"
-                set_gpio_value "$PIN" "$VALUE"
-            else
-                log "Invalid format: '$PIN $VALUE'"
-            fi
-        done < "$GPIO_FILE"
+  if [ -f "$OUT_FILE" ]; then
+    while read -r pin val; do
+      # Validate inputs
+      if echo "$pin" | grep -Eq '^[0-9]+$' && { [ "$val" = "0" ] || [ "$val" = "1" ]; }; then
+        init_gpio "$pin"
+        set_gpio_value "$pin" "$val"
+      else
+        errorLog "Invalid format: '$pin $val'"
+      fi
+    done < "$OUT_FILE"
 
-        rm -f "$GPIO_FILE"
-    fi
-    sleep 1
+    rm -f "$OUT_FILE"
+  fi
+
+  for i in "${!CFG_GPIO[@]}"; do
+    config=(${CFG_GPIO[i]})
+    pin="${config[0]}"
+    cat "/sys/class/gpio/gpio${pin}/value" > "$IN_DIR/${pin}"
+  done
+
+  sleep 1
 done
 
