@@ -14,7 +14,7 @@
 #   http://www.microfarad.de
 #   http://www.github.com/microfarad-de
 #
-# Copyright (C) 2023 Karim Hraibi (khraibi@gmail.com)
+# Copyright (C) 2025 Karim Hraibi (khraibi@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,8 +38,8 @@ source "$DIR/common.sh"
 
 # Configuration parameters
 LOG="$CFG_LOG_DIR/gpio-daemon.log"  # Main log file
-OUT_FILE="/tmp/gpio-out"            # GPIO out control file
-IN_DIR="/tmp/gpio"                  # GPIO in diretory
+OUT_FILE="/tmp/gpio-out"            # GPIO control file
+STATUS_DIR="/tmp/gpio"              # GPIO status diretory
 
 # Print info message to log file
 function infoLog {
@@ -65,7 +65,7 @@ function errorLog {
 
 infoLog "GPIO daemon started."
 
-mkdir -p "$IN_DIR"
+mkdir -p "$STATUS_DIR"
 
 # Initialize perconfigured GPIO pins
 for i in "${!CFG_GPIO[@]}"; do
@@ -128,6 +128,8 @@ set_gpio_value() {
 
 
 while true; do
+
+  # Write to GPIO
   if [ -f "$OUT_FILE" ]; then
     while read -r pin val; do
       # Validate inputs
@@ -142,10 +144,11 @@ while true; do
     rm -f "$OUT_FILE"
   fi
 
+  # Collect GPIO status
   for i in "${!CFG_GPIO[@]}"; do
     config=(${CFG_GPIO[i]})
     pin="${config[0]}"
-    cat "/sys/class/gpio/gpio${pin}/value" > "$IN_DIR/${pin}"
+    cat "/sys/class/gpio/gpio${pin}/value" > "$STATUS_DIR/${pin}"
   done
 
   sleep 1
