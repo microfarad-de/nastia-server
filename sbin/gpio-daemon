@@ -38,23 +38,24 @@ source "$DIR/common.sh"
 
 # Configuration parameters
 LOG="$CFG_LOG_DIR/gpio-daemon.log"  # Main log file
+PREFIX="gpio-daemon"                # Log prefix
 OUT_FILE="/tmp/gpio-out"            # GPIO control file
 STATUS_DIR="/tmp/gpio"              # GPIO status diretory
 
+
 # Print info message to log file
 function infoLog {
-  _infoLog "$1" "gpio-daemon" "$LOG" "ecdp"
+  _infoLog "$1" "$PREFIX" "$LOG" "ecd"
 }
 
 # Print warning message to log file
 function warningLog {
-  _warningLog "$1" "gpio-daemon" "$LOG" "ecdp"
+  _warningLog "$1" "$PREFIX" "$LOG" "ecd"
 }
 
 # Print error message to log file
 function errorLog {
-  _errorLog "$1" "gpio-daemon" "$LOG" "ecdp"
-  exit 1
+  _errorLog "$1" "$PREFIX" "$LOG" "ecd"
 }
 
 

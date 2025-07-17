@@ -37,23 +37,24 @@ source "$DIR/common.sh"
 
 # Configuration parameters
 LOG="$CFG_LOG_DIR/init.log"  # Main log file
+PREFIX="init"                # Log prefix
 
 
 # Print info message to log file
 function infoLog {
-  _infoLog "$1" "init" "$LOG" "ecdp"
+  _infoLog "$1" "$PREFIX" "$LOG" "ecd"
 }
 
 # Print warning message to log file
 function warningLog {
-  _warningLog "$1" "init" "$LOG" "ecdp"
+  _warningLog "$1" "$PREFIX" "$LOG" "ecd"
 }
 
 # Print error message to log file
 function errorLog {
-  _errorLog "$1" "init" "$LOG" "ecdp"
-  exit 1
+  _errorLog "$1" "$PREFIX" "$LOG" "ecd"
 }
+
 
 
 
