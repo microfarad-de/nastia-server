@@ -465,18 +465,19 @@ function service-status {
   for service in "${SERVICES[@]}"; do
     echo "*** '$service' Service Status ***"
     mailLog "<h2>'$service' Service Status</h2>"
-    status=$(/etc/init.d/$service status 2>&1)
+    #status=$(/etc/init.d/$service status 2>&1)
+    svstat "/service/$service" | grep -q "up"
     rv=$?
     if [[ $rv -ne 0 ]]; then
-      errorLog "Service '$service' failed:"
+      errorLog "Service '$service' failed"
     else
       okLog "Service '$service' is running"
     fi
-    echo "$status"
-    mailLog "<pre>"
-    mailLog "$status"
-    mailLog "</pre>"
-    mailLog "<p>&nbsp;</p>"
+    #echo "$status"
+    #mailLog "<pre>"
+    #mailLog "$status"
+    #mailLog "</pre>"
+    #mailLog "<p>&nbsp;</p>"
     echo ""
     echo ""
   done
