@@ -468,7 +468,7 @@ function service-status {
     status=$(/usr/sbin/service "$service" status 2>&1)
     rv=$?
     if [[ $rv -ne 0 ]]; then
-      errorLog "Service '$service' failed:"
+      errorLog "Service '$service' failed"
     else
       okLog "Service '$service' is running"
     fi
