@@ -36,7 +36,14 @@ Below is a list of the provided scripts:
 
 * **Centralized configuration file:** [`nastia-server.conf`](https://github.com/microfarad-de/nastia-server/blob/master/etc/nastia-server.conf) – Stores configuration parameters for all scripts.
 
-* **Cron job configuration:** [`/etc/cron.d/nastia-server`](https://github.com/microfarad-de/nastia-server/blob/master/etc/cron.d/nastia-server) – Unless otherwise specified, these scripts are executed using cron jobs configured in this file.
+* **Cron job configuration:** [`/etc/cron.d/nastia-server`](https://github.com/microfarad-de/nastia-server/blob/master/etc/cron.d/nastia-server) – Configures the cron jobs periodically executing some of the above scripts.
+
+* **Logrotate configuration:** [`/etc/logrotate.d/nastia-server`](https://github.com/microfarad-de/nastia-server/blob/master/etc/logrotate.d/nastia-server) - Configures the log rotation policy used by `logrotate`.
+
+* **Service configurations:** `/service/<service_name>` - Configuration files for starting some of the above scripts as a service via the **runit** service supervisor. Services controlled started using the following commands:
+   - `svc -u /service/<servoce_name>`: Start a service
+   - `svc -d /service/<servoce_name>`: Stops a service
+   - `svstat /service/<servoce_name>`: Check the service status
 
 ## Dependencies
 
@@ -61,6 +68,7 @@ The following Python modules must be installed manually with `pip3 install <modu
    ln -s /opt/nastia-server/etc/nastia-server.conf /etc/nastia-server.conf
    ln -s /opt/nastia-server/etc/cron.d/nastia-server /etc/cron.d/nastia-server
    ln -s /opt/nastia-server/etc/logrotate.d/nastia-server /etc/logrotate.d/nastia-server
-   ln -s /opt/nastia-server/service/[service_name] /opt/victronenergy/service/[service_name]
-
+   ln -s /opt/nastia-server/service/<service_name> /opt/victronenergy/service/<service_name>
    ```
+
+   > **Note:** The system must be rebooted in order for the changes in `/opt/victronenergy/service/` to take effect. Following reboot, the service configurations will appear under the `/service` tmpfs directory.
