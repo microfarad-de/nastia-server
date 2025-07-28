@@ -46,9 +46,14 @@ The following Linux packages must be installed manually (compiled from source if
 * `lynx`
 * `logrotate`
 
+The following Python modules must be installed manually with `pip3 install <module>`:
+
+* `pyserial`
+* `speedtest-cli`
+
 ## Installation
 
-1. Clone this repository into `/opt/nastia-server` on your Raspberry Pi (or other Linux system).
+1. Clone this repository into `/opt/nastia-server` on your Victron Venus OS system.
 
 2. Create the following symbolic links:
 
