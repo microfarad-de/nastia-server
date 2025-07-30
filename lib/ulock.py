@@ -2,7 +2,7 @@
 #
 # System wide lock for use on unix based systems
 #
-# Based on the ilock Python module but uses the mkdir atomic command
+# Based on the ilock Python module but uses the atomic file lock command
 # instead of Portalocker, which is unstable on some embedded systems
 # such as the Victron Venus OS.
 #
@@ -101,4 +101,4 @@ class ULock:
         return self.acquire()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.release()
+        return self.release()
