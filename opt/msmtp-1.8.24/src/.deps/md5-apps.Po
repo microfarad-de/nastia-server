@@ -1,0 +1,48 @@
+md5-apps.o: md5-apps.c /usr/include/stdc-predef.h ../config.h \
+ /usr/include/string.h /usr/include/bits/libc-header-start.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/bits/wordsize-32.h \
+ /usr/include/bits/long-double.h /usr/include/bits/long-double-32.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
+ /usr/include/gnu/stubs-hard.h \
+ /usr/lib/gcc/arm-ve-linux-gnueabi/9.5.0/include/stddef.h \
+ /usr/include/bits/types/locale_t.h /usr/include/bits/types/__locale_t.h \
+ /usr/include/strings.h md5.h md5-apps.h
+
+/usr/include/stdc-predef.h:
+
+../config.h:
+
+/usr/include/string.h:
+
+/usr/include/bits/libc-header-start.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/bits/wordsize-32.h:
+
+/usr/include/bits/long-double.h:
+
+/usr/include/bits/long-double-32.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-32.h:
+
+/usr/include/gnu/stubs-hard.h:
+
+/usr/lib/gcc/arm-ve-linux-gnueabi/9.5.0/include/stddef.h:
+
+/usr/include/bits/types/locale_t.h:
+
+/usr/include/bits/types/__locale_t.h:
+
+/usr/include/strings.h:
+
+md5.h:
+
+md5-apps.h:

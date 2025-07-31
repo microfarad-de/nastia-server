@@ -1,0 +1,7 @@
+readbuf.o: readbuf.c /usr/include/stdc-predef.h ../config.h readbuf.h
+
+/usr/include/stdc-predef.h:
+
+../config.h:
+
+readbuf.h:

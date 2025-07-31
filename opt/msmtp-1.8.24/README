@@ -1,0 +1,35 @@
+msmtp is an SMTP client.
+
+In the default mode, it transmits a mail to an SMTP server.
+
+To use this program with your mail user agent (MUA), create a configuration
+file with your mail account(s) and tell your MUA to call msmtp instead of
+/usr/sbin/sendmail.
+
+Features include:
+- Sendmail compatible interface (command line options and exit codes)
+- Support for multiple accounts
+- TLS support including client certificates
+- Support for Internationalized Domain Names (IDN)
+- Many authentication methods
+- Fast SMTP implementation using command pipelining
+- DSN (Delivery Status Notification) support
+- SOCKS proxy support
+
+msmtp runs on a wide variety of platforms. It needs little more than an ANSI C
+compiler and Berkeley-style sockets. It does not require any additional libraries,
+but it can use the following to enhance its feature set:
+- GnuTLS. The GnuTLS library provides TLS support.
+  Alternatively, libtls from the LibreSSL project can be used.
+- GNU SASL. Using the GNU SASL library adds support for some additional
+  authentication methods. You only need it for SCRAM-SHA-* and GSSAPI.
+- GNU libidn2. On modern Linux systems with recent glibc and GnuTLS
+  libraries, msmtp has automatic support for Internationalized Domain Names
+  (IDN). On other systems, IDN support is available via libidn2.
+
+The homepage of this program is <https://marlam.de/msmtp>.
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License (see the file COPYING) as published
+by the Free Software Foundation; either version 3 of the License, or (at your
+option) any later version.

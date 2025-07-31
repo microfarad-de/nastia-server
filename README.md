@@ -47,11 +47,20 @@ Below is a list of the provided scripts:
 
 ## Dependencies
 
-The following Linux packages must be installed manually (compiled from source if necessary):
+The following Linux packages must be installed manually:
 
 * `msmtp`
 * `lynx`
 * `logrotate`
+
+The compiled binaries of the above tools is provided under the `opt` subdirectory. These binaries have been compiled on a Raspberry Pi 3 B+ 
+running Venus OS version `5.10.110-rpi-venus-4`. Please create the following symbolic links for those binaries:
+
+   ```bash
+   ln -s /opt/nastia-server/opt/logrotate-3.21.0/logrotate /usr/sbin/logrotate
+   ln -s /opt/nastia-server/opt/msmtp-1.8.24/src/msmtp /usr/bin/msmtp
+   ln -s /opt/nastia-server/opt/lynx2.9.0/lynx /usr/bin/lynx
+   ```
 
 The following Python modules must be installed manually with `pip3 install <module>`:
 

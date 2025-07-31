@@ -1,0 +1,1673 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Martin Lambers <marlam@marlam.de>
+# This file is distributed under the same license as the msmtp package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: msmtp 1.8.24\n"
+"Report-Msgid-Bugs-To: marlam@marlam.de\n"
+"POT-Creation-Date: 2023-06-29 22:04+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/aliases.c:121
+#, c-format
+msgid "line %d: longer than %d characters"
+msgstr ""
+
+#: src/aliases.c:138
+#, c-format
+msgid "line %d: single ':' delimiter expected"
+msgstr ""
+
+#: src/aliases.c:146
+#, c-format
+msgid "line %d: invalid alias '%s'"
+msgstr ""
+
+#: src/aliases.c:153
+#, c-format
+msgid "line %d: duplicate alias '%s'"
+msgstr ""
+
+#: src/aliases.c:178 src/conf.c:1204 src/stream.c:63
+#, c-format
+msgid "input error"
+msgstr ""
+
+#: src/aliases.c:283
+#, c-format
+msgid "Too many redirects when expanding alias %s."
+msgstr ""
+
+#: src/conf.c:826 src/conf.c:841
+#, c-format
+msgid "host not set"
+msgstr ""
+
+#: src/conf.c:831
+#, c-format
+msgid "port not set"
+msgstr ""
+
+#: src/conf.c:836
+#, c-format
+msgid "envelope-from address is missing"
+msgstr ""
+
+#: src/conf.c:846
+#, c-format
+msgid "tls_key_file requires tls_cert_file"
+msgstr ""
+
+#: src/conf.c:851
+#, c-format
+msgid "tls_cert_file requires tls_key_file"
+msgstr ""
+
+#: src/conf.c:859
+#, c-format
+msgid ""
+"tls requires either tls_trust_file (highly recommended) or tls_fingerprint "
+"or a disabled tls_certcheck"
+msgstr ""
+
+#: src/conf.c:865
+#, c-format
+msgid "tls_crl_file requires tls_trust_file"
+msgstr ""
+
+#: src/conf.c:897 src/conf.c:904 src/conf.c:921 src/mtls-gnutls.c:328
+#, c-format
+msgid "%s: %s"
+msgstr ""
+
+#: src/conf.c:1130 src/conf.c:1303
+#, c-format
+msgid "line %d: missing account name"
+msgstr ""
+
+#: src/conf.c:1135
+#, c-format
+msgid "line %d: account %s not (yet) defined"
+msgstr ""
+
+#: src/conf.c:1216
+#, c-format
+msgid "line longer than %d characters"
+msgstr ""
+
+#: src/conf.c:1233 src/conf.c:1346 src/conf.c:1365 src/conf.c:1392
+#: src/conf.c:1421 src/conf.c:1734 src/conf.c:1769
+#, c-format
+msgid "line %d: command %s needs an argument"
+msgstr ""
+
+#: src/conf.c:1275 src/conf.c:2119 src/conf.c:2136
+#, c-format
+msgid "line %d: command %s does not take an argument"
+msgstr ""
+
+#: src/conf.c:1311
+#, c-format
+msgid "line %d: an account name must not contain colons or commas"
+msgstr ""
+
+#: src/conf.c:1321
+#, c-format
+msgid "line %d: account %s was already defined"
+msgstr ""
+
+#: src/conf.c:1376 src/conf.c:1408 src/conf.c:1439 src/conf.c:1478
+#: src/conf.c:1504 src/conf.c:1550 src/conf.c:1570 src/conf.c:1655
+#: src/conf.c:1676 src/conf.c:1695 src/conf.c:1756 src/conf.c:1787
+#: src/conf.c:1837 src/conf.c:1884 src/conf.c:1909 src/conf.c:1929
+#: src/conf.c:1949 src/conf.c:1969 src/conf.c:1989 src/conf.c:2036
+#: src/conf.c:2057 src/conf.c:2078 src/conf.c:2106
+#, c-format
+msgid "line %d: invalid argument %s for command %s"
+msgstr ""
+
+#: src/conf.c:2152
+#, c-format
+msgid "line %d: unknown command %s"
+msgstr ""
+
+#: src/conf.c:2206
+#, c-format
+msgid "contains secrets and therefore must be owned by you"
+msgstr ""
+
+#: src/conf.c:2212
+#, c-format
+msgid ""
+"contains secrets and therefore must have no more than user read/write "
+"permissions"
+msgstr ""
+
+#. TRANSLATORS: msmtp shares a lot of code and translatable strings with
+#. mpop <https://marlam.de/mpop>.
+#: src/msmtp.c:90
+#, c-format
+msgid "%s: FATAL: %s\n"
+msgstr ""
+
+#: src/msmtp.c:230 src/msmtp.c:408 src/msmtp.c:1522
+#, c-format
+msgid "the server does not support TLS via the STARTTLS command"
+msgstr ""
+
+#: src/msmtp.c:272
+#, c-format
+msgid "the server does not support Remote Message Queue Starting"
+msgstr ""
+
+#: src/msmtp.c:284 src/msmtp.c:1580
+#, c-format
+msgid "the server does not support authentication"
+msgstr ""
+
+#: src/msmtp.c:443
+#, c-format
+msgid "%s server at %s (%s [%s]), port %d:\n"
+msgstr ""
+
+#: src/msmtp.c:450
+#, c-format
+msgid "%s server at %s (%s), port %d:\n"
+msgstr ""
+
+#: src/msmtp.c:457
+#, c-format
+msgid "%s server at %s ([%s]), port %d:\n"
+msgstr ""
+
+#: src/msmtp.c:464
+#, c-format
+msgid "%s server at %s, port %d:\n"
+msgstr ""
+
+#: src/msmtp.c:485
+#, c-format
+msgid "No special capabilities.\n"
+msgstr ""
+
+#: src/msmtp.c:489
+#, c-format
+msgid "Capabilities:\n"
+msgstr ""
+
+#: src/msmtp.c:493
+msgid "Maximum message size is "
+msgstr ""
+
+#: src/msmtp.c:496
+#, c-format
+msgid "unlimited\n"
+msgstr ""
+
+#: src/msmtp.c:500
+#, c-format
+msgid "%ld bytes"
+msgstr ""
+
+#: src/msmtp.c:503
+#, c-format
+msgid " = %.2f MiB"
+msgstr ""
+
+#: src/msmtp.c:508
+#, c-format
+msgid " = %.2f KiB"
+msgstr ""
+
+#: src/msmtp.c:515
+msgid "Support for command grouping for faster transmission"
+msgstr ""
+
+#: src/msmtp.c:520
+msgid "Support for RMQS (Remote Message Queue Starting)"
+msgstr ""
+
+#: src/msmtp.c:525
+msgid "Support for Delivery Status Notifications"
+msgstr ""
+
+#: src/msmtp.c:535
+msgid "Support for TLS encryption via the STARTTLS command"
+msgstr ""
+
+#: src/msmtp.c:541
+msgid "Supported authentication methods:"
+msgstr ""
+
+#: src/msmtp.c:594
+#, c-format
+msgid ""
+"This server might advertise more or other capabilities when TLS is active.\n"
+msgstr ""
+
+#: src/msmtp.c:1274 src/msmtp.c:3443
+#, c-format
+msgid "cannot write mail headers to temporary file: output error"
+msgstr ""
+
+#: src/msmtp.c:1382
+#, c-format
+msgid "input error while reading the mail"
+msgstr ""
+
+#: src/msmtp.c:1569
+#, c-format
+msgid "the server does not support DSN"
+msgstr ""
+
+#: src/msmtp.c:1718 src/msmtp.c:1737 src/msmtp.c:1789
+#, c-format
+msgid "automatic configuration based on SRV records failed: %s"
+msgstr ""
+
+#: src/msmtp.c:1719
+msgid "invalid mail address"
+msgstr ""
+
+#: src/msmtp.c:1735
+#, c-format
+msgid "no SRV records for %s or %s"
+msgstr ""
+
+#: src/msmtp.c:1752
+#, c-format
+msgid "copy this to your configuration file %s"
+msgstr ""
+
+#: src/msmtp.c:1756
+msgid "warning: the host does not match the mail domain; please check"
+msgstr ""
+
+#: src/msmtp.c:1759 src/msmtp.c:1763
+msgid "add your password to the key ring:"
+msgstr ""
+
+#: src/msmtp.c:1766
+msgid "encrypt your password:"
+msgstr ""
+
+#: src/msmtp.c:1790
+msgid "this system lacks libresolv"
+msgstr ""
+
+#: src/msmtp.c:2022
+#, c-format
+msgid "invalid logfile_time_format"
+msgstr ""
+
+#: src/msmtp.c:2035
+#, c-format
+msgid "cannot open: %s"
+msgstr ""
+
+#: src/msmtp.c:2043
+#, c-format
+msgid "cannot lock (tried for %d seconds): %s"
+msgstr ""
+
+#: src/msmtp.c:2048
+#, c-format
+msgid "cannot lock: %s"
+msgstr ""
+
+#: src/msmtp.c:2057
+msgid "output error"
+msgstr ""
+
+#: src/msmtp.c:2074
+#, c-format
+msgid "cannot log to %s: %s"
+msgstr ""
+
+#: src/msmtp.c:2078
+#, c-format
+msgid "log info was: %s"
+msgstr ""
+
+#: src/msmtp.c:2187
+#, c-format
+msgid "%s version %s\n"
+msgstr ""
+
+#: src/msmtp.c:2188
+#, c-format
+msgid "Platform: %s\n"
+msgstr ""
+
+#: src/msmtp.c:2190
+#, c-format
+msgid "TLS/SSL library: %s\n"
+msgstr ""
+
+#: src/msmtp.c:2198 src/msmtp.c:2276
+#, c-format
+msgid "none"
+msgstr ""
+
+#: src/msmtp.c:2202
+#, c-format
+msgid ""
+"Authentication library: %s\n"
+"Supported authentication methods:\n"
+msgstr ""
+
+#: src/msmtp.c:2205
+msgid "GNU SASL; oauthbearer and xoauth2: built-in"
+msgstr ""
+
+#: src/msmtp.c:2207
+msgid "built-in"
+msgstr ""
+
+#: src/msmtp.c:2256
+#, c-format
+msgid "IDN support: "
+msgstr ""
+
+#: src/msmtp.c:2260 src/msmtp.c:2268
+#, c-format
+msgid "enabled"
+msgstr ""
+
+#: src/msmtp.c:2262 src/msmtp.c:2271
+#, c-format
+msgid "disabled"
+msgstr ""
+
+#: src/msmtp.c:2266
+#, c-format
+msgid "NLS: "
+msgstr ""
+
+#: src/msmtp.c:2269
+#, c-format
+msgid ", LOCALEDIR is %s"
+msgstr ""
+
+#: src/msmtp.c:2274
+#, c-format
+msgid "Keyring support: "
+msgstr ""
+
+#: src/msmtp.c:2279
+#, c-format
+msgid "Gnome "
+msgstr ""
+
+#: src/msmtp.c:2282
+#, c-format
+msgid "MacOS "
+msgstr ""
+
+#: src/msmtp.c:2288
+#, c-format
+msgid "System configuration file name: %s\n"
+msgstr ""
+
+#: src/msmtp.c:2292
+#, c-format
+msgid "User configuration file name: %s\n"
+msgstr ""
+
+#: src/msmtp.c:2295
+#, c-format
+msgid ""
+"Copyright (C) %d Martin Lambers and others.\n"
+"This is free software.  You may redistribute copies of it under the terms "
+"of\n"
+"the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\n"
+"There is NO WARRANTY, to the extent permitted by law.\n"
+msgstr ""
+
+#: src/msmtp.c:2312
+#, c-format
+msgid ""
+"Usage:\n"
+"\n"
+msgstr ""
+
+#: src/msmtp.c:2313
+#, c-format
+msgid ""
+"Sendmail mode (default):\n"
+"  %s [option...] [--] recipient...\n"
+"  %s [option...] -t [--] [recipient...]\n"
+"  Read a mail from standard input and transmit it to an SMTP or LMTP "
+"server.\n"
+msgstr ""
+
+#: src/msmtp.c:2318
+#, c-format
+msgid ""
+"Configuration mode:\n"
+"  %s --configure=mailadress\n"
+"  Generate and print configuration for address.\n"
+msgstr ""
+
+#: src/msmtp.c:2321
+#, c-format
+msgid ""
+"Server information mode:\n"
+"  %s [option...] --serverinfo\n"
+"  Print information about a server.\n"
+msgstr ""
+
+#: src/msmtp.c:2324
+#, c-format
+msgid ""
+"Remote Message Queue Starting mode:\n"
+"  %s [option...] --rmqs=host|@domain|#queue\n"
+"  Send a Remote Message Queue Starting request to a server.\n"
+"\n"
+msgstr ""
+
+#: src/msmtp.c:2328
+#, c-format
+msgid "General options:\n"
+msgstr ""
+
+#: src/msmtp.c:2329
+#, c-format
+msgid "  --version                    print version\n"
+msgstr ""
+
+#: src/msmtp.c:2330
+#, c-format
+msgid "  --help                       print help\n"
+msgstr ""
+
+#: src/msmtp.c:2331
+#, c-format
+msgid "  -P, --pretend                print configuration info and exit\n"
+msgstr ""
+
+#: src/msmtp.c:2332
+#, c-format
+msgid "  -d, --debug                  print debugging information\n"
+msgstr ""
+
+#: src/msmtp.c:2333
+#, c-format
+msgid "Changing the mode of operation:\n"
+msgstr ""
+
+#: src/msmtp.c:2334
+#, c-format
+msgid ""
+"  --configure=mailaddress      generate and print configuration for address\n"
+msgstr ""
+
+#: src/msmtp.c:2335
+#, c-format
+msgid "  -S, --serverinfo             print information about the server\n"
+msgstr ""
+
+#: src/msmtp.c:2336
+#, c-format
+msgid ""
+"  --rmqs=host|@domain|#queue   send a Remote Message Queue Starting request\n"
+msgstr ""
+
+#: src/msmtp.c:2337
+#, c-format
+msgid "Configuration options:\n"
+msgstr ""
+
+#: src/msmtp.c:2338
+#, c-format
+msgid "  -C, --file=filename          set configuration file\n"
+msgstr ""
+
+#: src/msmtp.c:2339
+#, c-format
+msgid ""
+"  -a, --account=id             use the given account instead of the account\n"
+"                               named \"default\"; its settings may be "
+"changed\n"
+"                               with command-line options\n"
+msgstr ""
+
+#: src/msmtp.c:2342
+#, c-format
+msgid ""
+"  --host=hostname              set the server, use only command-line "
+"settings;\n"
+"                               do not use any configuration file data\n"
+msgstr ""
+
+#: src/msmtp.c:2344
+#, c-format
+msgid "  --port=number                set port number\n"
+msgstr ""
+
+#: src/msmtp.c:2345
+#, c-format
+msgid ""
+"  --source-ip=[IP]             set/unset source ip address to bind the "
+"socket to\n"
+msgstr ""
+
+#: src/msmtp.c:2346
+#, c-format
+msgid "  --proxy-host=[IP|hostname]   set/unset proxy\n"
+msgstr ""
+
+#: src/msmtp.c:2347
+#, c-format
+msgid "  --proxy-port=[number]        set/unset proxy port\n"
+msgstr ""
+
+#: src/msmtp.c:2348
+#, c-format
+msgid "  --socket=[socketname]        set/unset local socket to connect to\n"
+msgstr ""
+
+#: src/msmtp.c:2349
+#, c-format
+msgid "  --timeout=(off|seconds)      set/unset network timeout in seconds\n"
+msgstr ""
+
+#: src/msmtp.c:2350
+#, c-format
+msgid "  --protocol=(smtp|lmtp)       use the given sub protocol\n"
+msgstr ""
+
+#: src/msmtp.c:2351
+#, c-format
+msgid ""
+"  --domain=string              set the argument of EHLO or LHLO command\n"
+msgstr ""
+
+#: src/msmtp.c:2352
+#, c-format
+msgid ""
+"  --auth[=(on|off|method)]     enable/disable authentication and optionally\n"
+"                               choose the method\n"
+msgstr ""
+
+#: src/msmtp.c:2354
+#, c-format
+msgid "  --user=[username]            set/unset user name for authentication\n"
+msgstr ""
+
+#: src/msmtp.c:2355
+#, c-format
+msgid "  --passwordeval=[eval]        evaluate password for authentication\n"
+msgstr ""
+
+#: src/msmtp.c:2356
+#, c-format
+msgid "  --tls[=(on|off)]             enable/disable TLS encryption\n"
+msgstr ""
+
+#: src/msmtp.c:2357
+#, c-format
+msgid "  --tls-starttls[=(on|off)]    enable/disable STARTTLS for TLS\n"
+msgstr ""
+
+#: src/msmtp.c:2358
+#, c-format
+msgid "  --tls-trust-file=[file]      set/unset trust file for TLS\n"
+msgstr ""
+
+#: src/msmtp.c:2359
+#, c-format
+msgid "  --tls-crl-file=[file]        set/unset revocation file for TLS\n"
+msgstr ""
+
+#: src/msmtp.c:2360
+#, c-format
+msgid ""
+"  --tls-fingerprint=[f]        set/unset trusted certificate fingerprint for "
+"TLS\n"
+msgstr ""
+
+#: src/msmtp.c:2361
+#, c-format
+msgid ""
+"  --tls-certcheck[=(on|off)]   enable/disable server certificate checks for "
+"TLS\n"
+msgstr ""
+
+#: src/msmtp.c:2362
+#, c-format
+msgid "  --tls-key-file=[file]        set/unset private key file for TLS\n"
+msgstr ""
+
+#: src/msmtp.c:2363
+#, c-format
+msgid "  --tls-cert-file=[file]       set/unset private cert file for TLS\n"
+msgstr ""
+
+#: src/msmtp.c:2364
+#, c-format
+msgid "  --tls-priorities=[prios]     set/unset TLS priorities.\n"
+msgstr ""
+
+#: src/msmtp.c:2365
+#, c-format
+msgid ""
+"  --tls-host-override=[host]   set/unset override for TLS host "
+"verification.\n"
+msgstr ""
+
+#: src/msmtp.c:2366
+#, c-format
+msgid "  --tls-min-dh-prime-bits=[b]  set/unset minimum bit size of DH prime\n"
+msgstr ""
+
+#: src/msmtp.c:2367
+#, c-format
+msgid "Options specific to sendmail mode:\n"
+msgstr ""
+
+#: src/msmtp.c:2368
+#, c-format
+msgid ""
+"  --auto-from[=(on|off)]       enable/disable automatic envelope-from "
+"addresses\n"
+msgstr ""
+
+#: src/msmtp.c:2369
+#, c-format
+msgid "  -f, --from=address           set envelope from address\n"
+msgstr ""
+
+#: src/msmtp.c:2370
+#, c-format
+msgid ""
+"  --maildomain=[domain]        set the domain for automatic envelope from\n"
+"                               addresses\n"
+msgstr ""
+
+#: src/msmtp.c:2372
+#, c-format
+msgid "  -N, --dsn-notify=(off|cond)  set/unset DSN conditions\n"
+msgstr ""
+
+#: src/msmtp.c:2373
+#, c-format
+msgid "  -R, --dsn-return=(off|ret)   set/unset DSN amount\n"
+msgstr ""
+
+#: src/msmtp.c:2374
+#, c-format
+msgid "  -X, --logfile=[file]         set/unset log file\n"
+msgstr ""
+
+#: src/msmtp.c:2375
+#, c-format
+msgid ""
+"  --logfile-time-format=[fmt]  set/unset log file time format for "
+"strftime()\n"
+msgstr ""
+
+#: src/msmtp.c:2376
+#, c-format
+msgid ""
+"  --syslog[=(on|off|facility)] enable/disable/configure syslog logging\n"
+msgstr ""
+
+#: src/msmtp.c:2377
+#, c-format
+msgid ""
+"  -t, --read-recipients        read additional recipients from the mail\n"
+msgstr ""
+
+#: src/msmtp.c:2378
+#, c-format
+msgid ""
+"  --read-envelope-from         read envelope from address from the mail\n"
+msgstr ""
+
+#: src/msmtp.c:2379
+#, c-format
+msgid "  --aliases=[file]             set/unset aliases file\n"
+msgstr ""
+
+#: src/msmtp.c:2380
+#, c-format
+msgid "  --set-from-header[=(auto|on|off)] set From header handling\n"
+msgstr ""
+
+#: src/msmtp.c:2381
+#, c-format
+msgid "  --set-date-header[=(auto|off)] set Date header handling\n"
+msgstr ""
+
+#: src/msmtp.c:2382
+#, c-format
+msgid "  --set-msgid-header[=(auto|off)] set Message-ID header handling\n"
+msgstr ""
+
+#: src/msmtp.c:2383
+#, c-format
+msgid ""
+"  --remove-bcc-headers[=(on|off)] enable/disable removal of Bcc headers\n"
+msgstr ""
+
+#: src/msmtp.c:2384
+#, c-format
+msgid ""
+"  --undisclosed-recipients[=(on|off)] enable/disable replacement of To/Cc/"
+"Bcc\n"
+"                               with To: undisclosed-recipients:;\n"
+msgstr ""
+
+#: src/msmtp.c:2386
+#, c-format
+msgid "  --                           end of options\n"
+msgstr ""
+
+#: src/msmtp.c:2387
+#, c-format
+msgid ""
+"Accepted but ignored: -A, -B, -bm, -F, -G, -h, -i, -L, -m, -n, -O, -o, -v\n"
+msgstr ""
+
+#: src/msmtp.c:2388
+#, c-format
+msgid ""
+"\n"
+"Report bugs to <%s>.\n"
+msgstr ""
+
+#: src/msmtp.c:2629 src/msmtp.c:2643
+msgid "cannot use both --serverinfo and --rmqs"
+msgstr ""
+
+#: src/msmtp.c:2663 src/msmtp.c:2675
+msgid "cannot use both --host and --account"
+msgstr ""
+
+#: src/msmtp.c:2691 src/msmtp.c:2709 src/msmtp.c:2728 src/msmtp.c:2783
+#: src/msmtp.c:2815 src/msmtp.c:2833 src/msmtp.c:2896 src/msmtp.c:2941
+#: src/msmtp.c:2963 src/msmtp.c:3009 src/msmtp.c:3034 src/msmtp.c:3053
+#: src/msmtp.c:3106 src/msmtp.c:3151 src/msmtp.c:3178 src/msmtp.c:3196
+#: src/msmtp.c:3214 src/msmtp.c:3233 src/msmtp.c:3252 src/msmtp.c:3270
+#: src/msmtp.c:3288 src/msmtp.c:3365
+#, c-format
+msgid "invalid argument %s for %s"
+msgstr ""
+
+#: src/msmtp.c:2738 src/msmtp.c:3328
+msgid "cannot use both --from and --read-envelope-from"
+msgstr ""
+
+#: src/msmtp.c:3343
+#, c-format
+msgid "unsupported operation mode b%s"
+msgstr ""
+
+#: src/msmtp.c:3420 src/msmtp.c:3904 src/msmtp.c:4211
+#, c-format
+msgid "cannot create temporary file: %s"
+msgstr ""
+
+#: src/msmtp.c:3450 src/msmtp.c:3930 src/msmtp.c:4250
+#, c-format
+msgid "cannot rewind temporary file: %s"
+msgstr ""
+
+#: src/msmtp.c:3516
+#, c-format
+msgid "ignoring system configuration file %s: %s\n"
+msgstr ""
+
+#: src/msmtp.c:3531
+#, c-format
+msgid "loaded system configuration file %s\n"
+msgstr ""
+
+#: src/msmtp.c:3570
+#, c-format
+msgid "ignoring user configuration file %s: %s\n"
+msgstr ""
+
+#: src/msmtp.c:3585
+#, c-format
+msgid "loaded user configuration file %s\n"
+msgstr ""
+
+#: src/msmtp.c:3642
+#, c-format
+msgid "using account %s from %s\n"
+msgstr ""
+
+#: src/msmtp.c:3646 src/msmtp.c:3649 src/msmtp.c:3651 src/msmtp.c:3654
+#: src/msmtp.c:3688 src/msmtp.c:3689 src/msmtp.c:3691 src/msmtp.c:3693
+#: src/msmtp.c:3697 src/msmtp.c:3699 src/msmtp.c:3718 src/msmtp.c:3720
+#: src/msmtp.c:3722 src/msmtp.c:3732 src/msmtp.c:3735 src/msmtp.c:3737
+#: src/msmtp.c:3742 src/msmtp.c:3745 src/msmtp.c:3747 src/msmtp.c:3761
+#: src/msmtp.c:3763 src/msmtp.c:3765 src/msmtp.c:3768 src/msmtp.c:3770
+#: src/msmtp.c:3772
+msgid "(not set)"
+msgstr ""
+
+#: src/msmtp.c:3658
+#, c-format
+msgid "off\n"
+msgstr ""
+
+#: src/msmtp.c:3664
+#, c-format
+msgid "%d seconds\n"
+msgstr ""
+
+#: src/msmtp.c:3668
+#, c-format
+msgid "1 second\n"
+msgstr ""
+
+#: src/msmtp.c:3677
+#, c-format
+msgid "none\n"
+msgstr ""
+
+#: src/msmtp.c:3681
+#, c-format
+msgid "choose\n"
+msgstr ""
+
+#: src/msmtp.c:3694 src/msmtp.c:3695 src/msmtp.c:3724 src/msmtp.c:3740
+#: src/msmtp.c:3749 src/msmtp.c:3752 src/msmtp.c:3757 src/msmtp.c:3759
+msgid "on"
+msgstr ""
+
+#: src/msmtp.c:3694 src/msmtp.c:3695 src/msmtp.c:3724 src/msmtp.c:3740
+#: src/msmtp.c:3749 src/msmtp.c:3752 src/msmtp.c:3755 src/msmtp.c:3757
+#: src/msmtp.c:3759
+msgid "off"
+msgstr ""
+
+#: src/msmtp.c:3745
+msgid "(read from mail)"
+msgstr ""
+
+#: src/msmtp.c:3751 src/msmtp.c:3754
+msgid "auto"
+msgstr ""
+
+#: src/msmtp.c:3775
+#, c-format
+msgid "reading recipients from the command line and the mail\n"
+msgstr ""
+
+#: src/msmtp.c:3780
+#, c-format
+msgid "reading recipients from the command line\n"
+msgstr ""
+
+#: src/msmtp.c:3894
+msgid "too many arguments"
+msgstr ""
+
+#: src/msmtp.c:3924
+#, c-format
+msgid "envelope from address extracted from mail: %s\n"
+msgstr ""
+
+#: src/msmtp.c:3939
+msgid "no recipients found"
+msgstr ""
+
+#: src/msmtp.c:3969
+#, c-format
+msgid "account chosen by envelope from address %s: %s\n"
+msgstr ""
+
+#: src/msmtp.c:3983
+#, c-format
+msgid "falling back to default account\n"
+msgstr ""
+
+#: src/msmtp.c:4006
+#, c-format
+msgid "using environment variables EMAIL and SMTPSERVER\n"
+msgstr ""
+
+#: src/msmtp.c:4014
+#, c-format
+msgid "account %s not found in %s and %s"
+msgstr ""
+
+#: src/msmtp.c:4020 src/msmtp.c:4025
+#, c-format
+msgid "account %s not found in %s"
+msgstr ""
+
+#: src/msmtp.c:4030
+#, c-format
+msgid "account %s not found: no configuration file available"
+msgstr ""
+
+#: src/msmtp.c:4052
+#, c-format
+msgid "using account specified on command line\n"
+msgstr ""
+
+#: src/msmtp.c:4117
+#, c-format
+msgid "account %s from %s: %s"
+msgstr ""
+
+#: src/msmtp.c:4158
+msgid "this platform does not support syslog logging"
+msgstr ""
+
+#: src/msmtp.c:4167
+#, c-format
+msgid "support for authentication method %s is not compiled in"
+msgstr ""
+
+#: src/msmtp.c:4175
+#, c-format
+msgid "cannot initialize networking: %s"
+msgstr ""
+
+#: src/msmtp.c:4186
+#, c-format
+msgid "cannot initialize TLS library: %s"
+msgstr ""
+
+#: src/msmtp.c:4193
+msgid "support for TLS is not compiled in"
+msgstr ""
+
+#: src/msmtp.c:4279
+#, c-format
+msgid "LMTP server message: %s"
+msgstr ""
+
+#: src/msmtp.c:4290
+#, c-format
+msgid "could not send mail to all recipients (account %s from %s)"
+msgstr ""
+
+#: src/msmtp.c:4296
+msgid "could not send mail to all recipients"
+msgstr ""
+
+#: src/msmtp.c:4311 src/msmtp.c:4366 src/msmtp.c:4387
+#, c-format
+msgid "server message: %s"
+msgstr ""
+
+#: src/msmtp.c:4317
+#, c-format
+msgid "could not send mail (account %s from %s)"
+msgstr ""
+
+#: src/msmtp.c:4322
+msgid "could not send mail"
+msgstr ""
+
+#: src/msmtp.c:4332
+#, c-format
+msgid "delivery to one or more recipients failed"
+msgstr ""
+
+#: src/mtls.c:142
+#, c-format
+msgid "TLS session parameters:\n"
+msgstr ""
+
+#: src/mtls.c:144
+msgid "not available"
+msgstr ""
+
+#: src/mtls.c:152
+#, c-format
+msgid "TLS certificate information:\n"
+msgstr ""
+
+#: src/mtls.c:153
+msgid "Subject"
+msgstr ""
+
+#: src/mtls.c:155
+msgid "Issuer"
+msgstr ""
+
+#: src/mtls.c:157
+msgid "Validity"
+msgstr ""
+
+#: src/mtls.c:159
+msgid "Activation time"
+msgstr ""
+
+#: src/mtls.c:161
+msgid "Expiration time"
+msgstr ""
+
+#: src/mtls.c:162
+msgid "Fingerprints"
+msgstr ""
+
+#: src/mtls-gnutls.c:120 src/mtls-openssl.c:285 src/mtls-libtls.c:105
+msgid "cannot get TLS certificate info"
+msgstr ""
+
+#: src/mtls-gnutls.c:125 src/mtls-gnutls.c:241 src/mtls-openssl.c:288
+#, c-format
+msgid "%s: no certificate was found"
+msgstr ""
+
+#: src/mtls-gnutls.c:130 src/mtls-gnutls.c:247
+#, c-format
+msgid "%s: cannot initialize certificate structure"
+msgstr ""
+
+#: src/mtls-gnutls.c:136
+#, c-format
+msgid "%s: error parsing certificate"
+msgstr ""
+
+#: src/mtls-gnutls.c:145 src/mtls-gnutls.c:263 src/mtls-openssl.c:308
+#: src/mtls-openssl.c:470 src/mtls-libtls.c:113 src/mtls-libtls.c:179
+#, c-format
+msgid "%s: error getting SHA256 fingerprint"
+msgstr ""
+
+#: src/mtls-gnutls.c:152 src/mtls-gnutls.c:281 src/mtls-openssl.c:314
+#: src/mtls-openssl.c:488
+#, c-format
+msgid "%s: error getting SHA1 fingerprint"
+msgstr ""
+
+#: src/mtls-gnutls.c:158 src/mtls-openssl.c:322 src/mtls-libtls.c:126
+#, c-format
+msgid "%s: cannot get activation time"
+msgstr ""
+
+#: src/mtls-gnutls.c:164 src/mtls-openssl.c:332 src/mtls-libtls.c:133
+#, c-format
+msgid "%s: cannot get expiration time"
+msgstr ""
+
+#: src/mtls-gnutls.c:224 src/mtls-openssl.c:446 src/mtls-libtls.c:166
+msgid "TLS certificate verification failed"
+msgstr ""
+
+#: src/mtls-gnutls.c:254
+#, c-format
+msgid "%s: error parsing certificate %u of %u"
+msgstr ""
+
+#: src/mtls-gnutls.c:270 src/mtls-gnutls.c:288 src/mtls-gnutls.c:306
+#: src/mtls-openssl.c:477 src/mtls-openssl.c:495 src/mtls-openssl.c:513
+#: src/mtls-libtls.c:191
+#, c-format
+msgid "%s: the certificate fingerprint does not match"
+msgstr ""
+
+#: src/mtls-gnutls.c:299 src/mtls-openssl.c:506
+#, c-format
+msgid "%s: error getting MD5 fingerprint"
+msgstr ""
+
+#: src/mtls-gnutls.c:387 src/mtls-libtls.c:238 src/mtls-libtls.c:374
+#, c-format
+msgid "cannot initialize TLS session: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:400
+#, c-format
+msgid "error in priority string at position %d"
+msgstr ""
+
+#: src/mtls-gnutls.c:403 src/mtls-gnutls.c:410 src/mtls-openssl.c:657
+#: src/mtls-libtls.c:257 src/mtls-libtls.c:272 src/mtls-libtls.c:287
+#: src/mtls-libtls.c:297
+#, c-format
+msgid "cannot set priorities for TLS session: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:423
+#, c-format
+msgid "cannot set default priority for TLS session: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:438
+#, c-format
+msgid "cannot allocate certificate for TLS session: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:451 src/mtls-libtls.c:312
+#, c-format
+msgid ""
+"cannot set X509 key file %s and/or X509 cert file %s for TLS session: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:473 src/mtls-openssl.c:720
+#, c-format
+msgid "cannot set X509 system trust for TLS session: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:488 src/mtls-libtls.c:342
+#, c-format
+msgid "cannot set X509 trust file %s for TLS session: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:503 src/mtls-libtls.c:355
+#, c-format
+msgid "cannot set X509 CRL file %s for TLS session: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:532
+#, c-format
+msgid "cannot set credentials for TLS session: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:567 src/mtls-libtls.c:410
+#, c-format
+msgid "TLS handshake failed: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:623 src/mtls-gnutls.c:670 src/mtls-openssl.c:866
+#: src/mtls-openssl.c:933 src/mtls-openssl.c:975 src/net.c:97 src/net.c:208
+#: src/net.c:255 src/net.c:767 src/net.c:894
+#, c-format
+msgid "operation aborted"
+msgstr ""
+
+#: src/mtls-gnutls.c:627 src/mtls-libtls.c:497
+#, c-format
+msgid "cannot read from TLS connection: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:674 src/mtls-gnutls.c:685 src/mtls-libtls.c:529
+#, c-format
+msgid "cannot write to TLS connection: %s"
+msgstr ""
+
+#: src/mtls-gnutls.c:686 src/mtls-openssl.c:809 src/mtls-openssl.c:833
+#: src/net.c:178 src/net.c:648
+msgid "unknown error"
+msgstr ""
+
+#: src/mtls-openssl.c:92
+#, c-format
+msgid ""
+"no environment variables RANDFILE or HOME, or filename of rand file too long"
+msgstr ""
+
+#: src/mtls-openssl.c:98
+#, c-format
+msgid "%s: input error"
+msgstr ""
+
+#: src/mtls-openssl.c:120
+#, c-format
+msgid "random file + time + pseudo randomness is not enough, giving up"
+msgstr ""
+
+#: src/mtls-openssl.c:293 src/mtls-openssl.c:579
+#, c-format
+msgid "%s: cannot get certificate subject"
+msgstr ""
+
+#: src/mtls-openssl.c:299
+#, c-format
+msgid "%s: cannot get certificate issuer"
+msgstr ""
+
+#: src/mtls-openssl.c:450
+msgid "TLS certificate check failed"
+msgstr ""
+
+#: src/mtls-openssl.c:456
+#, c-format
+msgid "%s: no certificate was sent"
+msgstr ""
+
+#: src/mtls-openssl.c:559
+#, c-format
+msgid "%s: certificate subject alternative name contains NUL"
+msgstr ""
+
+#: src/mtls-openssl.c:591
+#, c-format
+msgid "%s: cannot get certificate common name"
+msgstr ""
+
+#: src/mtls-openssl.c:600
+#, c-format
+msgid "%s: certificate common name contains NUL"
+msgstr ""
+
+#: src/mtls-openssl.c:617
+#, c-format
+msgid "%s: the certificate owner does not match hostname %s"
+msgstr ""
+
+#: src/mtls-openssl.c:649 src/mtls-libtls.c:231
+#, c-format
+msgid "cannot set minimum number of DH prime bits for TLS: %s"
+msgstr ""
+
+#: src/mtls-openssl.c:650 src/mtls-openssl.c:658 src/mtls-openssl.c:666
+msgid "feature not yet implemented for OpenSSL"
+msgstr ""
+
+#: src/mtls-openssl.c:665
+#, c-format
+msgid "cannot load CRL file: %s"
+msgstr ""
+
+#: src/mtls-openssl.c:672
+#, c-format
+msgid "cannot set TLS method"
+msgstr ""
+
+#: src/mtls-openssl.c:680
+#, c-format
+msgid "cannot create TLS context: %s"
+msgstr ""
+
+#: src/mtls-openssl.c:693
+#, c-format
+msgid "cannot load key file %s: %s"
+msgstr ""
+
+#: src/mtls-openssl.c:702
+#, c-format
+msgid "cannot load certificate file %s: %s"
+msgstr ""
+
+#: src/mtls-openssl.c:732
+#, c-format
+msgid "cannot load trust file %s: %s"
+msgstr ""
+
+#: src/mtls-openssl.c:759 src/mtls-libtls.c:365
+#, c-format
+msgid "cannot create a TLS structure: %s"
+msgstr ""
+
+#: src/mtls-openssl.c:801
+msgid "a protocol violating EOF occurred"
+msgstr ""
+
+#: src/mtls-openssl.c:819
+msgid "the connection was closed unexpectedly"
+msgstr ""
+
+#: src/mtls-openssl.c:828 src/net.c:198 src/net.c:213 src/net.c:245
+#: src/net.c:260
+msgid "the operation timed out"
+msgstr ""
+
+#: src/mtls-openssl.c:853 src/mtls-libtls.c:402
+#, c-format
+msgid "cannot set the file descriptor for TLS: %s"
+msgstr ""
+
+#: src/mtls-openssl.c:872
+msgid "TLS handshake failed"
+msgstr ""
+
+#: src/mtls-openssl.c:938
+msgid "cannot read from TLS connection"
+msgstr ""
+
+#: src/mtls-openssl.c:981
+msgid "cannot write to TLS connection"
+msgstr ""
+
+#: src/mtls-libtls.c:59
+#, c-format
+msgid "cannot initialize libtls"
+msgstr ""
+
+#: src/mtls-libtls.c:223
+#, c-format
+msgid "cannot use deprecated fingerprints, please update to SHA256"
+msgstr ""
+
+#: src/mtls-libtls.c:232
+msgid "feature not yet implemented for libtls"
+msgstr ""
+
+#: src/mtls-libtls.c:288
+msgid "could not parse protocols"
+msgstr ""
+
+#: src/net.c:94
+msgid "not enough memory"
+msgstr ""
+
+#: src/net.c:100 src/net.c:684
+msgid "invalid argument"
+msgstr ""
+
+#: src/net.c:103
+msgid "class type not found"
+msgstr ""
+
+#: src/net.c:106
+msgid "the network subsystem has failed"
+msgstr ""
+
+#: src/net.c:109
+msgid "host not found (authoritative)"
+msgstr ""
+
+#: src/net.c:112
+msgid "host not found (nonauthoritative) or server failure"
+msgstr ""
+
+#: src/net.c:115
+msgid "nonrecoverable error"
+msgstr ""
+
+#: src/net.c:118
+msgid "valid name, but no data record of requested type"
+msgstr ""
+
+#: src/net.c:121
+msgid "address family not supported"
+msgstr ""
+
+#: src/net.c:124
+msgid "no socket descriptors available"
+msgstr ""
+
+#: src/net.c:127
+msgid "no buffer space available"
+msgstr ""
+
+#: src/net.c:130
+msgid "protocol not supported"
+msgstr ""
+
+#: src/net.c:133
+msgid "wrong protocol type for this socket"
+msgstr ""
+
+#: src/net.c:136
+msgid "socket type is not supported in this address family"
+msgstr ""
+
+#: src/net.c:139
+msgid "remote address is not valid"
+msgstr ""
+
+#: src/net.c:142 src/net.c:636
+msgid "connection refused"
+msgstr ""
+
+#: src/net.c:145 src/net.c:630
+msgid "network unreachable"
+msgstr ""
+
+#: src/net.c:148
+msgid "timeout"
+msgstr ""
+
+#: src/net.c:151
+msgid "socket not connected"
+msgstr ""
+
+#: src/net.c:154
+msgid "the socket was shut down"
+msgstr ""
+
+#: src/net.c:157 src/net.c:633
+msgid "host unreachable"
+msgstr ""
+
+#: src/net.c:160
+msgid "connection reset by peer"
+msgstr ""
+
+#: src/net.c:163
+msgid "the underlying network subsystem is not ready"
+msgstr ""
+
+#: src/net.c:166
+msgid "the requested version is not available"
+msgstr ""
+
+#: src/net.c:169
+msgid "a blocking operation is in progress"
+msgstr ""
+
+#: src/net.c:172
+msgid "limit on the number of tasks has been reached"
+msgstr ""
+
+#: src/net.c:175
+msgid "invalid request"
+msgstr ""
+
+#: src/net.c:197 src/net.c:202 src/net.c:212 src/net.c:217
+#, c-format
+msgid "network read error: %s"
+msgstr ""
+
+#: src/net.c:244 src/net.c:249 src/net.c:259 src/net.c:264
+#, c-format
+msgid "network write error: %s"
+msgstr ""
+
+#: src/net.c:528 src/net.c:558 src/net.c:593 src/net.c:624 src/net.c:627
+#: src/net.c:630 src/net.c:633 src/net.c:636 src/net.c:639 src/net.c:642
+#: src/net.c:645 src/net.c:648
+#, c-format
+msgid "proxy failure: %s"
+msgstr ""
+
+#: src/net.c:528
+msgid "host name too long"
+msgstr ""
+
+#: src/net.c:542 src/net.c:576 src/net.c:1007
+#, c-format
+msgid "network write error"
+msgstr ""
+
+#: src/net.c:552 src/net.c:586 src/net.c:615
+#, c-format
+msgid "network read error"
+msgstr ""
+
+#: src/net.c:558 src/net.c:593
+msgid "unexpected reply"
+msgstr ""
+
+#: src/net.c:624
+msgid "general server failure"
+msgstr ""
+
+#: src/net.c:627
+msgid "connection not allowed"
+msgstr ""
+
+#: src/net.c:639
+msgid "time-to-live expired"
+msgstr ""
+
+#: src/net.c:642
+msgid "command not supported"
+msgstr ""
+
+#: src/net.c:645
+msgid "address type not supported"
+msgstr ""
+
+#: src/net.c:676 src/net.c:683 src/net.c:698
+#, c-format
+msgid "cannot connect to %s: %s"
+msgstr ""
+
+#: src/net.c:689 src/net.c:862
+#, c-format
+msgid "cannot create socket: %s"
+msgstr ""
+
+#: src/net.c:762 src/net.c:771
+#, c-format
+msgid "cannot locate host %s: %s"
+msgstr ""
+
+#: src/net.c:873
+#, c-format
+msgid "cannot bind source ip %s: %s"
+msgstr ""
+
+#: src/net.c:889 src/net.c:902
+#, c-format
+msgid "cannot connect to %s, port %d: %s"
+msgstr ""
+
+#: src/password.c:214
+#, c-format
+msgid "password for %s at %s: "
+msgstr ""
+
+#: src/smtp.c:208
+#, c-format
+msgid "the server sent an empty reply"
+msgstr ""
+
+#: src/smtp.c:212
+#, c-format
+msgid "the server sent an invalid reply"
+msgstr ""
+
+#: src/smtp.c:236
+#, c-format
+msgid ""
+"Rejecting server reply that is longer than %d lines. Increase SMTP_MAXLINES."
+msgstr ""
+
+#: src/smtp.c:323
+#, c-format
+msgid ""
+"Cannot send command because it is longer than %d characters. Increase "
+"SMTP_MAXCMDLEN."
+msgstr ""
+
+#: src/smtp.c:355
+#, c-format
+msgid "cannot get initial OK message from server"
+msgstr ""
+
+#: src/smtp.c:417
+#, c-format
+msgid "SMTP server does not accept EHLO or HELO commands"
+msgstr ""
+
+#: src/smtp.c:440 src/smtp.c:598 src/smtp.c:603 src/smtp.c:676 src/smtp.c:724
+#: src/smtp.c:814 src/smtp.c:905 src/smtp.c:1041 src/smtp.c:2160
+#, c-format
+msgid "command %s failed"
+msgstr ""
+
+#: src/smtp.c:681 src/smtp.c:745 src/smtp.c:766 src/smtp.c:863 src/smtp.c:926
+#: src/smtp.c:1000 src/smtp.c:1083 src/smtp.c:1431 src/smtp.c:1474
+#: src/smtp.c:1511
+#, c-format
+msgid "authentication failed (method %s)"
+msgstr ""
+
+#: src/smtp.c:825
+#, c-format
+msgid "authentication method CRAM-MD5: server sent invalid challenge"
+msgstr ""
+
+#: src/smtp.c:1201 src/smtp.c:1532
+#, c-format
+msgid "the server does not support authentication method %s"
+msgstr ""
+
+#: src/smtp.c:1207 src/smtp.c:1342 src/smtp.c:1385
+#, c-format
+msgid "GNU SASL: %s"
+msgstr ""
+
+#: src/smtp.c:1214
+#, c-format
+msgid "GNU SASL: authentication method %s not supported"
+msgstr ""
+
+#: src/smtp.c:1283 src/smtp.c:1563
+#, c-format
+msgid "cannot use a secure authentication method"
+msgstr ""
+
+#: src/smtp.c:1289 src/smtp.c:1569
+#, c-format
+msgid "cannot find a usable authentication method"
+msgstr ""
+
+#: src/smtp.c:1302 src/smtp.c:1581
+#, c-format
+msgid "authentication method %s needs a user name"
+msgstr ""
+
+#: src/smtp.c:1315 src/smtp.c:1591
+#, c-format
+msgid "authentication method %s needs a password"
+msgstr ""
+
+#: src/smtp.c:1490
+#, c-format
+msgid "authentication failed: %s (method %s)"
+msgstr ""
+
+#: src/smtp.c:1626
+#, c-format
+msgid "authentication method %s not supported"
+msgstr ""
+
+#: src/smtp.c:1740
+#, c-format
+msgid "envelope from address %s not accepted by the server"
+msgstr ""
+
+#: src/smtp.c:1759
+#, c-format
+msgid "recipient address %s not accepted by the server"
+msgstr ""
+
+#: src/smtp.c:1778
+#, c-format
+msgid "the server does not accept mail data"
+msgstr ""
+
+#: src/smtp.c:2018
+#, c-format
+msgid "the server did not accept the mail"
+msgstr ""
+
+#: src/smtp.c:2082
+#, c-format
+msgid "the server refuses to send the mail to %s"
+msgstr ""
+
+#: src/smtp.c:2146
+#, c-format
+msgid "the server is unable to fulfill the request"
+msgstr ""
+
+#: src/smtp.c:2154
+#, c-format
+msgid "invalid argument for Remote Message Queue Starting"
+msgstr ""
