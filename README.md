@@ -56,11 +56,11 @@ In order to install this package, clone this repository into the  `/opt/nastia-s
 
 Then create the following symbolic links for the cron, logrotate and systemd service configuration:
 
-- `ln -s /opt/nastia-server/etc/logrotate.d/nastia-server /etc/logrotate.d/nastia-server`
+- `sudo ln -s /opt/nastia-server/etc/logrotate.d/nastia-server /etc/logrotate.d/`
 
-- `ln -s /opt/nastia-server/etc/cron.d/nastia-server /etc/cron.d/nastia-server`
+- `sudo ln -s /opt/nastia-server/etc/cron.d/nastia-server /etc/cron.d/`
 
-- `ln -s /opt/nastia-server/lib/systemd/system/<service> /lib/systemd/system/<service>`
+- `sudo ln -s /opt/nastia-server/lib/systemd/system/* /lib/systemd/system/`
 
 Alternatively, you can create copies of the above files and customize the as required.
 
