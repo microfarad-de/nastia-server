@@ -62,7 +62,7 @@ Then create the following symbolic links for the cron, logrotate and systemd ser
 
 - `sudo ln -s /opt/nastia-server/lib/systemd/system/* /lib/systemd/system/`
 
-Alternatively, you can create copies of the above files and customize the as required.
+Alternatively, you can create copies of the above files and customize them as required.
 
 Finally, you can create a copy of the configuration file under `/opt/nastia-server/etc/nastia-server.conf` renaming it to `nastia-server.local`, then modify the parameters inside copied file to achieve your desired setup. If the same setting is configured in both `.conf` and `.local` files, the value set within the `.local` file will have priority.
 
