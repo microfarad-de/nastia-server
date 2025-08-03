@@ -53,13 +53,13 @@ The following Linux packages must be installed manually:
 * `lynx`
 * `logrotate`
 
-The compiled binaries of the above tools is provided under the `opt` subdirectory. These binaries have been compiled on a Raspberry Pi 3 B+ 
+The compiled binaries of the above tools is provided under the `opt` subdirectory. These binaries have been compiled on a Raspberry Pi 3 B+
 running Venus OS version `5.10.110-rpi-venus-4`. Please create the following symbolic links for those binaries:
 
    ```bash
-   ln -s /opt/nastia-server/opt/logrotate-3.21.0/logrotate /usr/sbin/logrotate
-   ln -s /opt/nastia-server/opt/msmtp-1.8.24/src/msmtp /usr/bin/msmtp
-   ln -s /opt/nastia-server/opt/lynx2.9.0/lynx /usr/bin/lynx
+   ln -s /opt/nastia-server/opt/logrotate-3.21.0/logrotate /usr/sbin/
+   ln -s /opt/nastia-server/opt/msmtp-1.8.24/src/msmtp /usr/bin/
+   ln -s /opt/nastia-server/opt/lynx2.9.0/lynx /usr/bin/
    ```
 
 The following Python modules must be installed manually with `pip3 install <module>`:
@@ -74,10 +74,10 @@ The following Python modules must be installed manually with `pip3 install <modu
 2. Create the following symbolic links:
 
    ```bash
-   ln -s /opt/nastia-server/etc/nastia-server.conf /etc/nastia-server.conf
-   ln -s /opt/nastia-server/etc/cron.d/nastia-server /etc/cron.d/nastia-server
-   ln -s /opt/nastia-server/etc/logrotate.d/nastia-server /etc/logrotate.d/nastia-server
-   ln -s /opt/nastia-server/service/<service_name> /opt/victronenergy/service/<service_name>
+   ln -s /opt/nastia-server/etc/nastia-server.conf /etc/
+   ln -s /opt/nastia-server/etc/cron.d/nastia-server /etc/cron.d/
+   ln -s /opt/nastia-server/etc/logrotate.d/nastia-server /etc/logrotate.d/
+   ln -s /opt/nastia-server/service/* /opt/victronenergy/service/
    ```
 
    > **Note:** The system must be rebooted in order for the changes in `/opt/victronenergy/service/` to take effect. Following reboot, the service configurations will appear under the `/service` tmpfs directory.
