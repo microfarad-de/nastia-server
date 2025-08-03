@@ -60,7 +60,7 @@ Then create the following symbolic links for the cron, logrotate and systemd ser
 
 - `ln -s /opt/nastia-server/etc/cron.d/nastia-server /etc/cron.d/nastia-server`
 
-- `ln -s /opt/nastia-server/lib/systemd/<service> /lib/systemd/<service>`
+- `ln -s /opt/nastia-server/lib/systemd/system/<service> /lib/systemd/system/<service>`
 
 Alternatively, you can create copies of the above files and customize the as required.
 
