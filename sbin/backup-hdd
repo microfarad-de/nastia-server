@@ -128,7 +128,7 @@ if [[ $rv -eq 0 || $rv -eq 23 || $rv -eq 24 ]]; then
     warningLog "rsync returned $rv (partial transfer due to error)"
   fi
   if [[ $rv -eq 24 ]]; then
-    warningLog "rsync returned $rv (partial transfer due to vanished source files)"
+    infoLog "rsync returned $rv (partial transfer due to vanished source files)"
   fi
   # delete old backups and check free disk space
   $CLEANUP_SCRIPT "$DST" "$DRYRUN"
