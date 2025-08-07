@@ -41,7 +41,7 @@ if [ ! -d "$LOGDIR" ]; then
 fi
 
 # Process rotated logs in chronological order
-for f in $(ls -1 "$LOGDIR"/@*.s 2>/dev/null | sort); do
+for f in $(ls -1 "$LOGDIR"/@* 2>/dev/null | sort); do
   if [ -f "$f" ]; then
     tai64nlocal < "$f"
   fi
