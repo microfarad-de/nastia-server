@@ -118,7 +118,7 @@ function bleStart {
 ####  START  ####
 #################
 
-infoLog "Starting bluetooth daemon"
+infoLog "Bluetooth daemon started"
 
 # Loop over configurations
 for i in "${!CFG_BLUETOOTH[@]}"; do

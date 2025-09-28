@@ -136,7 +136,7 @@ for i in "${!CFG_BACKUP_FILES_SOURCE[@]}"; do
     if [[ rv -ne 0 ]]; then
       echo ""
       if [[ $rv -eq 24 ]]; then
-        warningLog "$source --> $destination (partial transfer due to vanished source files $rv)"
+        infoLog "$source --> $destination (partial transfer due to vanished source files $rv)"
       else
         errorLog "$source --> $destination ($rv)"
       fi

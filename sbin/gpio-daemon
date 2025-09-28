@@ -64,7 +64,7 @@ function errorLog {
 ####  START  ####
 #################
 
-infoLog "GPIO daemon started."
+infoLog "GPIO daemon started"
 
 mkdir -p "$STATUS_DIR"
 
