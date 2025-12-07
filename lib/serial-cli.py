@@ -9,7 +9,7 @@
 #   http://www.microfarad.de
 #   http://www.github.com/microfarad-de
 #
-# Copyright (C) 2023 Karim Hraibi (khraibi@gmail.com)
+# Copyright (C) 2025 Karim Hraibi (khraibi@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,94 +25,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import serial  # pip install pyserial
-import ilock  # pip install ilock
+import os
 import sys
-import signal
-#import traceback
+import errno
 from threading import Thread, Semaphore
 from time import sleep, gmtime, strftime
-from optparse import OptionParser
+import argparse
 
+import serial  # pip install pyserial
+import ilock   # pip install ilock
 
-# Read the contents of the receive buffer
-def read():
-    global device
-    global ser
-    global terminate
-    rx = " "
-    result = ""
-    while len(rx) > 0:
-        try:
-            rx = ser.readline().decode()
-            result = result + rx
-        except:
-            print("Failed to read from", device)
-            terminate = True
-            break
-    return result
-
-
-# Write to the transmit buffer
-def write(str):
-    global device
-    global ser
-    global terminate
-    try:
-        ser.write(str.encode())
-    except:
-        print("Failed to write to", device)
-        terminate = True
-
-
-# Handle Ctrl+C
-def signal_handler(sig, frame):
-    global terminate
-    global thread
-    print("\nInterrupted by user\n")
-    terminate = True
-    thread.join()
-    sys.exit(0)
-
-
-# Timestamp generator
-def ts():
-    global timestamp
-    if timestamp:
-        return strftime("%Y-%m-%d %H:%M:%S %Z:\r\n", gmtime())
-    else:
-        return ""
-
-
-# Run receiving loop as a thread
-def rx_thread():
-    global sema
-    global terminate
-    while 1:
-        sleep(0.1)
-        sema.acquire()
-        with lock:
-            rx = read()
-        sema.release()
-        if rx:
-            sys.stdout.write(ts() + rx)
-        if terminate:
-            break
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 # Extends ILock with exception handling
-class ILockE(ilock.ILock):
+class Lock(ilock.ILock):
     def __enter__(self):
         while 1:
             try:
-                super(ILockE, self).__enter__()
+                super(Lock, self).__enter__()
                 break
             except PermissionError:
                 pass
     def __exit__(self, exc_type, exc_val, exc_tb):
         while 1:
             try:
-                super(ILockE, self).__exit__(exc_type, exc_val, exc_tb)
+                super(Lock, self).__exit__(exc_type, exc_val, exc_tb)
                 break
             except PermissionError:
                 pass
@@ -120,74 +58,277 @@ class ILockE(ilock.ILock):
                 break
 
 
+
+class SerialConsole:
+    def __init__(self, device, baud_rate, timestamp, verbose):
+        self.device = device
+        self.baud_rate = baud_rate
+        self.timestamp_enabled = timestamp
+        self.verbose = verbose
+
+        # System-wide lock ensures mutually exclusive access to the serial port
+        self.lock = Lock(device, timeout=45)
+
+        self.ser = None
+        self.terminate = False
+
+        # Semaphore for intra-process mutual exclusion between RX thread and main thread
+        self.sema = Semaphore()
+        self.thread = None
+
+        # Pending writes to resend after reconnect
+        self.pending_writes = []
+
+        # Tracks whether we've successfully connected at least once
+        self.connected_once = False
+
+    # Timestamp generator
+    def ts(self):
+        if self.timestamp_enabled:
+            return strftime("%Y-%m-%d %H:%M:%S %Z:\r\n", gmtime())
+        else:
+            return ""
+
+    def close_serial(self):
+        if self.ser is not None:
+            try:
+                self.ser.close()
+            except serial.SerialException:
+                # Swallow close errors; nothing useful to do here
+                pass
+            self.ser = None
+
+    def _device_does_not_exist(self, exc):
+        """
+        Decide if the exception means the serial device does not exist.
+        We treat ENOENT or 'No such file or directory' as 'does not exist'.
+        """
+        cause = getattr(exc, "__cause__", None)
+        if isinstance(cause, OSError) and cause.errno == errno.ENOENT:
+            return True
+        if "No such file or directory" in str(exc):
+            return True
+        return False
+
+    def open(self):
+        """
+        Single open method:
+
+        - Keeps trying to open the serial port.
+        - If the device does not exist (ENOENT), exits the program.
+        - Called for initial open and all reconnects.
+        - Must be called with self.lock already held.
+        """
+        while not self.terminate:
+            try:
+                self.ser = serial.Serial(self.device, self.baud_rate, timeout=0.1)
+
+                # First successful connection: always print
+                if not self.connected_once:
+                    print("Connected to " + self.device + " at " + str(self.baud_rate) + " baud")
+                    print("Waiting for user input (press Ctrl+C to exit)...\n")
+                    self.connected_once = True
+                else:
+                    # Reconnects: only print when verbose
+                    if self.verbose:
+                        print("Reconnected to " + self.device + " at " + str(self.baud_rate) + " baud")
+
+                # After successful open, flush any pending writes
+                self._flush_pending_writes()
+                return
+            except serial.SerialException as e:
+                if self._device_does_not_exist(e):
+                    # Fatal: device really not there
+                    print("Serial device", self.device, "does not exist.")
+                    sys.exit(1)
+                else:
+                    if self.verbose:
+                        print("Failed to open", self.device, ":", e)
+                    # Retry after a short delay
+                    sleep(1.0)
+
+    # Read the contents of the receive buffer (RX thread only)
+    def read(self):
+        """
+        RX thread only. Reads everything currently available.
+        Reconnects using open() on SerialException.
+        Must be called with self.lock already held.
+        """
+        if self.ser is None:
+            # Try to open if not connected (e.g., after a write-side failure)
+            self.open()
+            if self.ser is None:
+                return ""
+
+        result = ""
+        while not self.terminate:
+            try:
+                line = self.ser.readline()
+                if not line:
+                    break
+                decoded = line.decode(errors="replace")
+                result += decoded
+            except serial.SerialException as e:
+                if self.verbose:
+                    print("Serial read error on", self.device, ":", e)
+                self.close_serial()
+                if self.verbose:
+                    print("Serial port closed; attempting reopen...")
+                self.open()
+                break
+
+        return result
+
+    def _flush_pending_writes(self):
+        """
+        Flush buffered data to the serial port.
+        - Must be called with self.lock already held.
+        - Assumes self.ser is valid or that open() will be called by caller.
+        """
+        while self.pending_writes and self.ser is not None and not self.terminate:
+            msg = self.pending_writes[0]
+            try:
+                self.ser.write(msg.encode())
+                self.pending_writes.pop(0)
+            except serial.SerialException as e:
+                if self.verbose:
+                    print("Serial write error on", self.device, "during flush:", e)
+                self.close_serial()
+                if self.verbose:
+                    print("Serial port closed; attempting reopen...")
+                self.open()
+                # open() returns only on success or exit, so loop continues
+
+    # Write to the transmit buffer (main thread only)
+    def write(self, data):
+        """
+        Main thread only. Buffers the data and ensures it is sent.
+
+        - If write fails due to SerialException, data is NOT lost.
+        - Once reconnected, pending data is resent.
+        - Must be called with self.lock already held.
+        """
+
+        # Always buffer first so we can retry later if needed
+        self.pending_writes.append(data)
+
+        # Ensure we have a connection
+        if self.ser is None:
+            if self.verbose:
+                print("Serial port not connected; attempting open...")
+            self.open()
+            return  # open() will flush pending writes
+
+        # Try flushing; _flush_pending_writes handles reconnection
+        self._flush_pending_writes()
+
+    # Run receiving loop as a thread (does ALL reading)
+    def rx_thread(self):
+        while not self.terminate:
+            sleep(0.3)
+
+            self.sema.acquire()
+            with self.lock:
+                rx = self.read()
+            self.sema.release()
+
+            if rx:
+                sys.stdout.write(self.ts() + rx)
+                sys.stdout.flush()
+
+        # Cleanup on thread exit
+        self.close_serial()
+
+    def start_rx_thread(self):
+        self.thread = Thread(target=self.rx_thread)
+        self.thread.start()
+
+    def join_rx_thread(self):
+        if self.thread is not None:
+            self.thread.join()
+
+    def run(self):
+        # Initial open
+        with self.lock:
+            self.open()
+
+        # Run receive routine as a thread
+        sleep(1)
+        self.terminate = False
+        self.start_rx_thread()
+
+        # Main loop only handles stdin -> serial writes
+        try:
+            while not self.terminate:
+                sleep(0.3)
+                tx = sys.stdin.readline()
+                if not tx:
+                    continue
+
+                self.sema.acquire()
+                with self.lock:
+                    self.write(tx)
+                self.sema.release()
+
+        finally:
+            # Graceful shutdown
+            self.terminate = True
+            self.join_rx_thread()
+            self.close_serial()
+
+
 #################
 ####  START  ####
 #################
-if __name__ == '__main__':
-
-    # Handle Ctrl+C
-    signal.signal(signal.SIGINT, signal_handler)
-
+def main():
     print("\nInteractive Serial Console\n")
 
-    parser = OptionParser("Usage: %prog <device> [baud rate] [options]")
+    parser = argparse.ArgumentParser(
+        description="Interactive Serial Console"
+    )
 
-    parser.add_option("-t", "--timestamp" ,
-                      action="store_true",
-                      dest="timestamp",
-                      default=False,
-                      help="add time stamps to console output")
+    parser.add_argument(
+        "device",
+        help="Serial device (e.g. /dev/ttyUSB0 or COM3)"
+    )
 
-    (options, args) = parser.parse_args()
+    parser.add_argument(
+        "baud_rate",
+        nargs="?",
+        type=int,
+        default=9600,
+        help="Baud rate (default: 9600)"
+    )
 
-    timestamp = options.timestamp
+    parser.add_argument(
+        "-t", "--timestamp",
+        action="store_true",
+        help="Add timestamps to console output"
+    )
 
-    # Check for correct number of arguments
-    if len(args) < 1:
-        parser.print_help()
-        sys.exit(1)
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Print serial read/write/open errors and reconnect messages"
+    )
 
-    device = str(args[0])  # Serial device name
+    args = parser.parse_args()
 
-    if len(args) < 2:
-        baud_rate = 9600
-    else:
-        baud_rate = args[1]
+    device = args.device
+    baud_rate = args.baud_rate
+    timestamp = args.timestamp
+    verbose = args.verbose
 
-    # System-wide lock ensures mutually exclusive access to the serial port
-    lock = ILockE(device, timeout=600)
+    console = SerialConsole(device, baud_rate, timestamp, verbose)
 
-    # Initialize the serial port
     try:
-        with lock:
-            ser = serial.Serial(device, baud_rate, timeout=0.1)
-        print("Connected to " + device + " at " + str(baud_rate) + " baud")
-        print("Waiting for user input (press Ctrl+C to exit)...\n")
-    except:
-        print("Failed to connect to " + device)
-        #traceback.print_exc()
-        sys.exit(1)
+        console.run()
+    except KeyboardInterrupt:
+        # This triggers immediately on Ctrl+C, even if readline() is blocked
+        print("\nInterrupted by user\n")
 
-    # Run receive routine as a thread
-    terminate = False
-    sema = Semaphore()
-    thread = Thread(target=rx_thread)
-    thread.start()
+    sys.exit(0)
 
-    while 1:
-        sleep(0.1)
-        tx = sys.stdin.readline()
-        rx = ""
 
-        sema.acquire()
-        with lock:
-            write(tx)
-            rx = read()
-        sema.release()
-
-        if rx:
-            sys.stdout.write(ts() + rx)
-
-        if terminate:
-            thread.join()
-            sys.exit(0)
+if __name__ == '__main__':
+    main()
