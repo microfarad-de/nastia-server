@@ -86,7 +86,7 @@ function _printLog {
   # Print a common log message (used by monitor.sh)
   if [[ "$mode" == *"c"* ]]; then
     echo -e "$(eval $LOG_STAMP):$prefix $text" >> "$clog"
-    chown "$CFG_USER":"$CFG_GROUP" "$clog"
+    #chown "$CFG_USER":"$CFG_GROUP" "$clog"
   fi
 
   if [[ "$mode" != *"+"* ]]; then

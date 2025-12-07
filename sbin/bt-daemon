@@ -9,7 +9,7 @@
 #   http://www.microfarad.de
 #   http://www.github.com/microfarad-de
 #
-# Copyright (C) 2023 Karim Hraibi (khraibi@gmail.com)
+# Copyright (C) 2025 Karim Hraibi (khraibi@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,17 +28,18 @@
 set -m # Enable Job Control
 
 # Path to the current directory where this script is located
-DIR=$(dirname $(readlink -f "$BASH_SOURCE"))
+DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 
 # Include common configuration file
+# (must define CFG_LOG_DIR, CFG_BLUETOOTH, CFG_BLUETOOTH_WATCHDOG, CFG_BLUETOOTH_BIND_ONLY)
 source "$DIR/common.sh"
 
 # Configuration parameters
-PREFIX="bt-daemon"                            # Log prefix
-LOG="$CFG_LOG_DIR/$PREFIX.log"                # Main log file
-WATCHDOG="$CFG_BLUETOOTH_WATCHDOG"            # Bluetooth watchdog enable flag
-BIND_ONLY="$CFG_BLUETOOTH_BIND_ONLY"          # Just bind and don't spawn any serial daemons
-DEAMON_SCRIPT="$DIR/../lib/serial-daemon.py"  # Script that handles a BT serial port
+PREFIX="bt-daemon"                             # Log prefix
+LOG="$CFG_LOG_DIR/$PREFIX.log"                 # Main log file
+WATCHDOG="$CFG_BLUETOOTH_WATCHDOG"             # Bluetooth watchdog enable flag (0/1)
+BIND_ONLY="$CFG_BLUETOOTH_BIND_ONLY"           # 1: just bind and don't spawn any serial daemons
+DAEMON_SCRIPT="$DIR/../lib/serial-daemon.py"   # Script that handles a BT serial port
 
 
 # Print info message to log file
@@ -57,34 +58,51 @@ function errorLog {
 }
 
 
-
-# Start a serial daemon
+# Start a serial daemon for a classic BT device
 function start {
   local device="$1"
   local address="$2"
   local justBind="$3"
   local rv=0
-  local status
+  local success=0
 
   if [[ ! -e "/dev/$device" ]]; then
     infoLog "Binding /dev/$device to $address"
     rfcomm bind "/dev/$device" "$address"
     rv=$?
-    sleep 30
+
+    # Wait up to 30 seconds for RFCOMM to be fully usable
+    if [[ "$rv" -eq 0 ]]; then
+      for _ in {1..30}; do
+        if [[ -e "/dev/$device" ]] && rfcomm show "$device" 2>/dev/null | grep -q "connected"; then
+          success=1
+          break
+        fi
+        sleep 1
+      done
+      # If not connected after waiting, treat as failure
+      if [[ "$success" -ne 1 ]]; then
+        rv=1
+      fi
+    fi
   else
     infoLog "/dev/$device already bound"
+    rv=0
   fi
 
-  if [[ $justBind -eq 1 ]]; then
+  # If bind failed, always log and stop (even in bind-only mode)
+  if [[ "$rv" -ne 0 ]]; then
+    errorLog "Failed to bind Bluetooth device (device=$device address=$address)"
     return
   fi
 
-  if [[ rv -eq 0 ]]; then
-    infoLog "Connecting Bluetooth device (device=/dev/$device address=$address)"
-    $DEAMON_SCRIPT "$device" "$PREFIX" &
-  else
-    errorLog "Failed to bind Bluetooth device (device=$device address=$address)"
+  # Bind-only mode: stop here, but after validating success
+  if [[ "$justBind" -eq 1 ]]; then
+    return
   fi
+
+  infoLog "Connecting Bluetooth device (device=/dev/$device address=$address)"
+  "$DAEMON_SCRIPT" "$device" "$PREFIX" &
 }
 
 
@@ -93,25 +111,38 @@ function bleStart {
   local device="$1"
   local address="$2"
   local justBind="$3"
-  local rv=0
-  local status
+  local success=0
 
   if [[ ! -e "/dev/$device" ]]; then
     infoLog "Binding BLE /dev/$device to $address"
     python3 -m ble_serial -d "$address" -p "/dev/$device" &
-    sleep 5
-  fi
-
-  if [[ -e "/dev/$device" ]]; then
-    infoLog "Connecting BLE device (device=/dev/$device address=$address)"
-    $DEAMON_SCRIPT "$device" "$PREFIX" &
+    # Wait up to 10 seconds for the device node to appear
+    for _ in {1..10}; do
+      if [[ -e "/dev/$device" ]]; then
+        success=1
+        break
+      fi
+      sleep 1
+    done
   else
-    errorLog "Failed to bind BLE device (device=$device address=$address)"
+    infoLog "BLE device node /dev/$device already present"
+    success=1
   fi
+
+  # If bind failed (device node never appeared), always log and stop
+  if [[ "$success" -ne 1 ]]; then
+    errorLog "Failed to bind BLE device (device=$device address=$address)"
+    return
+  fi
+
+  # Bind-only mode: stop here, but after validating success
+  if [[ "$justBind" -eq 1 ]]; then
+    return
+  fi
+
+  infoLog "Connecting BLE device (device=/dev/$device address=$address)"
+  "$DAEMON_SCRIPT" "$device" "$PREFIX" &
 }
-
-
-
 
 
 #################
@@ -120,13 +151,21 @@ function bleStart {
 
 infoLog "Bluetooth daemon started"
 
+# If no Bluetooth devices are configured, this is a fatal configuration error
+if [[ "${#CFG_BLUETOOTH[@]}" -eq 0 ]]; then
+  errorLog "No Bluetooth devices configured (CFG_BLUETOOTH is empty) — exiting"
+  exit 1
+fi
+
 # Loop over configurations
 for i in "${!CFG_BLUETOOTH[@]}"; do
+  # Each entry CFG_BLUETOOTH[i] is expected to be: "<device> <address> <mode>"
   config=(${CFG_BLUETOOTH[i]})
   device="${config[0]}"
   address="${config[1]}"
   mode="${config[2]}"
   justBind="$BIND_ONLY"
+
   if [[ "$mode" == "ble" ]]; then
     bleStart "$device" "$address" "$justBind"
   else
@@ -134,15 +173,17 @@ for i in "${!CFG_BLUETOOTH[@]}"; do
   fi
 done
 
-if [[ "$justBind" == "bind" ]]; then
+# If configured for bind-only, exit after binding without watchdog loop
+if [[ "$BIND_ONLY" -eq 1 ]]; then
   exit 0
 fi
 
 # Loop forever until process stopped
 while true; do
-  if [[ $WATCHDOG == 1 ]]; then
+  if [[ "$WATCHDOG" -eq 1 ]]; then
     timeout=60
-    tmpFile="/tmp/bt-daemon.tmp"
+
+    tmpFile="$(mktemp /tmp/bt-daemon.XXXXXX)"
     config=(${CFG_BLUETOOTH[0]})
     device="/dev/${config[0]}"
 
@@ -150,26 +191,27 @@ while true; do
     date
 
     # Run command in background
-    /opt/nastia-server/bin/serial-command "$device" 9600 s 2> >(tee "$tmpFile" >&2) &
+    /opt/nastia-server/bin/serial-command "$device" 9600 s \
+        2> >(tee "$tmpFile" >&2) &
     cmdPid=$!
 
     # Start watchdog to kill the command after timeout
     {
       sleep "$timeout"
-      kill  "$cmdPid"
+      kill "$cmdPid" 2>/dev/null
     } &
     watchdogPid=$!
 
     wait "$cmdPid"
     rv=$?
 
-    # Clean up watchdog
+    # Clean up watchdog process
     kill "$watchdogPid" 2>/dev/null
 
-    stderr=$(cat "$tmpFile")
-    rm -f  "$tmpFile"
+    stderr=$(cat "$tmpFile" 2>/dev/null)
+    rm -f "$tmpFile"
 
-    if [[ rv -ne 0 ]]; then
+    if [[ "$rv" -ne 0 ]]; then
       if [[ -z "$stderr" ]]; then
         stderr="Timeout reached while calling serial-command"
       fi
@@ -178,7 +220,7 @@ while true; do
       /etc/init.d/bluetooth restart
     fi
   fi
+
   sleep 370
 done
-
 
