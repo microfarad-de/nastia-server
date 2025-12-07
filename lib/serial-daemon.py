@@ -26,7 +26,6 @@
 #
 
 import serial  # pip install pyserial
-import ilock  # pip install ilock
 import sys
 import time
 import signal
@@ -41,6 +40,10 @@ except:
 
 # Current directory where this script is located
 dir = os.path.dirname(os.path.abspath(__file__))
+
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from lib.ulock import ULock, ULockException
 
 
 # Print info log message
@@ -131,24 +134,17 @@ def exit_failure():
     sys.exit(1)
 
 
-# Extends ILock with exception handling
-class ILockE(ilock.ILock):
+# Extends ULock with exception handling
+class Lock(ULock):
     def __enter__(self):
-        while 1:
-            try:
-                super(ILockE, self).__enter__()
-                break
-            except PermissionError:
-                pass
+        try:
+            return super().__enter__()
+        except ULockException as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(2)
+
     def __exit__(self, exc_type, exc_val, exc_tb):
-        while 1:
-            try:
-                super(ILockE, self).__exit__(exc_type, exc_val, exc_tb)
-                break
-            except PermissionError:
-                pass
-            except FileNotFoundError:
-                break
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
 
 #################
@@ -193,7 +189,8 @@ if __name__ == '__main__':
         pass
 
     # System-wide lock ensures mutually exclusive access to the serial port
-    lock = ILockE(dev, timeout=600)
+    lock = Lock(dev, timeout=45, stale_timeout=30)
+
 
     # Initialize the serial port
     try:

@@ -33,30 +33,22 @@ from time import sleep, gmtime, strftime
 import argparse
 
 import serial  # pip install pyserial
-import ilock   # pip install ilock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from lib.ulock import ULock, ULockException
 
 
-# Extends ILock with exception handling
-class Lock(ilock.ILock):
+# Extends ULock with exception handling
+class Lock(ULock):
     def __enter__(self):
-        while 1:
-            try:
-                super(Lock, self).__enter__()
-                break
-            except PermissionError:
-                pass
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        while 1:
-            try:
-                super(Lock, self).__exit__(exc_type, exc_val, exc_tb)
-                break
-            except PermissionError:
-                pass
-            except FileNotFoundError:
-                break
+        try:
+            return super().__enter__()
+        except ULockException as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(2)
 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
 
 class SerialConsole:
@@ -67,7 +59,7 @@ class SerialConsole:
         self.verbose = verbose
 
         # System-wide lock ensures mutually exclusive access to the serial port
-        self.lock = Lock(device, timeout=45)
+        self.lock = Lock(device, timeout=45, stale_timeout=30)
 
         self.ser = None
         self.terminate = False
@@ -268,7 +260,12 @@ class SerialConsole:
                 self.sema.acquire()
                 with self.lock:
                     self.write(tx)
+                    rx = self.read()
                 self.sema.release()
+
+                if rx:
+                    sys.stdout.write(self.ts() + rx)
+                    sys.stdout.flush()
 
         finally:
             # Graceful shutdown
