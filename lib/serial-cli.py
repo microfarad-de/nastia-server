@@ -260,7 +260,13 @@ class SerialConsole:
                 self.sema.acquire()
                 with self.lock:
                     self.write(tx)
+                    rx = self.read()
                 self.sema.release()
+
+                if rx:
+                    sys.stdout.write(self.ts() + rx)
+                    sys.stdout.flush()
+
 
         finally:
             # Graceful shutdown
