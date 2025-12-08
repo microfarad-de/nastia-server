@@ -12,7 +12,7 @@
 #   http://www.microfarad.de
 #   http://www.github.com/microfarad-de
 #
-# Copyright (C) 2023 Karim Hraibi (khraibi@gmail.com)
+# Copyright (C) 2025 Karim Hraibi (khraibi@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ import serial  # pip install pyserial
 import os
 import sys
 import time
+import argparse
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from lib.ulock import ULock, ULockException
 
@@ -87,15 +88,29 @@ class Lock(ULock):
 #################
 if __name__ == '__main__':
 
+    # Argument parser
+    parser = argparse.ArgumentParser(
+        description="Send a command to a serial port and print the response"
+    )
+    parser.add_argument("device", help="Serial device")
+    parser.add_argument(
+        "baud_rate",
+        nargs="?",
+        default="9600",
+        help="Baud rate (default: 9600)"
+    )
+    parser.add_argument("command", help="Command to send")
 
-    # Check for correct number of arguments
-    if len(sys.argv) != 4:
-        print(f"Usage: {sys.argv[0]} <device> <baud rate> <command>")
+    args = parser.parse_args()
+
+    device    = args.device
+    command   = args.command
+
+    try:
+        baud_rate = int(args.baud_rate)
+    except ValueError:
+        print(f"Invalid baud rate: {args.baud_rate}", file=sys.stderr)
         sys.exit(1)
-
-    device    = sys.argv[1]
-    baud_rate = sys.argv[2]
-    command   = sys.argv[3]
 
     # System-wide lock ensures mutually exclusive access to the serial port
     lock = Lock(device, timeout=45, stale_timeout=30)
@@ -145,5 +160,3 @@ if __name__ == '__main__':
     elif not success:
         print("Serial I/O error", file=sys.stderr)
         sys.exit(4)
-
-

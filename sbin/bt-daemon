@@ -63,7 +63,7 @@ function start {
   local device="$1"
   local address="$2"
   local justBind="$3"
-  local rv=0
+  local rv
   local success=0
 
   if [[ ! -e "/dev/$device" ]]; then
@@ -73,36 +73,34 @@ function start {
 
     # Wait up to 30 seconds for RFCOMM to be fully usable
     if [[ "$rv" -eq 0 ]]; then
-      for _ in {1..30}; do
+      for _ in {1..60}; do
         if [[ -e "/dev/$device" ]] && rfcomm show "$device" 2>/dev/null | grep -q "connected"; then
           success=1
           break
         fi
         sleep 1
       done
-      # If not connected after waiting, treat as failure
-      if [[ "$success" -ne 1 ]]; then
-        rv=1
-      fi
     fi
   else
     infoLog "/dev/$device already bound"
-    rv=0
+    success=1
   fi
 
   # If bind failed, always log and stop (even in bind-only mode)
-  if [[ "$rv" -ne 0 ]]; then
+  if [[ "$success" -ne 1 ]]; then
     errorLog "Failed to bind Bluetooth device (device=$device address=$address)"
-    return
+    return 1
   fi
 
   # Bind-only mode: stop here, but after validating success
   if [[ "$justBind" -eq 1 ]]; then
-    return
+    return 0
   fi
 
   infoLog "Connecting Bluetooth device (device=/dev/$device address=$address)"
   "$DAEMON_SCRIPT" "$device" "$PREFIX" &
+
+  return 0
 }
 
 
@@ -132,16 +130,17 @@ function bleStart {
   # If bind failed (device node never appeared), always log and stop
   if [[ "$success" -ne 1 ]]; then
     errorLog "Failed to bind BLE device (device=$device address=$address)"
-    return
+    return 1
   fi
 
   # Bind-only mode: stop here, but after validating success
   if [[ "$justBind" -eq 1 ]]; then
-    return
+    return 0
   fi
 
   infoLog "Connecting BLE device (device=/dev/$device address=$address)"
   "$DAEMON_SCRIPT" "$device" "$PREFIX" &
+  return 0
 }
 
 
@@ -173,10 +172,6 @@ for i in "${!CFG_BLUETOOTH[@]}"; do
   fi
 done
 
-# If configured for bind-only, exit after binding without watchdog loop
-if [[ "$BIND_ONLY" -eq 1 ]]; then
-  exit 0
-fi
 
 # Loop forever until process stopped
 while true; do
