@@ -40,6 +40,7 @@ LOG="$CFG_LOG_DIR/$PREFIX.log"                 # Main log file
 WATCHDOG="$CFG_BLUETOOTH_WATCHDOG"             # Bluetooth watchdog enable flag (0/1)
 BIND_ONLY="$CFG_BLUETOOTH_BIND_ONLY"           # 1: just bind and don't spawn any serial daemons
 DAEMON_SCRIPT="$DIR/../lib/serial-daemon.py"   # Script that handles a BT serial port
+SERIAL_COMMAND="$DIR/../bin/serial-command"    # Script that sends/receives commands over serial port
 
 
 # Print info message to log file
@@ -186,7 +187,7 @@ while true; do
     date
 
     # Run command in background
-    /opt/nastia-server/bin/serial-command "$device" 9600 s \
+    "$SERIAL_COMMAND" "$device" 9600 s \
         2> >(tee "$tmpFile" >&2) &
     cmdPid=$!
 

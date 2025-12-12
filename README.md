@@ -57,9 +57,9 @@ The compiled binaries of the above tools is provided under the `opt` subdirector
 running Venus OS version `5.10.110-rpi-venus-4`. Please create the following symbolic links for those binaries:
 
    ```bash
-   ln -s /opt/nastia-server/opt/logrotate-3.21.0/logrotate /usr/sbin/
-   ln -s /opt/nastia-server/opt/msmtp-1.8.24/src/msmtp /usr/bin/
-   ln -s /opt/nastia-server/opt/lynx2.9.0/lynx /usr/bin/
+   ln -s /data/nastia-server/opt/logrotate-3.21.0/logrotate /usr/sbin/
+   ln -s /data/nastia-server/opt/msmtp-1.8.24/src/msmtp /usr/bin/
+   ln -s /data/nastia-server/opt/lynx2.9.0/lynx /usr/bin/
    ```
 
 The following Python modules must be installed manually with `pip3 install <module>`:
@@ -69,15 +69,15 @@ The following Python modules must be installed manually with `pip3 install <modu
 
 ## Installation
 
-1. Clone this repository into `/opt/nastia-server` on your Victron Venus OS system.
+1. Clone this repository into `/data/nastia-server` on your Victron Venus OS system.
 
 2. Create the following symbolic links:
 
    ```bash
-   ln -s /opt/nastia-server/etc/nastia-server.conf /etc/
-   ln -s /opt/nastia-server/etc/cron.d/nastia-server /etc/cron.d/
-   ln -s /opt/nastia-server/etc/logrotate.d/nastia-server /etc/logrotate.d/
-   ln -s /opt/nastia-server/service/* /opt/victronenergy/service/
+   ln -s /data/nastia-server/etc/nastia-server.conf /etc/
+   ln -s /data/nastia-server/etc/cron.d/nastia-server /etc/cron.d/
+   ln -s /data/nastia-server/etc/logrotate.d/nastia-server /etc/logrotate.d/
+   ln -s /data/nastia-server/service/* /opt/victronenergy/service/
    ```
 
    > **Note:** The system must be rebooted in order for the changes in `/opt/victronenergy/service/` to take effect. Following reboot, the service configurations will appear under the `/service` tmpfs directory.
