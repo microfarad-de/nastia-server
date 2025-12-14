@@ -60,6 +60,7 @@ running Venus OS version `5.10.110-rpi-venus-4`. Please create the following sym
    ln -s /data/nastia-server/opt/logrotate-3.21.0/logrotate /usr/sbin/
    ln -s /data/nastia-server/opt/msmtp-1.8.24/src/msmtp /usr/bin/
    ln -s /data/nastia-server/opt/lynx2.9.0/lynx /usr/bin/
+   ln -s /data/nastia-server/opt/lynx2.9.0/lynx.cfg /usr/local/etc/
    ```
 
 The following Python modules must be installed manually with `pip3 install <module>`:
