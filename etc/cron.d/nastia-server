@@ -15,23 +15,23 @@ MAILTO=""
  
 # Jobs executed by root
 #       m   h   dom mon dow   user   command
-        0   0   *   *   *     root   /opt/nastia-server/sbin/backup-config   > /dev/null
-       10   0   *   *   *     root   /opt/nastia-server/bin/backup-files     > /dev/null
+        0   0   *   *   *     root   /data/nastia-server/sbin/backup-config   > /dev/null
+       10   0   *   *   *     root   /data/nastia-server/bin/backup-files     > /dev/null
         0   1   *   *   *     root   /usr/sbin/logrotate /etc/logrotate.conf > /dev/null
-       17   3   *   *   *     root   /opt/nastia-server/bin/monitor          > /dev/null
-#     */5   *   *   *   *     root   /opt/nastia-server/bin/serial-command /dev/rfcomm0 9600 s 1>/dev/null  2>>/tmp/bt-watchdog || { rm -rf /tmp/ulock-*.lock; echo; date; /etc/init.d/bluetooth restart; echo; } >> /tmp/bt-watchdog 2>&1
-#       5 */3   *   *   *     root   /opt/nastia-server/sbin/backup-hdd    > /dev/null
-#       0   1   *   *   *     root   /opt/nastia-server/sbin/permissions   > /dev/null
-#       5   1   *   *   Sun   root   /opt/nastia-server/sbin/backup-sd     > /dev/null
+       17   3   *   *   *     root   /data/nastia-server/bin/monitor          > /dev/null
+#     */5   *   *   *   *     root   /data/nastia-server/bin/serial-command /dev/rfcomm0 9600 s 1>/dev/null  2>>/tmp/bt-watchdog || { rm -rf /tmp/ulock-*.lock; echo; date; /etc/init.d/bluetooth restart; echo; } >> /tmp/bt-watchdog 2>&1
+#       5 */3   *   *   *     root   /data/nastia-server/sbin/backup-hdd    > /dev/null
+#       0   1   *   *   *     root   /data/nastia-server/sbin/permissions   > /dev/null
+#       5   1   *   *   Sun   root   /data/nastia-server/sbin/backup-sd     > /dev/null
 
 # Jobs executed by USER
 #       m   h   dom mon dow   user   command
-#     */5   *   *   *   *     pi     /opt/nastia-server/bin/dyndns         > /dev/null
-# 5-59/10   *   *   *   *     pi     /opt/nastia-server/bin/dropbox-photos > /dev/null
-#    */10   *   *   *   *     pi     /opt/nastia-server/bin/photostream    > /dev/null
-#       0   2   *   *   Sun   pi     /opt/nastia-server/bin/check-images   > /dev/null
-#      27   3   *   *   *     pi     /opt/nastia-server/bin/monitor        > /dev/null
-#     */7   *   *   *   *     pi     /opt/nastia-server/bin/monitor speed-test > /dev/null
+#     */5   *   *   *   *     pi     /data/nastia-server/bin/dyndns         > /dev/null
+# 5-59/10   *   *   *   *     pi     /data/nastia-server/bin/dropbox-photos > /dev/null
+#    */10   *   *   *   *     pi     /data/nastia-server/bin/photostream    > /dev/null
+#       0   2   *   *   Sun   pi     /data/nastia-server/bin/check-images   > /dev/null
+#      27   3   *   *   *     pi     /data/nastia-server/bin/monitor        > /dev/null
+#     */7   *   *   *   *     pi     /data/nastia-server/bin/monitor speed-test > /dev/null
 #     */5   *   *   *   *     pi     /usr/local/bin/speedtest --simple     > /home/pi/cron-test 2>&1
 
 # Test job
