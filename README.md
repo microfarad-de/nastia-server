@@ -73,7 +73,6 @@ The following Python modules must be installed manually with `pip3 install <modu
    ln -s /data/nastia-server/opt/lynx2.9.0/lynx /usr/bin/
    ln -s /data/nastia-server/etc/nastia-server.conf /etc/
    ln -s /data/nastia-server/etc/cron.d/nastia-server /etc/cron.d/
-   ln -s /data/nastia-server/etc/logrotate.d /etc/
    ln -s /data/nastia-server/etc/logrotate.conf /etc/
    ln -s /data/nastia-server/service/* /opt/victronenergy/service/
    ln -s /data/nastia-server/opt/lynx2.9.0/lynx.cfg /usr/local/etc/

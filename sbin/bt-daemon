@@ -31,7 +31,6 @@ set -m # Enable Job Control
 DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 
 # Include common configuration file
-# (must define CFG_LOG_DIR, CFG_BLUETOOTH, CFG_BLUETOOTH_WATCHDOG, CFG_BLUETOOTH_BIND_ONLY)
 source "$DIR/common.sh"
 
 # Configuration parameters
@@ -75,7 +74,8 @@ function start {
     # Wait up to 30 seconds for RFCOMM to be fully usable
     if [[ "$rv" -eq 0 ]]; then
       for _ in {1..60}; do
-        if [[ -e "/dev/$device" ]] && rfcomm show "$device" 2>/dev/null | grep -q "connected"; then
+        if [[ -e "/dev/$device" ]] && rfcomm show "$device" 2>/dev/null | grep -q "$device"; then
+          infoLog "/dev/$device bound successfully"
           success=1
           break
         fi
