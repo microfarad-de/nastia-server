@@ -75,8 +75,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 HOST="$(hostname -s)"
-TS="$(date -u +%Y%m%d-%H%M%S)"
-FILE="$HOST-$TS-sd.img"
+FILE="$HOST-sd.img"
 REMOTE_OUT="$DEST_DIR/$FILE.zst"
 REMOTE_TMP="$REMOTE_OUT.partial"
 
