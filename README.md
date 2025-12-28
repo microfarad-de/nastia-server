@@ -47,14 +47,20 @@ Below is a list of the provided scripts:
 
 ## Dependencies
 
-The following Linux packages must be installed manually:
+The following Linux packages must be installed manually by creating symlinks (see Installation section below):
 
 * `msmtp`
 * `lynx`
 * `logrotate`
 
 The compiled binaries of the above tools is provided under the `opt` subdirectory. These binaries have been compiled on a Raspberry Pi 3 B+
-running Venus OS version `5.10.110-rpi-venus-4`.
+running Venus OS version 3.55 (`5.10.110-rpi-venus-4`).
+
+On Venus OS versions above 3.67: the following Linux packages must be installed with opkg (see Installation section below):
+
+* `git`
+* `zstd`
+* `bc`
 
 The following Python modules must be installed manually with `pip3 install <module>`:
 
@@ -75,7 +81,16 @@ The following Python modules must be installed manually with `pip3 install <modu
    ln -s /data/nastia-server/etc/cron.d/nastia-server /etc/cron.d/
    ln -s /data/nastia-server/etc/logrotate.conf /etc/
    ln -s /data/nastia-server/service/* /opt/victronenergy/service/
+   mkdir /usr/local/etc/
    ln -s /data/nastia-server/opt/lynx2.9.0/lynx.cfg /usr/local/etc/
    ```
 
    > **Note:** The system must be rebooted in order for the changes in `/opt/victronenergy/service/` to take effect. Following reboot, the service configurations will appear under the `/service` tmpfs directory.
+
+3. On Venus OS versions above 3.67: install required packages:
+
+* `opkg update`
+* `opkg install git`
+* `opkg install zstd`
+* `opkg install bc`
+
