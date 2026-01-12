@@ -36,7 +36,8 @@ source "$DIR/common.sh"
 # Configuration parameters
 OUTDIR="$CFG_BACKUP_SD_DESTINATION"
 DEVICE="$CFG_BACKUP_SD_DEVICE"
-OUTFILE="sd_card.img"
+HOST="$(hostname -s)"
+OUTFILE="$HOST-sd.img"
 LOCK="$CFG_TMPFS_DIR/backup-sd.lock"
 LOG="$CFG_LOG_DIR/backup-sd.log"
 
