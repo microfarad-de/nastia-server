@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+#
+# Mount/unmount all partitions of a disk image file
+# Must run as root
+#
+# This source file is part of the follwoing repository:
+# http://www.github.com/microfarad-de/nastia-server
+#
+# Please visit:
+#   http://www.microfarad.de
+#   http://www.github.com/microfarad-de
+#
+# Copyright (C) 2026 Karim Hraibi (khraibi@gmail.com)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+set -euo pipefail
+
+STATE_FILE="/run/img-mount.loop"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  img-mount.sh <image-file>
+  img-mount.sh -d
+
+Mounts <image-file> using a free loop device and mounts partitions to:
+  /media/p1 ... /media/p9
+
+With -d:
+  Unmounts /media/p1 ... /media/p9,
+  removes those directories,
+  and detaches the loop device.
+EOF
+}
+
+need_root() {
+  if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
+    echo "Please run as root (sudo)." >&2
+    exit 1
+  fi
+}
+
+detach() {
+  need_root
+
+  if [[ ! -f "$STATE_FILE" ]]; then
+    echo "No state file found; nothing to detach."
+    exit 0
+  fi
+
+  LOOP_DEV=$(<"$STATE_FILE")
+
+  # Unmount and remove only /media/p1 .. /media/p9
+  for i in {1..9}; do
+    m="/media/p${i}"
+
+    if mountpoint -q "$m"; then
+      umount "$m" || true
+    fi
+
+    # Remove directory only if it exists and is empty
+    if [[ -d "$m" ]]; then
+      rmdir "$m" 2>/dev/null || true
+    fi
+  done
+
+  if losetup "$LOOP_DEV" &>/dev/null; then
+    losetup -d "$LOOP_DEV"
+    echo "Detached $LOOP_DEV"
+  fi
+
+  rm -f "$STATE_FILE"
+}
+
+mount_image() {
+  need_root
+
+  local img="$1"
+  [[ -f "$img" ]] || { echo "Image not found: $img" >&2; exit 1; }
+
+  LOOP_DEV=$(losetup --find --show -P "$img")
+  echo "$LOOP_DEV" > "$STATE_FILE"
+
+  # Wait for partition nodes
+  for _ in {1..20}; do
+    ls "${LOOP_DEV}"p* &>/dev/null && break
+    sleep 0.1
+  done
+
+  mapfile -t parts < <(ls -1 "${LOOP_DEV}"p* 2>/dev/null | sort -V)
+
+  if (( ${#parts[@]} == 0 )); then
+    echo "No partitions found." >&2
+    losetup -d "$LOOP_DEV"
+    rm -f "$STATE_FILE"
+    exit 1
+  fi
+
+  local i=1
+  for p in "${parts[@]}"; do
+    (( i > 9 )) && break
+
+    m="/media/p${i}"
+    mkdir -p "$m"
+
+    if mountpoint -q "$m"; then
+      echo "Warning: $m already mounted, skipping." >&2
+    else
+      mount "$p" "$m"
+      echo "Mounted $p -> $m"
+    fi
+    ((i++))
+  done
+}
+
+main() {
+  [[ $# -gt 0 ]] || { usage; exit 1; }
+
+  case "$1" in
+    -d) detach ;;
+    -h|--help) usage ;;
+    *) mount_image "$1" ;;
+  esac
+}
+
+main "$@"
+
