@@ -41,8 +41,11 @@ Mounts <image-file> using a free loop device and mounts partitions to:
 
 With -d:
   Unmounts /media/p1 ... /media/p9,
-  removes those directories,
-  and detaches the loop device.
+  removes those directories (only if empty),
+  and detaches the loop device recorded in the state file.
+
+Safety:
+  - If the state file already exists, mounting is refused (prevents mounting a 2nd image).
 EOF
 }
 
@@ -87,6 +90,12 @@ detach() {
 
 mount_image() {
   need_root
+
+  if [[ -f "$STATE_FILE" ]]; then
+    echo "Refusing to mount: state file exists ($STATE_FILE)." >&2
+    echo "Run: sudo $0 -d   to unmount/detach first." >&2
+    exit 1
+  fi
 
   local img="$1"
   [[ -f "$img" ]] || { echo "Image not found: $img" >&2; exit 1; }
