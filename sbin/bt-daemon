@@ -9,7 +9,7 @@
 #   http://www.microfarad.de
 #   http://www.github.com/microfarad-de
 #
-# Copyright (C) 2025 Karim Hraibi (khraibi@gmail.com)
+# Copyright (C) 2026 Karim Hraibi (khraibi@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-set -m # Enable Job Control
+# Note:
+# - This script is intended to run under runit (svc/svstat).
+# - We intentionally DO NOT trap SIGTERM/SIGINT, so "svc -d" stops the service
+#   immediately via default signal handling (like your original script did).
+# - We DO use an EXIT trap to clean up child processes we started.
 
 # Path to the current directory where this script is located
 DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
@@ -34,31 +38,79 @@ DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 source "$DIR/common.sh"
 
 # Configuration parameters
-PREFIX="bt-daemon"                             # Log prefix
-LOG="$CFG_LOG_DIR/$PREFIX.log"                 # Main log file
-WATCHDOG="$CFG_BLUETOOTH_WATCHDOG"             # Bluetooth watchdog enable flag (0/1)
-BIND_ONLY="$CFG_BLUETOOTH_BIND_ONLY"           # 1: just bind and don't spawn any serial daemons
-DAEMON_SCRIPT="$DIR/../lib/serial-daemon.py"   # Script that handles a BT serial port
-SERIAL_COMMAND="$DIR/../bin/serial-command"    # Script that sends/receives commands over serial port
+PREFIX="bt-daemon"                                # Log prefix
+LOG="$CFG_LOG_DIR/$PREFIX.log"                    # Main log file
+WATCHDOG="$CFG_BLUETOOTH_WATCHDOG"                # Bluetooth watchdog enable flag (0/1)
+BIND_ONLY="$CFG_BLUETOOTH_BIND_ONLY"              # 1: just bind and don't spawn any serial daemons
+DAEMON_SCRIPT="$DIR/../lib/serial-daemon.py"      # Script that handles a BT serial port
+SERIAL_COMMAND="$DIR/../bin/serial-command"       # Script that sends/receives commands over serial port
+WATCHDOG_INTERVAL=300                             # Interval between sending consecutive serial watchdog commands (seconds)
+SUPERVISOR_INTERVAL=1                             # Poll interval for daemon supervision (seconds)
 
+# Track bind-only watchdog helper PIDs so we can stop them cleanly
+CMD_PID=""
+WATCHDOG_PID=""
+
+# --- Process supervision state (only used when BIND_ONLY != 1) ---
+declare -A DAEMON_PID_BY_DEV
+declare -A DEV_ADDR
+declare -A DEV_MODE
 
 # Print info message to log file
-function infoLog {
-  _infoLog "$1" "$PREFIX" "$LOG" "ecd"
+function infoLog { _infoLog "$1" "$PREFIX" "$LOG" "ecd"; }
+function warningLog { _warningLog "$1" "$PREFIX" "$LOG" "ecd"; }
+function errorLog { _errorLog "$1" "$PREFIX" "$LOG" "ecd"; }
+
+
+function stopBindOnlyHelpers {
+  [[ -n "$WATCHDOG_PID" ]] && kill "$WATCHDOG_PID" 2>/dev/null || true
+  WATCHDOG_PID=""
+  [[ -n "$CMD_PID" ]] && kill "$CMD_PID" 2>/dev/null || true
+  CMD_PID=""
 }
 
-# Print warning message to log file
-function warningLog {
-  _warningLog "$1" "$PREFIX" "$LOG" "ecd"
+function stopAllDaemons {
+  for dev in "${!DAEMON_PID_BY_DEV[@]}"; do
+    pid="${DAEMON_PID_BY_DEV[$dev]}"
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      kill "$pid" 2>/dev/null || true
+    fi
+  done
+
+  # Give them a moment to exit, then hard-kill if needed
+  sleep 0.2
+  for dev in "${!DAEMON_PID_BY_DEV[@]}"; do
+    pid="${DAEMON_PID_BY_DEV[$dev]}"
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      kill -9 "$pid" 2>/dev/null || true
+    fi
+  done
+
+  DAEMON_PID_BY_DEV=()
 }
 
-# Print error message to log file
-function errorLog {
-  _errorLog "$1" "$PREFIX" "$LOG" "ecd"
+function cleanup {
+  # Cleanup should never block the service from exiting
+  { infoLog "Cleanup on exit"; } >/dev/null 2>&1 || true
+
+  # Bind-only watchdog helper processes
+  stopBindOnlyHelpers 2>/dev/null || true
+
+  # Supervised serial-daemon processes
+  stopAllDaemons 2>/dev/null || true
+
+  # Any other background jobs started by this shell (e.g., watchdog subshell)
+  jobs -pr 2>/dev/null | xargs -r kill 2>/dev/null || true
+
+  # Last resort: kill any remaining direct children of this script
+  pkill -P $$ 2>/dev/null || true
 }
 
+# IMPORTANT: EXIT trap only (no TERM/INT trap)
+trap cleanup EXIT
 
 # Start a serial daemon for a classic BT device
+# When justBind==0, it stores PID in DAEMON_PID_BY_DEV[device]
 function start {
   local device="$1"
   local address="$2"
@@ -100,12 +152,12 @@ function start {
 
   infoLog "Connecting Bluetooth device (device=/dev/$device address=$address)"
   "$DAEMON_SCRIPT" "$device" "$PREFIX" &
-
+  DAEMON_PID_BY_DEV["$device"]=$!
   return 0
 }
 
-
 # Start a serial daemon for a BLE device
+# When justBind==0, it stores PID in DAEMON_PID_BY_DEV[device]
 function bleStart {
   local device="$1"
   local address="$2"
@@ -141,9 +193,43 @@ function bleStart {
 
   infoLog "Connecting BLE device (device=/dev/$device address=$address)"
   "$DAEMON_SCRIPT" "$device" "$PREFIX" &
+  DAEMON_PID_BY_DEV["$device"]=$!
   return 0
 }
 
+function startOne {
+  local device="$1"
+  local address="$2"
+  local mode="$3"
+  local justBind="$4"
+
+  DEV_ADDR["$device"]="$address"
+  DEV_MODE["$device"]="$mode"
+
+  if [[ "$mode" == "ble" ]]; then
+    bleStart "$device" "$address" "$justBind"
+  else
+    start "$device" "$address" "$justBind"
+  fi
+}
+
+function restartOneDaemon {
+  local device="$1"
+  local address="${DEV_ADDR[$device]}"
+  local mode="${DEV_MODE[$device]}"
+
+  infoLog "Restarting serial daemon (device=/dev/$device mode=$mode address=$address)"
+  startOne "$device" "$address" "$mode" 0
+}
+
+function restartAllDaemons {
+  infoLog "Restarting all serial daemons"
+  stopAllDaemons
+
+  for device in "${!DEV_ADDR[@]}"; do
+    restartOneDaemon "$device"
+  done
+}
 
 #################
 ####  START  ####
@@ -166,57 +252,77 @@ for i in "${!CFG_BLUETOOTH[@]}"; do
   mode="${config[2]}"
   justBind="$BIND_ONLY"
 
-  if [[ "$mode" == "ble" ]]; then
-    bleStart "$device" "$address" "$justBind"
-  else
-    start "$device" "$address" "$justBind"
-  fi
+  startOne "$device" "$address" "$mode" "$justBind"
 done
 
 
-# Loop forever until process stopped
+function watchdog {
+  local timeout=60
+
+  local tmpFile="$(mktemp /tmp/bt-daemon.XXXXXX)"
+  local config=(${CFG_BLUETOOTH[0]})
+  local device="/dev/${config[0]}"
+
+  # Run command in background
+  "$SERIAL_COMMAND" "$device" 9600 s \
+      2> >(tee "$tmpFile" >&2) &
+  CMD_PID=$!
+
+  # Start watchdog to kill the command after timeout
+  {
+    sleep "$timeout"
+    kill "$CMD_PID" 2>/dev/null
+  } &
+  WATCHDOG_PID=$!
+  wait "$CMD_PID"
+  rv=$?
+
+  #infoLog "CMD_PID=$CMD_PID WATCHDOG_PID=$WATCHDOG_PID"
+
+  # Clean up watchdog process
+  kill "$WATCHDOG_PID" 2>/dev/null || true
+  WATCHDOG_PID=""
+  CMD_PID=""
+
+  stderr=$(cat "$tmpFile" 2>/dev/null)
+  rm -f "$tmpFile"
+
+  if [[ "$rv" -ne 0 ]]; then
+    if [[ -z "$stderr" ]]; then
+      stderr="Timeout reached while calling serial-command"
+    fi
+    infoLog "$stderr - restarting Bluetooth"
+    rm -rf /tmp/ulock-*.lock
+    /etc/init.d/bluetooth restart
+  fi
+}
+
+# ----------------------------
+# Idle loop
+# ----------------------------
+last=0
 while true; do
-  if [[ "$WATCHDOG" -eq 1 ]]; then
-    timeout=60
+  now=$(date +%s)
 
-    tmpFile="$(mktemp /tmp/bt-daemon.XXXXXX)"
-    config=(${CFG_BLUETOOTH[0]})
-    device="/dev/${config[0]}"
+  if [[ "$BIND_ONLY" -ne 1 ]]; then
+    # --- Supervise daemons ---
+    for device in "${!DAEMON_PID_BY_DEV[@]}"; do
+      pid="${DAEMON_PID_BY_DEV[$device]}"
 
-    echo
-    date
-
-    # Run command in background
-    "$SERIAL_COMMAND" "$device" 9600 s \
-        2> >(tee "$tmpFile" >&2) &
-    cmdPid=$!
-
-    # Start watchdog to kill the command after timeout
-    {
-      sleep "$timeout"
-      kill "$cmdPid" 2>/dev/null
-    } &
-    watchdogPid=$!
-
-    wait "$cmdPid"
-    rv=$?
-
-    # Clean up watchdog process
-    kill "$watchdogPid" 2>/dev/null
-
-    stderr=$(cat "$tmpFile" 2>/dev/null)
-    rm -f "$tmpFile"
-
-    if [[ "$rv" -ne 0 ]]; then
-      if [[ -z "$stderr" ]]; then
-        stderr="Timeout reached while calling serial-command"
+      if [[ -z "$pid" ]] || ! kill -0 "$pid" 2>/dev/null; then
+        infoLog "serial-daemon exited (device=/dev/$device pid=${pid:-n/a})"
+        restartOneDaemon "$device"
       fi
-      infoLog "$stderr - restarting bluetooth"
-      rm -rf /tmp/ulock-*.lock
-      /etc/init.d/bluetooth restart
+    done
+  fi
+
+  if [[ "$WATCHDOG" -eq 1 ]]; then
+    # --- Watchdog  ---
+    if (( now - last >= WATCHDOG_INTERVAL )); then
+      watchdog
+      last=$now
     fi
   fi
 
-  sleep 370
+  sleep "$SUPERVISOR_INTERVAL"
 done
-

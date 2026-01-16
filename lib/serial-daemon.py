@@ -12,7 +12,7 @@
 #   http://www.microfarad.de
 #   http://www.github.com/microfarad-de
 #
-# Copyright (C) 2025 Karim Hraibi (khraibi@gmail.com)
+# Copyright (C) 2026 Karim Hraibi (khraibi@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -240,6 +240,9 @@ if __name__ == "__main__":
                         try:
                             with open(out_file, "w") as f:
                                 f.write(rx)
+
+                            os.chmod(out_file, 0o666)   # rw-rw-rw-
+
                         except OSError as e:
                             error_log("Failed to open file " + out_file + f": {e}")
 
