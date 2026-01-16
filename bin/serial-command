@@ -1,0 +1,162 @@
+#!/usr/bin/env python
+#
+# Sends a command of a serial port and prints the response 
+#
+# This version has been adapted for instable rfcoomm serial
+# connection on Victron Venus OS
+#
+# This source file is part of the follwoing repository:
+# http://www.github.com/microfarad-de/nastia-server
+#
+# Please visit:
+#   http://www.microfarad.de
+#   http://www.github.com/microfarad-de
+#
+# Copyright (C) 2025 Karim Hraibi (khraibi@gmail.com)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+import serial  # pip install pyserial
+import os
+import sys
+import time
+import argparse
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from lib.ulock import ULock, ULockException
+
+DEBUG = False
+
+# Read the contents of the receive buffer
+def read():
+    global device
+    global ser
+    global success
+    rx = " "
+    result = ""
+    while len(rx) > 0:
+        try:
+            rx = ser.readline().decode()
+            result = result + rx
+            time.sleep(0.1)
+            success = True
+        except:
+            if DEBUG: print(f"Failed to read from {device}", file=sys.stderr)
+            raise
+    return result
+
+
+# Write to the transmit buffer
+def write(str):
+    global device
+    global ser
+    global success
+    try:
+        ser.write(str.encode())
+        success = True
+    except:
+        if DEBUG: print(f"Failed to write to {device}", file=sys.stderr)
+        raise
+
+
+# Extends ULock with exception handling
+class Lock(ULock):
+    def __enter__(self):
+        try:
+            return super().__enter__()
+        except ULockException as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(2)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return super().__exit__(exc_type, exc_val, exc_tb)
+
+
+#################
+####  START  ####
+#################
+if __name__ == '__main__':
+
+    # Argument parser
+    parser = argparse.ArgumentParser(
+        description="Send a command to a serial port and print the response"
+    )
+    parser.add_argument("device", help="Serial device")
+    parser.add_argument(
+        "baud_rate",
+        nargs="?",
+        default="9600",
+        help="Baud rate (default: 9600)"
+    )
+    parser.add_argument("command", help="Command to send")
+
+    args = parser.parse_args()
+
+    device    = args.device
+    command   = args.command
+
+    try:
+        baud_rate = int(args.baud_rate)
+    except ValueError:
+        print(f"Invalid baud rate: {args.baud_rate}", file=sys.stderr)
+        sys.exit(1)
+
+    # System-wide lock ensures mutually exclusive access to the serial port
+    lock = Lock(device, timeout=45, stale_timeout=30)
+
+    tx      = command
+    rx      = ""
+    success = False
+
+    if tx:
+        retry = 10
+        while not success and retry > 0:
+            if DEBUG: print(f"Start: {retry=}", file=sys.stderr)
+
+            with lock:
+                try:
+                    ser = serial.Serial(device, baud_rate, timeout=0.5)
+                except:
+                    if DEBUG: print(f"Failed to connect to {device}", file=sys.stderr)
+                    retry -= 1
+                    success = False
+                    continue
+
+                time.sleep(1)
+
+                try:
+                    write(tx + "\r\n")
+                    if DEBUG: print(f"Write: tx='{tx}'", file=sys.stderr)
+                    count = 10
+                    while not rx and count > 0:
+                        time.sleep(1)
+                        rx = read()
+                        if DEBUG: print(f"Read: rx='{rx}', {count=}, {success=}", file=sys.stderr)
+                        count -= 1
+                except:
+                    retry -= 1
+                    success = False
+
+                ser.close()
+
+    print(rx)
+
+    if rx and success:
+        sys.exit(0)
+    elif not rx:
+        print("No response", file=sys.stderr)
+        sys.exit(3)
+    elif not success:
+        print("Serial I/O error", file=sys.stderr)
+        sys.exit(4)

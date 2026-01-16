@@ -267,6 +267,7 @@ class SerialConsole:
                     sys.stdout.write(self.ts() + rx)
                     sys.stdout.flush()
 
+
         finally:
             # Graceful shutdown
             self.terminate = True

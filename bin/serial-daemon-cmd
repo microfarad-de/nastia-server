@@ -1,0 +1,144 @@
+#!/usr/bin/env python
+#
+# Serial port communication via serial-daemon.py
+#
+# This source file is part of the follwoing repository:
+# http://www.github.com/microfarad-de/nastia-server
+#
+# Please visit:
+#   http://www.microfarad.de
+#   http://www.github.com/microfarad-de
+#
+# Copyright (C) 2026 Karim Hraibi (khraibi@gmail.com)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+
+import argparse
+import os
+import re
+import sys
+import time
+
+
+EXIT_INVALID_ARGS = 1
+EXIT_TIMEOUT = 3
+POLL_INTERVAL = 0.5  # seconds
+
+
+def normalize_device(dev: str) -> str:
+    # Allow "/dev/ttyUSB0" or "ttyUSB0"
+    dev = os.path.basename(dev.strip())
+
+    # Prevent path traversal / odd filenames
+    if not dev or not re.fullmatch(r"[A-Za-z0-9._-]+", dev):
+        return ""
+    return dev
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Send a command to serial-daemon via /tmp files and wait for response"
+    )
+    parser.add_argument(
+        "-t",
+        "--timeout",
+        type=float,
+        default=10.0,
+        help="Timeout in seconds (default: 10)"
+    )
+    parser.add_argument(
+        "device",
+        help="Serial device name (e.g. ttyUSB0 or /dev/ttyUSB0)"
+    )
+    parser.add_argument(
+        "command",
+        nargs=argparse.REMAINDER,
+        help="Command string to send"
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+
+    if not args.command:
+        print("Missing command string.", file=sys.stderr)
+        return EXIT_INVALID_ARGS
+
+    device = normalize_device(args.device)
+    if not device:
+        print(f"Invalid device name: {args.device!r}", file=sys.stderr)
+        return EXIT_INVALID_ARGS
+
+    if args.timeout <= 0:
+        print("Timeout must be > 0.", file=sys.stderr)
+        return EXIT_INVALID_ARGS
+
+    command = " ".join(args.command).strip()
+
+    in_path = f"/tmp/serial-daemon-in-{device}"
+    out_path = f"/tmp/serial-daemon-out-{device}"
+
+    # Write request
+    try:
+        with open(in_path, "w", encoding="utf-8") as f:
+            f.write(command)
+            f.write("\n")
+            f.flush()
+            os.fsync(f.fileno())
+    except OSError as ex:
+        print(f"Failed to write {in_path}: {ex}", file=sys.stderr)
+        return EXIT_INVALID_ARGS
+
+    # Wait for response
+    deadline = time.monotonic() + args.timeout
+    while time.monotonic() < deadline:
+        try:
+            if os.path.getsize(out_path) <= 0:
+                time.sleep(POLL_INTERVAL)
+                continue
+
+            with open(out_path, "r", encoding="utf-8", errors="replace") as f:
+                response = f.read()
+
+
+            sys.stdout.write(response)
+            if response and not response.endswith("\n"):
+                sys.stdout.write("\n")
+            sys.stdout.flush()
+
+            # Truncate the output file so it is not read twice
+            try:
+                with open(out_path, "w") as f:
+                    f.truncate(0)
+                    f.flush()
+                    os.fsync(f.fileno())
+            except OSError as e:
+                print(f"Failed to truncate {out_path}: {e}", file=sys.stderr)
+
+            return 0
+
+        except FileNotFoundError:
+            time.sleep(POLL_INTERVAL)
+        except OSError:
+            time.sleep(POLL_INTERVAL)
+
+    return EXIT_TIMEOUT
+
+
+if __name__ == "__main__":
+    sys.exit(main())

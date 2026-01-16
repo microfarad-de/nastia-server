@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 #
-# Serial port daemon, sends commands and check the response
+# Serial port daemon, sends commands and checks the response
 #
-# This source file is part of the follwoing repository:
+# This version has been adapted for instable rfcomm serial
+# connection on Victron Venus OS
+#
+# This source file is part of the following repository:
 # http://www.github.com/microfarad-de/nastia-server
 #
 # Please visit:
 #   http://www.microfarad.de
 #   http://www.github.com/microfarad-de
 #
-# Copyright (C) 2023 Karim Hraibi (khraibi@gmail.com)
+# Copyright (C) 2026 Karim Hraibi (khraibi@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,113 +28,126 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import serial  # pip install pyserial
+import os
 import sys
 import time
 import signal
-import os
-import traceback
 import re
+import errno
+import argparse
 import logging
+
+import serial  # pip install pyserial
+
 try:
     from systemd.journal import JournalHandler
 except:
    JournalHandler=None
 
-# Current directory where this script is located
-dir = os.path.dirname(os.path.abspath(__file__))
-
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from lib.ulock import ULock, ULockException
 
 
+# Current directory where this script is located
+dir = os.path.dirname(os.path.abspath(__file__))
+
+# Enable transmit/receive logging
+TRX_LOG = True
+
+# Global state used by helpers
+dev = None
+log = None
+log_trx = None
+terminate = False
+ser = None
+
+
 # Print info log message
-def info_log(text):
-    global dir
-    global log
+def info_log(text: str) -> None:
+    global dir, log
     global logger
     logger.info(text)
     print(text)
-    os.popen(dir + "/infoLog.sh \"" + text + "\" '" + log + "' '' 'cd'")
+    os.popen(f"{dir}/infoLog.sh \"{text}\" '{log}' '' 'cd'")
 
 
 # Print warning log message
-def warning_log(text):
-    global dir
-    global log
+def warning_log(text: str) -> None:
+    global dir, log
     global logger
     logger.warning(text)
     print("[WARNING] " + text)
-    os.popen(dir + "/warningLog.sh \"" + text + "\" '" + log + "' '' 'cd'")
+    os.popen(f"{dir}/warningLog.sh \"{text}\" '{log}' '' 'cd'")
 
 
 # Print error log message
-def error_log(text):
-    global dir
-    global log
+def error_log(text: str) -> None:
+    global dir, log
     global logger
     logger.error(text)
     print("[ERROR] " + text)
-    os.popen(dir + "/errorLog.sh \"" + text + "\" '" + log + "' '' 'cd'")
+    os.popen(f"{dir}/errorLog.sh \"{text}\" '{log}' '' 'cd'")
 
 
 # Print transmit/receive log message
-def trx_log(text):
+def trx_log(text: str) -> None:
     global log_trx
-    # Remove empty lines
-    text = re.sub(r'\n\s*\n','\n',text,re.MULTILINE)
-    print(text)
-    os.popen(dir + "/infoLog.sh \"\n" + text + "\" '" + log_trx + "' '' 'd'")
+    if TRX_LOG:
+        # Remove empty lines
+        text = re.sub(r"\n\s*\n", "\n", text, flags=re.MULTILINE)
+        print(text)
+        os.popen(f"{dir}/infoLog.sh \"\n{text}\" '{log_trx}' '' 'd'")
 
 
 # Read the contents of the receive buffer
-def read():
-    global dev
-    global ser
+def read() -> str:
+    global dev, ser
+    if ser is None:
+        error_log("Attempted read but serial port is not open for " + str(dev))
+        return ""
+
     rx = " "
     result = ""
     while len(rx) > 0:
         try:
-            rx = ser.readline().decode()
-            result = result + rx
+            line = ser.readline()
+            if not line:
+                break
+            rx = line.decode(errors="replace")
+            result += rx
             time.sleep(0.1)
-        except:
-            #print(traceback.format_exc())
-            error_log("Failed to read from " + dev)
-            exit_failure()
+        except serial.SerialException as e:
+            error_log(f"Failed to read from {dev}: {e}")
+            raise
+        except Exception as e:
+            error_log(f"Unexpected error while reading from {dev}: {e}")
+            raise
     return result
 
 
 # Write to the transmit buffer
-def write(str):
-    global dev
-    global ser
+def write(data: str) -> None:
+    global dev, ser
+    if ser is None:
+        error_log("Attempted write but serial port is not open for " + str(dev))
+        raise RuntimeError("Serial port not open")
+
     try:
-        ser.write(str.encode())
-    except:
-        #print(traceback.format_exc())
-        error_log("Failed to write to " + dev)
-        exit_failure()
+        ser.write(data.encode())
+    except serial.SerialException as e:
+        error_log(f"Failed to write to {dev}: {e}")
+        raise
+    except Exception as e:
+        error_log(f"Unexpected error while writing to {dev}: {e}")
+        raise
 
 
 # Handle Ctrl+C
 def signal_handler(sig, frame):
     global terminate
-    terminate = True
     print("\nInterrupted by user\n")
-    time.sleep(0.3)
-    sys.exit(0)
-
-
-# Exit due to failure
-def exit_failure():
-    global status_file
-    try:
-        os.remove(status_file)
-    except:
-        pass
-    sys.exit(1)
+    terminate = True
+    # Let the main loop cleanly exit based on `terminate`
 
 
 # Extends ULock with exception handling
@@ -140,8 +156,8 @@ class Lock(ULock):
         try:
             return super().__enter__()
         except ULockException as e:
-            print(str(e), file=sys.stderr)
-            sys.exit(2)
+            error_log(str(e))
+            raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         return super().__exit__(exc_type, exc_val, exc_tb)
@@ -150,86 +166,125 @@ class Lock(ULock):
 #################
 ####  START  ####
 #################
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Handle Ctrl+C
     signal.signal(signal.SIGINT, signal_handler)
-    terminate = False
 
-    # Check for correct number of arguments
-    if len(sys.argv) < 3:
-        print("Usage: " + sys.argv[0] + " <device> <log> [baud rate]\n")
-        sys.exit(1)
 
-    dev_short = str(sys.argv[1]).replace(
-        "/dev/", "")  # Serial device name without the /dev prefix
-    dev = "/dev/" + dev_short  # Serial device name
-    log = sys.argv[2]  # Log file prefix
-    log_trx = log + "-" + dev_short  # Transmit/receive log
     logger = logging.getLogger(log)
     if JournalHandler is not None:
         logger.addHandler(JournalHandler())
     logger.setLevel(logging.INFO)
 
-    if len(sys.argv) < 4:
-        baud_rate = 9600
-    else:
-        baud_rate = sys.argv[2]  # Serial baud rate
+
+    parser = argparse.ArgumentParser(
+        description="Serial port daemon, sends commands and checks the response"
+    )
+
+    parser.add_argument(
+        "device",
+        help="Serial device (e.g. /dev/ttyUSB0, /dev/rfcomm0)",
+    )
+
+    parser.add_argument(
+        "log_prefix",
+        help="Log file prefix",
+    )
+
+    parser.add_argument(
+        "baud_rate",
+        nargs="?",
+        type=int,
+        default=9600,
+        help="Baud rate (default: 9600)",
+    )
+
+    args = parser.parse_args()
+
+    dev_short = str(args.device).replace("/dev/", "")  # Serial device name without the /dev prefix
+    dev = "/dev/" + dev_short  # Serial device name
+    log = args.log_prefix  # Log file prefix
+    log_trx = log + "-" + dev_short  # Transmit/receive log
+    baud_rate = args.baud_rate  # Serial baud rate
 
     in_file = "/tmp/serial-daemon-in-" + dev_short
     out_file = "/tmp/serial-daemon-out-" + dev_short
-    status_file = "/tmp/serial-daemon-status-" + dev_short
     print("Input file: ", in_file)
     print("Output file:", out_file)
-    print("Status file:", status_file)
 
     try:
         os.remove(out_file)
-    except:
+    except FileNotFoundError:
         pass
+    except OSError as e:
+        warning_log(f"Failed to remove old output file {out_file}: {e}")
 
     # System-wide lock ensures mutually exclusive access to the serial port
     lock = Lock(dev, timeout=45, stale_timeout=30)
 
+    tx = ""
+    retry = 10
 
-    # Initialize the serial port
-    try:
-        with lock:
-            ser = serial.Serial(dev, baud_rate, timeout=0.1)
-        info_log ("Connected to " + dev + " at " + str(baud_rate) + " baud")
-    except:
-        error_log("Failed to connect to " + dev)
-        exit_failure ()
-
-    while 1:
-        if terminate:
-            break
-
-        tx  = ""
-        rx  = ""
-        trx = ""
-
+    while retry > 0 and not terminate:
         try:
-            input = open(in_file, 'r')
-            tx = input.read()
-            os.remove(in_file)
-        except:
-            #print(traceback.format_exc())
-            time.sleep(0.3)
+            # Open serial port
+            with serial.Serial(dev, baud_rate, timeout=0.1) as ser:
+                info_log("Connected to " + dev + " at " + str(baud_rate) + " baud")
 
-        with lock:
-            if tx:
-                write(tx)
-            rx = read()
-            trx = tx + rx
+                while not terminate:
+                    rx = ""
+                    trx = ""
 
-        if tx and rx:
-            try:
-                output = open(out_file, 'w')
-                output.write(rx)
-                output.close()
-            except:
-                error_log("Failed to open file" + out_file)
+                    # Try to read pending command from input file
+                    try:
+                        with open(in_file, "r") as f:
+                            tx = f.read()
+                        os.remove(in_file)
+                    except FileNotFoundError:
+                        # No command yet; poll again
+                        time.sleep(1)
+                    except OSError as e:
+                        warning_log(f"Failed to read or remove input file {in_file}: {e}")
+                        time.sleep(1)
 
-        if trx:
-            trx_log(trx)
+                    if tx:
+                        with lock:
+                            write(tx)
+                            time.sleep(0.2)
+                            rx = read()
+                        trx = tx + rx
+
+                    if tx and rx:
+                        try:
+                            with open(out_file, "w") as f:
+                                f.write(rx)
+
+                            os.chmod(out_file, 0o666)   # rw-rw-rw-
+
+                        except OSError as e:
+                            error_log("Failed to open file " + out_file + f": {e}")
+
+                    if trx:
+                        trx_log(trx)
+
+                    tx = ""
+                    retry = 10  # Reset retry counter on successful loop
+
+        except serial.SerialException as e:
+            if terminate:
+                sys.exit(0)
+            else:
+                error_log(f"Serial error while connected to {dev}: {e}")
+                time.sleep(5)
+                retry -= 1
+        except Exception as e:
+            if terminate:
+                sys.exit(0)
+            else:
+                error_log(f"Unexpected error with {dev}: {e}")
+                time.sleep(5)
+                retry -= 1
+
+    sys.exit(0 if terminate else 1)
+
