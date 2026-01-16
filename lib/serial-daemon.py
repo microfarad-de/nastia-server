@@ -54,6 +54,9 @@ dir = os.path.dirname(os.path.abspath(__file__))
 # Enable transmit/receive logging
 TRX_LOG = True
 
+# Number of connection retries
+RETRY_COUNT = 2
+
 # Global state used by helpers
 dev = None
 log = None
@@ -224,7 +227,7 @@ if __name__ == "__main__":
     lock = Lock(dev, timeout=45, stale_timeout=30)
 
     tx = ""
-    retry = 10
+    retry = RETRY_COUNT
 
     while retry > 0 and not terminate:
         try:
@@ -269,7 +272,7 @@ if __name__ == "__main__":
                         trx_log(trx)
 
                     tx = ""
-                    retry = 10  # Reset retry counter on successful loop
+                    retry = RETRY_COUNT  # Reset retry counter on successful loop
 
         except serial.SerialException as e:
             if terminate:
