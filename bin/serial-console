@@ -260,6 +260,7 @@ class SerialConsole:
                 self.sema.acquire()
                 with self.lock:
                     self.write(tx)
+                    sleep(0.1)
                     rx = self.read()
                 self.sema.release()
 
