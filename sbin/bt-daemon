@@ -38,14 +38,14 @@ DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 source "$DIR/common.sh"
 
 # Configuration parameters
-PREFIX="bt-daemon"                                # Log prefix
-LOG="$CFG_LOG_DIR/$PREFIX.log"                    # Main log file
-WATCHDOG="$CFG_BLUETOOTH_WATCHDOG"                # Bluetooth watchdog enable flag (0/1)
-BIND_ONLY="$CFG_BLUETOOTH_BIND_ONLY"              # 1: just bind and don't spawn any serial daemons
-DAEMON_SCRIPT="$DIR/../lib/serial-daemon.py"      # Script that handles a BT serial port
-SERIAL_COMMAND="$DIR/../bin/serial-command"       # Script that sends/receives commands over serial port
-WATCHDOG_INTERVAL=300                             # Interval between sending consecutive serial watchdog commands (seconds)
-SUPERVISOR_INTERVAL=1                             # Poll interval for daemon supervision (seconds)
+PREFIX="bt-daemon"                            # Log prefix
+LOG="$CFG_LOG_DIR/$PREFIX.log"                # Main log file
+WATCHDOG="$CFG_BLUETOOTH_WATCHDOG"            # Bluetooth watchdog enable flag (0/1)
+BIND_ONLY="$CFG_BLUETOOTH_BIND_ONLY"          # 1: just bind and don't spawn any serial daemons
+DAEMON_SCRIPT="$DIR/../lib/serial-daemon.py"  # Script that handles a BT serial port
+SERIAL_COMMAND="$DIR/../bin/serial-command"   # Script that sends/receives commands over serial port
+WATCHDOG_INTERVAL=3600                        # Interval between sending consecutive serial watchdog commands (seconds)
+SUPERVISOR_INTERVAL=300                       # Poll interval for daemon supervision (seconds)
 
 # Track bind-only watchdog helper PIDs so we can stop them cleanly
 CMD_PID=""
