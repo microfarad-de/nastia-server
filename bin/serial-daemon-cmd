@@ -93,6 +93,15 @@ def main() -> int:
     in_path = f"/tmp/serial-daemon-in-{device}"
     out_path = f"/tmp/serial-daemon-out-{device}"
 
+    # Truncate the output file so it is not read twice
+    try:
+        with open(out_path, "w") as f:
+            f.truncate(0)
+            f.flush()
+            os.fsync(f.fileno())
+    except OSError as e:
+        print(f"Failed to truncate {out_path}: {e}", file=sys.stderr)
+
     # Write request
     try:
         with open(in_path, "w", encoding="utf-8") as f:
@@ -120,15 +129,6 @@ def main() -> int:
             if response and not response.endswith("\n"):
                 sys.stdout.write("\n")
             sys.stdout.flush()
-
-            # Truncate the output file so it is not read twice
-            try:
-                with open(out_path, "w") as f:
-                    f.truncate(0)
-                    f.flush()
-                    os.fsync(f.fileno())
-            except OSError as e:
-                print(f"Failed to truncate {out_path}: {e}", file=sys.stderr)
 
             return 0
 
