@@ -107,11 +107,7 @@ def read() -> str:
             rx = line.decode(errors="replace")
             result += rx
             time.sleep(0.1)
-        except serial.SerialException as e:
-            error_log(f"Failed to read from {dev}: {e}")
-            raise
         except Exception as e:
-            error_log(f"Unexpected error while reading from {dev}: {e}")
             raise
     return result
 
@@ -125,11 +121,7 @@ def write(data: str) -> None:
 
     try:
         ser.write(data.encode())
-    except serial.SerialException as e:
-        error_log(f"Failed to write to {dev}: {e}")
-        raise
     except Exception as e:
-        error_log(f"Unexpected error while writing to {dev}: {e}")
         raise
 
 
