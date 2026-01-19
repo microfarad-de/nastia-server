@@ -79,7 +79,7 @@ def warning_log(text: str) -> None:
     global dir, log
     global logger
     logger.warning(text)
-    print("[WARNING] " + text)
+    print(f"[WARNING] {text}")
     os.popen(f"{dir}/warningLog.sh \"{text}\" '{log}' '' 'cd'")
 
 
@@ -88,7 +88,7 @@ def error_log(text: str) -> None:
     global dir, log
     global logger
     logger.error(text)
-    print("[ERROR] " + text)
+    print(f"[ERROR] {text}")
     os.popen(f"{dir}/errorLog.sh \"{text}\" '{log}' '' 'cd'")
 
 
@@ -106,7 +106,7 @@ def trx_log(text: str) -> None:
 def read() -> str:
     global dev, ser
     if ser is None:
-        error_log("Attempted read but serial port is not open for " + str(dev))
+        error_log(f"Attempted read but serial port is not open for {dev}")
         return ""
 
     rx = " "
@@ -128,7 +128,7 @@ def read() -> str:
 def write(data: str) -> None:
     global dev, ser
     if ser is None:
-        error_log("Attempted write but serial port is not open for " + str(dev))
+        error_log(f"Attempted write but serial port is not open for {dev}")
         raise RuntimeError("Serial port not open")
 
     try:
@@ -198,13 +198,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dev_short = str(args.device).replace("/dev/", "")  # Serial device name without the /dev prefix
-    dev = "/dev/" + dev_short  # Serial device name
-    log = args.log_prefix  # Log file prefix
-    log_trx = log + "-" + dev_short  # Transmit/receive log
-    baud_rate = args.baud_rate  # Serial baud rate
+    dev = f"/dev/{dev_short}"       # Serial device name
+    log = args.log_prefix           # Log file prefix
+    log_trx = f"{log}-{dev_short}"  # Transmit/receive log
+    baud_rate = args.baud_rate      # Serial baud rate
 
-    in_file = "/tmp/serial-daemon-in-" + dev_short
-    out_file = "/tmp/serial-daemon-out-" + dev_short
+    in_file = f"/tmp/serial-daemon-in-{dev_short}"
+    out_file = f"/tmp/serial-daemon-out-{dev_short}"
     print("Input file: ", in_file)
     print("Output file:", out_file)
 
@@ -225,7 +225,7 @@ if __name__ == "__main__":
         try:
             # Open serial port
             with serial.Serial(dev, baud_rate, timeout=0.1) as ser:
-                info_log("Connected to " + dev + " at " + str(baud_rate) + " baud")
+                info_log(f"Connected to {dev} at {baud_rate} baud")
 
                 while not terminate:
                     rx = ""
@@ -258,7 +258,7 @@ if __name__ == "__main__":
                             os.chmod(out_file, 0o666)   # rw-rw-rw-
 
                         except OSError as e:
-                            error_log("Failed to open file " + out_file + f": {e}")
+                            error_log(f"Failed to open file {out_file}: {e}")
 
                     if trx:
                         trx_log(trx)
