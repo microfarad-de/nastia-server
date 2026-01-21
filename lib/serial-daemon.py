@@ -51,11 +51,12 @@ from lib.ulock import ULock, ULockException
 # Current directory where this script is located
 dir = os.path.dirname(os.path.abspath(__file__))
 
-# Enable transmit/receive logging
-TRX_LOG = True
 
-# Number of connection retries
-RETRY_COUNT = 2
+# Configuration parameters
+TRX_LOG     = True  # Enable transmit/receive logging
+POLL_RX     = True  # Poll srial port for received data
+RETRY_COUNT = 2     # Number of connection retries
+
 
 # Global state used by helpers
 dev = None
@@ -241,13 +242,14 @@ if __name__ == "__main__":
                         time.sleep(1)
                     except OSError as e:
                         warning_log(f"Failed to read or remove input file {in_file}: {e}")
-                        time.sleep(1)
+                        time.sleep(0.3)
 
-                    if tx:
-                        with lock:
+                    with lock:
+                        if tx:
                             write(tx)
-                            time.sleep(0.2)
-                            rx = read()
+                            time.sleep(0.1)
+                        if tx or POLL_RX:
+                            rx = read()  # Poll serial
                         trx = tx + rx
 
                     if tx and rx:
