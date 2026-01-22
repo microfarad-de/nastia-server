@@ -252,7 +252,7 @@ if __name__ == "__main__":
                             rx = read()  # Poll serial
                         trx = tx + rx
 
-                    if tx and rx:
+                    if rx:
                         try:
                             with open(out_file, "w") as f:
                                 f.write(rx)
