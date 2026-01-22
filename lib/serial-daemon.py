@@ -235,7 +235,7 @@ if __name__ == "__main__":
                         trx = tx + rx
 
 
-                    if tx and rx:
+                    if rx:
                         try:
                             with open(out_file, "w") as f:
                                 f.write(rx)
