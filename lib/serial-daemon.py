@@ -247,9 +247,9 @@ if __name__ == "__main__":
 
                     if trx:
                         trx_log(trx)
+                        retry = RETRY_COUNT  # Reset retry counter on successul transmit/receive
 
                     tx = ""
-                    retry = RETRY_COUNT  # Reset retry counter on successful loop
 
         except serial.SerialException as e:
             if terminate:
