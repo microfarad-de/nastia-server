@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
                 ser.close()
 
-    print(rx)
+    sys.stdout.write(rx)
 
     if rx and success:
         sys.exit(0)
