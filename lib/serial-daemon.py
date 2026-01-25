@@ -48,7 +48,7 @@ dir = os.path.dirname(os.path.abspath(__file__))
 
 # Configuration parameters
 TRX_LOG     = False  # Enable transmit/receive logging
-POLL_RX     = False  # Poll srial port for received data
+POLL_RX     = True   # Poll srial port for received data
 RETRY_COUNT = 2      # Number of connection retries
 
 
@@ -255,7 +255,7 @@ if __name__ == "__main__":
             if terminate:
                 sys.exit(0)
             else:
-                error_log(f"Serial error while connected to {dev}: {e}")
+                info_log(f"Serial error while connected to {dev}: {e}")
                 time.sleep(5)
                 retry -= 1
         except Exception as e:
