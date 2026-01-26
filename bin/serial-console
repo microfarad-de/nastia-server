@@ -240,6 +240,8 @@ class SerialConsole:
             self.thread.join()
 
     def run(self):
+        print("\nInteractive Serial Console\n")
+
         # Initial open
         with self.lock:
             self.open()
@@ -280,8 +282,6 @@ class SerialConsole:
 ####  START  ####
 #################
 def main():
-    print("\nInteractive Serial Console\n")
-
     parser = argparse.ArgumentParser(
         description="Interactive Serial Console"
     )
@@ -313,7 +313,8 @@ def main():
 
     args = parser.parse_args()
 
-    device = args.device
+    dev_short = str(args.device).replace("/dev/", "")  # Serial device name without the /dev prefix
+    device = f"/dev/{dev_short}"                       # Serial device name
     baud_rate = args.baud_rate
     timestamp = args.timestamp
     verbose = args.verbose

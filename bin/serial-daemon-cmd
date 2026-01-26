@@ -25,8 +25,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-
 import argparse
 import os
 import re
@@ -36,14 +34,13 @@ import time
 
 EXIT_INVALID_ARGS = 1
 EXIT_TIMEOUT = 3
+EXIT_SIGINT = 130  # 128 + SIGINT
+
 POLL_INTERVAL = 0.5  # seconds
 
 
 def normalize_device(dev: str) -> str:
-    # Allow "/dev/ttyUSB0" or "ttyUSB0"
     dev = os.path.basename(dev.strip())
-
-    # Prevent path traversal / odd filenames
     if not dev or not re.fullmatch(r"[A-Za-z0-9._-]+", dev):
         return ""
     return dev
@@ -54,8 +51,7 @@ def parse_args():
         description="Send a command to serial-daemon via /tmp files and wait for response"
     )
     parser.add_argument(
-        "-t",
-        "--timeout",
+        "-t", "--timeout",
         type=float,
         default=30.0,
         help="Timeout in seconds (default: 30)"
@@ -66,10 +62,16 @@ def parse_args():
     )
     parser.add_argument(
         "command",
-        nargs=argparse.REMAINDER,
         help="Command string to send"
     )
     return parser.parse_args()
+
+
+def safe_remove(path: str) -> None:
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
 def main() -> int:
@@ -88,20 +90,23 @@ def main() -> int:
         print("Timeout must be > 0.", file=sys.stderr)
         return EXIT_INVALID_ARGS
 
-    command = " ".join(args.command).strip()
+    command = args.command.strip()
+    if not command:
+        print("Missing command string.", file=sys.stderr)
+        return EXIT_INVALID_ARGS
 
     in_path = f"/tmp/serial-daemon-in-{device}"
     out_path = f"/tmp/serial-daemon-out-{device}"
 
-    # Truncate the output file so it is not read twice
-    try:
-        with open(out_path, "w") as f:
-            f.truncate(0)
-            f.flush()
-            os.fsync(f.fileno())
-    except OSError as e:
-        print(f"Failed to truncate {out_path}: {e}", file=sys.stderr)
-
+    # Truncate output file only if it already exists
+    if os.path.exists(out_path):
+        try:
+            with open(out_path, "w") as f:
+                f.truncate(0)
+                f.flush()
+                os.fsync(f.fileno())
+        except OSError as e:
+            print(f"Failed to truncate {out_path}: {e}", file=sys.stderr)
 
     # Write request
     try:
@@ -114,30 +119,34 @@ def main() -> int:
         print(f"Failed to write {in_path}: {ex}", file=sys.stderr)
         return EXIT_INVALID_ARGS
 
-    # Wait for response
     deadline = time.monotonic() + args.timeout
-    while time.monotonic() < deadline:
-        try:
-            if os.path.getsize(out_path) <= 0:
+    try:
+        while time.monotonic() < deadline:
+            try:
+                if not os.path.exists(out_path) or os.path.getsize(out_path) <= 0:
+                    time.sleep(POLL_INTERVAL)
+                    continue
+
+                with open(out_path, "r", encoding="utf-8", errors="replace") as f:
+                    response = f.read()
+
+                sys.stdout.write(response)
+                if response and not response.endswith("\n"):
+                    sys.stdout.write("\n")
+                sys.stdout.flush()
+                return 0
+
+            except FileNotFoundError:
                 time.sleep(POLL_INTERVAL)
-                continue
+            except OSError:
+                time.sleep(POLL_INTERVAL)
 
-            with open(out_path, "r", encoding="utf-8", errors="replace") as f:
-                response = f.read()
+    except KeyboardInterrupt:
+        safe_remove(in_path)
+        print("Interrupted by user", file=sys.stderr)
+        return EXIT_SIGINT
 
-
-            sys.stdout.write(response)
-            if response and not response.endswith("\n"):
-                sys.stdout.write("\n")
-            sys.stdout.flush()
-
-            return 0
-
-        except FileNotFoundError:
-            time.sleep(POLL_INTERVAL)
-        except OSError:
-            time.sleep(POLL_INTERVAL)
-
+    print("Timeout", file=sys.stderr)
     return EXIT_TIMEOUT
 
 

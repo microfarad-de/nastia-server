@@ -1,0 +1,167 @@
+#!/bin/sh
+#
+# nodered-diff-multi.sh
+#
+# Convert a Node-RED flows.json git diff into human-readable, colored JS diffs
+# for ALL embedded function node sources ("func": "..."), showing function name.
+#
+# Usage:
+#   git diff node-red/flows.json | ./nodered-diff-multi.sh
+#   git diff --cached node-red/flows.json | ./nodered-diff-multi.sh
+#
+# Optional:
+#   ./nodered-diff-multi.sh < diff.txt
+#
+
+set -e
+
+# If stdin is a terminal, we are not being piped any data -> show usage and exit.
+if [ -t 0 ]; then
+    echo "ERROR: No input on stdin." >&2
+    echo "Usage:" >&2
+    echo "  git diff node-red/flows.json | $0" >&2
+    echo "  git diff --cached node-red/flows.json | $0" >&2
+    echo "  $0 < diff.txt" >&2
+    exit 2
+fi
+
+TMPDIR="$(mktemp -d /tmp/nr_diff.XXXXXX)"
+
+cleanup() {
+    rm -rf "$TMPDIR"
+}
+trap cleanup EXIT INT TERM
+
+# Enable ANSI colors only when stdout is a terminal
+if [ -t 1 ]; then
+    ESC="$(printf '\033')"
+else
+    ESC=""
+fi
+
+colorize_diff() {
+    # Colorize unified diff output similar to git:
+    #   + lines (except +++ header): green
+    #   - lines (except --- header): red
+    #   @@ hunk lines: cyan
+    if [ -z "$ESC" ]; then
+        cat
+        return
+    fi
+
+    sed \
+        -e "/^+++ /b" \
+        -e "/^--- /b" \
+        -e "s/^\(+.*\)/${ESC}[32m\1${ESC}[0m/" \
+        -e "s/^\(-.*\)/${ESC}[31m\1${ESC}[0m/" \
+        -e "s/^\(@@.*@@.*\)/${ESC}[36m\1${ESC}[0m/"
+}
+
+# Read full diff once (now safe: we know stdin is not a TTY)
+DIFF="$(cat)"
+
+# If diff is empty, exit nicely
+if [ -z "$DIFF" ]; then
+    echo "ERROR: Empty input." >&2
+    exit 2
+fi
+
+# Extract all func pairs into decoded temp files and print an index + name list.
+# Output lines: "<idx>\t<name>"
+printf '%s\n' "$DIFF" | awk -v out="$TMPDIR" '
+function decode_func(s,   t) {
+    t = s
+    gsub(/\\"/, "\"", t)     # \" -> "
+    gsub(/\\\\/, "\\", t)    # \\ -> \
+    gsub(/\\t/, "\t", t)     # \t -> tab
+    gsub(/\\n/, "\n", t)     # \n -> newline
+    return t
+}
+
+function decode_name(s,   t) {
+    t = s
+    gsub(/\\"/, "\"", t)
+    gsub(/\\\\/, "\\", t)
+    return t
+}
+
+function extract_json_string(line, prefix,   s) {
+    # Remove leading:  - "key": "
+    s = line
+    sub("^" prefix "[[:space:]]*\"[^\"]+\"[[:space:]]*:[[:space:]]*\"", "", s)
+    # Remove trailing: ",
+    sub("\",[[:space:]]*$", "", s)
+    return s
+}
+
+BEGIN {
+    idx = 0
+    ctx_name = ""
+    oldname = ""; newname = ""
+    oldfunc = ""; newfunc = ""
+    have_oldfunc = 0; have_newfunc = 0
+}
+
+# Capture name lines even if unchanged (context), and also if changed (+/-)
+/^[ +-][[:space:]]*"name"[[:space:]]*:/ {
+    ctx_name = extract_json_string($0, substr($0, 1, 1))
+    next
+}
+
+# Capture func lines
+/^-+[[:space:]]*"func"[[:space:]]*:/ {
+    oldfunc = extract_json_string($0, "-")
+    have_oldfunc = 1
+    next
+}
+/^\++[[:space:]]*"func"[[:space:]]*:/ {
+    newfunc = extract_json_string($0, "+")
+    have_newfunc = 1
+    next
+}
+
+# When we have a pair, write decoded files and emit metadata
+{
+    if (have_oldfunc && have_newfunc) {
+        idx++
+
+        of = out "/old_" idx ".js"
+        nf = out "/new_" idx ".js"
+
+        print decode_func(oldfunc) > of
+        close(of)
+        print decode_func(newfunc) > nf
+        close(nf)
+
+        # Choose display name: prefer ctx_name, else "(unnamed)"
+        dn = ctx_name
+        if (dn == "") dn = "(unnamed)"
+        dn = decode_name(dn)
+
+        # Print record for the shell loop
+        print idx "\t" dn
+
+        # Reset for next node
+        ctx_name = ""
+        oldfunc = ""; newfunc = ""
+        have_oldfunc = 0; have_newfunc = 0
+    }
+}
+' > "$TMPDIR/index.tsv"
+
+if [ ! -s "$TMPDIR/index.tsv" ]; then
+    echo "ERROR: No function node func pairs found in the input diff." >&2
+    echo "Hint: pipe a git diff that includes changes to function nodes in flows.json." >&2
+    exit 1
+fi
+
+# Show diffs for each extracted pair
+while IFS="$(printf '\t')" read -r idx fname; do
+    oldf="$TMPDIR/old_${idx}.js"
+    newf="$TMPDIR/new_${idx}.js"
+
+    echo
+    echo "=== Function: $fname ==="
+    diff -u "$oldf" "$newf" | colorize_diff || true
+done < "$TMPDIR/index.tsv"
+
