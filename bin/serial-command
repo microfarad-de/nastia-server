@@ -103,7 +103,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    device    = args.device
+    dev_short = str(args.device).replace("/dev/", "")  # Serial device name without the /dev prefix
+    device    = f"/dev/{dev_short}"                    # Serial device name
     command   = args.command
 
     try:
