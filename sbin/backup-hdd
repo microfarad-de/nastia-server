@@ -36,7 +36,7 @@ source "$DIR/common.sh"
 SRC="${CFG_BACKUP_SOURCE[*]}"
 DST="$CFG_BACKUP_DESTINATION"
 EXCLUDE="$CFG_BACKUP_EXCLUDE"
-OPTIONS="-av" # -a = -rlptgoD
+OPTIONS="-av --itemize-changes" # -a = -rlptgoD
 LOCK="$CFG_TMPFS_DIR/backup-hdd.lock"
 LOG="$CFG_LOG_DIR/backup-hdd.log"
 CLEANUP_SCRIPT="$DIR/../lib/cleanup.py"
