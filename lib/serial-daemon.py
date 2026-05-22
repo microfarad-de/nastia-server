@@ -140,7 +140,7 @@ class Lock(ULock):
         try:
             return super().__enter__()
         except ULockException as e:
-            error_log(str(e))
+            info_log(str(e))
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -256,6 +256,12 @@ if __name__ == "__main__":
                 sys.exit(0)
             else:
                 info_log(f"Serial error while connected to {dev}: {e}")
+                time.sleep(5)
+                retry -= 1
+        except ULockException as e:
+            if terminate:
+                sys.exit(0)
+            else:
                 time.sleep(5)
                 retry -= 1
         except Exception as e:
